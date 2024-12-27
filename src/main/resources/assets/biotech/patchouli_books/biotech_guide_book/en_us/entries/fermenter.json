@@ -1,0 +1,15 @@
+{
+  "name": "Fermenter",
+  "icon": "biotech:fermenter",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A fermenter works by breaking down organic materials through microbial activity, producing valuable by-products.$(br)$(br)The fermenter can make fertilizer for your crops to help increase their yields."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:fermenter"
+    }
+  ]
+}

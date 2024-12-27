@@ -2,10 +2,7 @@ package com.nstut.biotech.jei;
 
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
-import com.nstut.biotech.recipes.BreedingChamberRecipe;
-import com.nstut.biotech.recipes.GreenhouseRecipe;
-import com.nstut.biotech.recipes.SlaughterhouseRecipe;
-import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
+import com.nstut.biotech.recipes.*;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
@@ -35,6 +32,7 @@ public class BiotechJEIPlugin implements IModPlugin {
         registration.addRecipeCategories(new TerrestrialHabitatCategory(registration.getJeiHelpers().getGuiHelper()));
         registration.addRecipeCategories(new SlaughterhouseCategory(registration.getJeiHelpers().getGuiHelper()));
         registration.addRecipeCategories(new GreenhouseCategory(registration.getJeiHelpers().getGuiHelper()));
+        registration.addRecipeCategories(new FermenterCategory(registration.getJeiHelpers().getGuiHelper()));
     }
 
     @Override
@@ -43,6 +41,7 @@ public class BiotechJEIPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(MachineRegistries.TERRESTRIAL_HABITAT.blockItem().get()), TerrestrialHabitatCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(MachineRegistries.SLAUGHTERHOUSE.blockItem().get()), SlaughterhouseCategory.TYPE);
         registration.addRecipeCatalyst(new ItemStack(MachineRegistries.GREENHOUSE.blockItem().get()), GreenhouseCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(MachineRegistries.FERMENTER.blockItem().get()), FermenterCategory.TYPE);
     }
 
     @Override
@@ -65,5 +64,8 @@ public class BiotechJEIPlugin implements IModPlugin {
 
         List<GreenhouseRecipe> greenhouseRecipes = recipeManager.getAllRecipesFor(GreenhouseRecipe.TYPE);
         registration.addRecipes(GreenhouseCategory.TYPE, greenhouseRecipes);
+
+        List<FermenterRecipe> fermenterRecipes = recipeManager.getAllRecipesFor(FermenterRecipe.TYPE);
+        registration.addRecipes(FermenterCategory.TYPE, fermenterRecipes);
     }
 }

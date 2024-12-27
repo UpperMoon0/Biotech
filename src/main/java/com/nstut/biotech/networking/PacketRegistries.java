@@ -59,6 +59,12 @@ public class PacketRegistries {
                 .encoder(GreenhousePacket::toBytes)
                 .consumerMainThread(GreenhousePacket::handle)
                 .add();
+
+        net.messageBuilder(FermenterPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(FermenterPacket::new)
+                .encoder(FermenterPacket::toBytes)
+                .consumerMainThread(FermenterPacket::handle)
+                .add();
     }
     public static <MSG> void sendToClients(MSG message) {
         INSTANCE.send(PacketDistributor.ALL.noArg(), message);

@@ -28,7 +28,8 @@ public class MachineGenerator extends DataGenerator {
             "breeding_chamber",
             "terrestrial_habitat",
             "slaughterhouse",
-            "greenhouse"
+            "greenhouse",
+            "fermenter"
         );
 
         for (String machineId : machineIds) {
@@ -180,7 +181,7 @@ public class MachineGenerator extends DataGenerator {
             File lootTableFile = new File(GEN_BLOCK_LOOT_TABLES_PATH, machineId + ".json");
 
             // Ensure the directory exists
-            lootTableFile.getParentFile().mkdirs();
+            boolean exist = lootTableFile.getParentFile().mkdirs();
 
             // Write the JSON content to the file
             try (FileWriter writer = new FileWriter(lootTableFile)) {

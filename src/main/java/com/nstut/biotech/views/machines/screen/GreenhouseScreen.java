@@ -126,6 +126,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             }
         }
 
+        pGuiGraphics.drawCenteredString(font, "Using", 56, 40, 0xFFFFFF);
+
         String machineName = Component.translatable("menu.title.biotech." + MachineRegistries.GREENHOUSE.id()).getString();
         int x = 106 - font.width(machineName) / 2;
         pGuiGraphics.drawString(font, machineName, x, 3, 0x3F3F3F, false);
@@ -163,6 +165,12 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
                 FluidStack currentFluid = menu.getRecipe().getFluidIngredients()[0];
                 BiotechFluidRenderer fluidRenderer = new BiotechFluidRenderer();
                 fluidRenderer.renderFluid(graphics.pose(), leftPos + 55, topPos + 55, 12, 12, currentFluid);
+
+                if (menu.getRecipe().getIngredientItems().length > 1) {
+                    BiotechItemRenderer fertilizerItemRenderer = new BiotechItemRenderer(12, 12);
+                    ItemStack currentFertilizer = menu.getRecipe().getIngredientItems()[1].getItemStack();
+                    fertilizerItemRenderer.render(graphics.pose(), leftPos + 53, topPos + 75, currentFertilizer);
+                }
             }
         }
     }

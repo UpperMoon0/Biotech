@@ -34,7 +34,7 @@ public class TerrestrialHabitatCategory implements IRecipeCategory<TerrestrialHa
     private final IDrawable icon;
 
     public TerrestrialHabitatCategory(IGuiHelper helper) {
-        this.background = helper.createDrawable(TEXTURE, 0, 0, 122, 52);
+        this.background = helper.createDrawable(TEXTURE, 0, 0, 140, 52);
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(MachineRegistries.TERRESTRIAL_HABITAT.blockItem().get()));
     }
 
@@ -74,6 +74,7 @@ public class TerrestrialHabitatCategory implements IRecipeCategory<TerrestrialHa
         builder.addSlot(RecipeIngredientRole.INPUT, 32, 21).addFluidStack(fluidIngredient.getFluid(), fluidIngredient.getAmount()).setFluidRenderer(fluidIngredient.getAmount(), false, 16, 16);
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 101, 11).addIngredients(itemOutputs.get(0));
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 119, 11).addIngredients(itemOutputs.get(1));
     }
 
     @Override

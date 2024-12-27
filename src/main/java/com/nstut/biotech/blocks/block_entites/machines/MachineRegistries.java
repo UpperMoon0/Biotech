@@ -4,10 +4,7 @@ import com.nstut.biotech.Biotech;
 import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.recipes.*;
 import com.nstut.biotech.views.machines.menu.*;
-import com.nstut.biotech.views.machines.screen.BreedingChamberScreen;
-import com.nstut.biotech.views.machines.screen.GreenhouseScreen;
-import com.nstut.biotech.views.machines.screen.SlaughterhouseScreen;
-import com.nstut.biotech.views.machines.screen.TerrestrialHabitatScreen;
+import com.nstut.biotech.views.machines.screen.*;
 import com.nstut.nstutlib.blocks.MachineBlock;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import com.nstut.nstutlib.recipes.ModRecipe;
@@ -73,6 +70,14 @@ public class MachineRegistries {
             GreenhouseMenu::new,
             GreenhouseScreen::new,
             GreenhouseRecipe.SERIALIZER
+    );
+
+    public static MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register(
+            "fermenter",
+            FermenterBlockEntity.class,
+            FermenterMenu::new,
+            FermenterScreen::new,
+            FermenterRecipe.SERIALIZER
     );
 
     public static <T extends MachineBlockEntity,

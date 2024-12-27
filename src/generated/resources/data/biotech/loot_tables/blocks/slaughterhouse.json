@@ -1,21 +1,21 @@
 {
   "random_sequence": "biotech:blocks/slaughterhouse",
+  "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0.0,
-      "rolls": 1.0,
+      "entries": [
+        {
+          "name": "biotech:slaughterhouse",
+          "type": "minecraft:item"
+        }
+      ],
       "conditions": [
         {
           "condition": "minecraft:survives_explosion"
         }
       ],
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "biotech:slaughterhouse"
-        }
-      ]
+      "rolls": 1.0,
+      "bonus_rolls": 0.0
     }
-  ],
-  "type": "minecraft:block"
+  ]
 }

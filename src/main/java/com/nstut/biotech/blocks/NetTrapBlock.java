@@ -1,6 +1,7 @@
 package com.nstut.biotech.blocks;
 
 import com.nstut.biotech.items.ItemRegistries;
+import com.nstut.nstutlib.items.SmartHammer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.*;

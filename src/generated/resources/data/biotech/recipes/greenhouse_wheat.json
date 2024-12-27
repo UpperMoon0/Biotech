@@ -4,7 +4,7 @@
     {
       "itemStack": {
         "id": "wheat_seeds",
-        "Count": 1
+        "Count": 2
       },
       "isConsumable": true
     }
@@ -13,14 +13,14 @@
     {
       "itemStack": {
         "id": "wheat",
-        "Count": 2
+        "Count": 4
       },
       "chance": 1.0
     },
     {
       "itemStack": {
         "id": "wheat_seeds",
-        "Count": 3
+        "Count": 6
       },
       "chance": 1.0
     }
@@ -28,9 +28,9 @@
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",
-      "Amount": 200
+      "Amount": 400
     }
   ],
   "fluidOutputs": [],
-  "energy": 64000
+  "energy": 128000
 }

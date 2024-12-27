@@ -149,9 +149,11 @@ public class TerrestrialHabitatScreen extends AbstractContainerScreen<Terrestria
                 ItemStack currentFood = menu.getRecipe().getIngredientItems()[1].getItemStack();
                 foodItemRenderer.render(graphics.pose(), this.leftPos + 33, this.topPos + 100, currentFood);
 
-                BiotechItemRenderer outputItemRenderer = new BiotechItemRenderer(32, 32);
-                ItemStack currentOutput = menu.getRecipe().getOutputItems()[0].getItemStack();
-                outputItemRenderer.render(graphics.pose(), this.leftPos + 142, this.topPos + 33, currentOutput);
+                BiotechItemRenderer outputItemRenderer = new BiotechItemRenderer(24, 24);
+                ItemStack output1 = menu.getRecipe().getOutputItems()[0].getItemStack();
+                ItemStack output2 = menu.getRecipe().getOutputItems()[1].getItemStack();
+                outputItemRenderer.render(graphics.pose(), this.leftPos + 128, this.topPos + 33, output1);
+                outputItemRenderer.render(graphics.pose(), this.leftPos + 156, this.topPos + 33, output2);
 
                 FluidStack currentFluid = menu.getRecipe().getFluidIngredients()[0];
                 BiotechFluidRenderer fluidRenderer = new BiotechFluidRenderer();

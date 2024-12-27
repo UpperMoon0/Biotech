@@ -73,14 +73,15 @@ public class RecipeGenerator extends DataGenerator {
 
             for (Food food : foods) {
                 IngredientItemJsonObj[] itemInputs = new IngredientItemJsonObj[]{
-                        new IngredientItemJsonObj(new ItemStackJsonObj(creature.babyId(), 2), true),
+                        new IngredientItemJsonObj(new ItemStackJsonObj(creature.babyId(), 1), true),
                         new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), 4), true)
                 };
                 FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
-                        new FluidJsonObj(CreatureData.FLUID_WATER, 500)
+                        new FluidJsonObj(CreatureData.FLUID_WATER, 400)
                 };
                 OutputItemJsonObj[] itemOutputs = new OutputItemJsonObj[]{
-                        new OutputItemJsonObj(new ItemStackJsonObj(creature.id(), 1))
+                        new OutputItemJsonObj(new ItemStackJsonObj(creature.id(), 1)),
+                        new OutputItemJsonObj(new ItemStackJsonObj("biotech:manure", 2))
                 };
                 FluidJsonObj[] fluidOutputs = new FluidJsonObj[]{};
                 int energy = 48000;
@@ -130,25 +131,43 @@ public class RecipeGenerator extends DataGenerator {
         List<Crop> crops = CropData.CROPS;
 
         for (Crop crop : crops) {
-
+            // Base recipe
             IngredientItemJsonObj[] ingredientItems = new IngredientItemJsonObj[]{
-                    new IngredientItemJsonObj(new ItemStackJsonObj(crop.seedId(), 1), true)
+                    new IngredientItemJsonObj(new ItemStackJsonObj(crop.seedId(), 2), true)
             };
-            FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
-                    new FluidJsonObj("minecraft:water", 200)
+            FluidJsonObj[] baseFluidInputs = new FluidJsonObj[]{
+                    new FluidJsonObj("minecraft:water", 400)
             };
-            OutputItemJsonObj[] outputItems = crop.yields().stream()
-                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count()), y.chance())).toArray(OutputItemJsonObj[]::new);
-            FluidJsonObj[] fluidOutputs = new FluidJsonObj[]{};
-            int energy = 64000;
+            OutputItemJsonObj[] baseOutputItems = crop.yields().stream()
+                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count() * 2), y.chance())).toArray(OutputItemJsonObj[]::new);
+            FluidJsonObj[] baseFluidOutputs = new FluidJsonObj[]{};
+            int baseEnergy = 128000;
 
             String cropId =  crop.yields().get(0).id();
             String cropName = cropId.substring( cropId.indexOf(":") + 1);
-            String recipeName = machineId + "_" + cropName;
+            String baseRecipeName = machineId + "_" + cropName;
 
-            RecipeJson recipeJson = new RecipeJson(type, ingredientItems, outputItems, fluidInputs, fluidOutputs, energy);
+            RecipeJson baseRecipeJson = new RecipeJson(type, ingredientItems, baseOutputItems, baseFluidInputs, baseFluidOutputs, baseEnergy);
 
-            generateRecipe(recipeName, recipeJson);
+            generateRecipe(baseRecipeName, baseRecipeJson);
+
+            // Fertilizer recipe
+            IngredientItemJsonObj[] ferIngredientItems = new IngredientItemJsonObj[]{
+                    new IngredientItemJsonObj(new ItemStackJsonObj(crop.seedId(), 2), true),
+                    new IngredientItemJsonObj(new ItemStackJsonObj("biotech:fertilizer", 2), true)
+            };
+            FluidJsonObj[] ferFluidInputs = new FluidJsonObj[]{
+                    new FluidJsonObj("minecraft:water", 500)
+            };
+            OutputItemJsonObj[] ferOutputItems = crop.yields().stream()
+                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count() * 3), y.chance())).toArray(OutputItemJsonObj[]::new);
+            int ferEnergy = 160000;
+
+            String ferRecipeName = machineId + "_" + cropName + "_fertilizer";
+
+            RecipeJson ferRecipeJson = new RecipeJson(type, ferIngredientItems, ferOutputItems, ferFluidInputs, baseFluidOutputs, ferEnergy);
+
+            generateRecipe(ferRecipeName, ferRecipeJson);
         }
     }
 

@@ -34,23 +34,13 @@ public class ItemRegistries {
     public static final RegistryObject<Item> RABBIT = ITEMS.register("rabbit", () -> new MobItem(9));
     public static final RegistryObject<Item> BABY_RABBIT = ITEMS.register("baby_rabbit", () -> new MobItem(10));
 
-    public static final Set<RegistryObject<Item>> ITEM_SET = new HashSet<>() {{
-        add(NET_TRAP_ITEM);
-        add(BIOTECH_MACHINE_CASING);
-        add(ITEM_INPUT_HATCH);
-        add(ITEM_OUTPUT_HATCH);
-        add(FLUID_INPUT_HATCH);
-        add(FLUID_OUTPUT_HATCH);
-        add(ENERGY_INPUT_HATCH);
-        add(COW);
-        add(BABY_COW);
-        add(CHICKEN);
-        add(BABY_CHICKEN);
-        add(PIG);
-        add(BABY_PIG);
-        add(SHEEP);
-        add(BABY_SHEEP);
-        add(RABBIT);
-        add(BABY_RABBIT);
-    }};
+    public static final RegistryObject<Item> MANURE = ITEMS.register("manure", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> PAPER_BAG = ITEMS.register("paper_bag", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> FERTILIZER = ITEMS.register("fertilizer", () -> new Item(new Item.Properties()));
+
+    public static final Set<RegistryObject<Item>> ITEM_SET;
+
+    static {
+        ITEM_SET = new HashSet<>(ITEMS.getEntries());
+    }
 }

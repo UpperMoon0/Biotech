@@ -4,7 +4,7 @@
     {
       "itemStack": {
         "id": "biotech:baby_sheep",
-        "Count": 2
+        "Count": 1
       },
       "isConsumable": true
     },
@@ -23,12 +23,19 @@
         "Count": 1
       },
       "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "Count": 2
+      },
+      "chance": 1.0
     }
   ],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",
-      "Amount": 500
+      "Amount": 400
     }
   ],
   "fluidOutputs": [],

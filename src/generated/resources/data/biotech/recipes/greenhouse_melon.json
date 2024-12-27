@@ -4,7 +4,7 @@
     {
       "itemStack": {
         "id": "melon_seeds",
-        "Count": 1
+        "Count": 2
       },
       "isConsumable": true
     }
@@ -13,7 +13,7 @@
     {
       "itemStack": {
         "id": "melon",
-        "Count": 1
+        "Count": 2
       },
       "chance": 1.0
     }
@@ -21,9 +21,9 @@
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",
-      "Amount": 200
+      "Amount": 400
     }
   ],
   "fluidOutputs": [],
-  "energy": 64000
+  "energy": 128000
 }

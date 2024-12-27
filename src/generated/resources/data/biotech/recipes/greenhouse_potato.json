@@ -4,7 +4,7 @@
     {
       "itemStack": {
         "id": "potato",
-        "Count": 1
+        "Count": 2
       },
       "isConsumable": true
     }
@@ -13,14 +13,14 @@
     {
       "itemStack": {
         "id": "potato",
-        "Count": 4
+        "Count": 8
       },
       "chance": 1.0
     },
     {
       "itemStack": {
         "id": "poisonous_potato",
-        "Count": 1
+        "Count": 2
       },
       "chance": 0.02
     }
@@ -28,9 +28,9 @@
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",
-      "Amount": 200
+      "Amount": 400
     }
   ],
   "fluidOutputs": [],
-  "energy": 64000
+  "energy": 128000
 }

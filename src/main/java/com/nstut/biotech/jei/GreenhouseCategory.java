@@ -35,7 +35,7 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
     private final IDrawable icon;
 
     public GreenhouseCategory(IGuiHelper helper) {
-        this.background = helper.createDrawable(TEXTURE, 0, 0, 135, 52);
+        this.background = helper.createDrawable(TEXTURE, 0, 0, 153, 52);
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(MachineRegistries.GREENHOUSE.blockItem().get()));
     }
 
@@ -71,10 +71,13 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
                 .toList();
 
         builder.addSlot(RecipeIngredientRole.INPUT, 23, 1).addIngredients(itemIngredients.get(0));
-        builder.addSlot(RecipeIngredientRole.INPUT, 23, 21).addFluidStack(fluidIngredient.getFluid(), fluidIngredient.getAmount()).setFluidRenderer(fluidIngredient.getAmount(), false, 16, 16);
+        if (itemIngredients.size() > 1) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 41, 1).addIngredients(itemIngredients.get(1));
+        }
+        builder.addSlot(RecipeIngredientRole.INPUT, 32, 21).addFluidStack(fluidIngredient.getFluid(), fluidIngredient.getAmount()).setFluidRenderer(fluidIngredient.getAmount(), false, 16, 16);
 
         for (int i = 0; i < itemOutputs.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 78 + i * 20, 6).addIngredients(itemOutputs.get(i));
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + i * 20, 6).addIngredients(itemOutputs.get(i));
         }
     }
 
@@ -90,7 +93,7 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
             if (recipe.getItemOutputs().get(i).getChance() < 1) {
                 chance = (int) (recipe.getItemOutputs().get(i).getChance() * 100) + "%";
             }
-            guiGraphics.drawString(minecraft.font, chance, 78 + i * 20, 25, 4210752, false);
+            guiGraphics.drawString(minecraft.font, chance, 96 + i * 20, 25, 4210752, false);
         }
     }
 }

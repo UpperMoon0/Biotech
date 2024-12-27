@@ -7,6 +7,7 @@
   "block.biotech.terrestrial_habitat": "Terrestrial Habitat",
   "block.biotech.slaughterhouse": "Slaughterhouse",
   "block.biotech.greenhouse": "Greenhouse",
+  "block.biotech.fermenter": "Fermenter",
 
   "block.biotech.item_input_hatch": "Item Input Hatch",
   "block.biotech.item_output_hatch": "Item Output Hatch",
@@ -24,7 +25,9 @@
   "item.biotech.baby_sheep": "Baby Sheep",
   "item.biotech.rabbit": "Rabbit",
   "item.biotech.baby_rabbit": "Baby Rabbit",
-  "item.biotech.smart_hammer": "Smart Hammer",
+  "item.biotech.manure": "Manure",
+  "item.biotech.paper_bag": "Paper Bag",
+  "item.biotech.fertilizer": "Fertilizer",
 
   "itemGroup.biotech": "Biotech",
 
@@ -32,6 +35,7 @@
   "menu.title.biotech.terrestrial_habitat": "Terrestrial Habitat",
   "menu.title.biotech.slaughterhouse": "Slaughterhouse",
   "menu.title.biotech.greenhouse": "Greenhouse",
+  "menu.title.biotech.fermenter": "Fermenter",
 
   "menu.title.biotech.item_input_hatch": "Item Input Hatch",
   "menu.title.biotech.item_output_hatch": "Item Output Hatch",

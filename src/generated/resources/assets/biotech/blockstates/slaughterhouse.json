@@ -3,32 +3,32 @@
     "facing=north,operating=true": {
       "model": "biotech:block/slaughterhouse_on"
     },
-    "facing=south,operating=false": {
-      "model": "biotech:block/slaughterhouse_off",
-      "y": 180
-    },
-    "facing=east,operating=true": {
-      "model": "biotech:block/slaughterhouse_on",
-      "y": 90
-    },
-    "facing=west,operating=true": {
-      "model": "biotech:block/slaughterhouse_on",
-      "y": 270
-    },
-    "facing=east,operating=false": {
-      "model": "biotech:block/slaughterhouse_off",
-      "y": 90
-    },
-    "facing=south,operating=true": {
-      "model": "biotech:block/slaughterhouse_on",
-      "y": 180
+    "facing=west,operating=false": {
+      "y": 270,
+      "model": "biotech:block/slaughterhouse_off"
     },
     "facing=north,operating=false": {
       "model": "biotech:block/slaughterhouse_off"
     },
-    "facing=west,operating=false": {
-      "model": "biotech:block/slaughterhouse_off",
-      "y": 270
+    "facing=south,operating=true": {
+      "y": 180,
+      "model": "biotech:block/slaughterhouse_on"
+    },
+    "facing=east,operating=false": {
+      "y": 90,
+      "model": "biotech:block/slaughterhouse_off"
+    },
+    "facing=west,operating=true": {
+      "y": 270,
+      "model": "biotech:block/slaughterhouse_on"
+    },
+    "facing=east,operating=true": {
+      "y": 90,
+      "model": "biotech:block/slaughterhouse_on"
+    },
+    "facing=south,operating=false": {
+      "y": 180,
+      "model": "biotech:block/slaughterhouse_off"
     }
   }
 }
