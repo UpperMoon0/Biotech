@@ -1,4 +1,4 @@
-package com.nstut.biotech.networking;
+package com.nstut.biotech.network;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;

@@ -8,29 +8,69 @@
       "text": "The Breeding Chamber produces baby animals in large quantity, allowing you to bypass the normal animals breeding cooldown.$(br)$(br)For the machine to work, provide it with the parent animals, their respective food, water and energy."
     },
     {
-      "type": "patchouli:multiblock",
       "multiblock": {
-        "pattern": [
-          [ "       ", "       ", "PPPPPPP", "BGGGGGB", "PPPPPPP", "       ", "       " ],
-          [ "       ", "CCCCCCC", "P     P", "B     B", "P     P", "CCCCCCC", "       " ],
-          [ "       ", "BBBBBBB", "B     B", "B     B", "B     B", "BBBBBBB", "       " ],
-          [ "BBBBBBB", "B     B", "B     B", "M  0  B", "B     B", "B     B", "BBBBBBB" ],
-          [ "BBBOBBB", "BBBBBBB", "BDDDDDB", "BDDDDDE", "BDDDDDB", "BBBBBBF", "BIBIBIB" ]
-        ],
         "mapping": {
-          "C": "minecraft:pink_concrete",
-          "P": "minecraft:pink_stained_glass",
-          "G": "minecraft:glowstone",
-          "D": "minecraft:grass_block",
-          "B": "biotech:biotech_machine_casing",
-          "M": "biotech:breeding_chamber[facing=north]",
-          "I": "biotech:item_input_hatch[facing=east]",
-          "O": "biotech:item_output_hatch[facing=west]",
-          "F": "biotech:fluid_input_hatch[facing=south]",
-          "E": "biotech:energy_input_hatch[facing=south]"
+          "b": "minecraft:pink_stained_glass",
+          "c": "biotech:biotech_machine_casing",
+          "d": "minecraft:glowstone",
+          "e": "minecraft:pink_concrete",
+          "f": "biotech:breeding_chamber[facing=east, operating=false]",
+          "g": "biotech:energy_input_hatch[facing=west]",
+          "h": "biotech:fluid_input_hatch[facing=west]",
+          "i": "minecraft:grass_block[snowy=false]",
+          "j": "biotech:item_input_hatch[facing=south]",
+          "k": "biotech:item_output_hatch[facing=north]"
         },
-        "symmetrical": true
-      }
+        "symmetrical": true,
+        "pattern": [
+          [
+            "  bcb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bcb  "
+          ],
+          [
+            " ebcbe ",
+            " e   e ",
+            " e   e ",
+            " e   e ",
+            " e   e ",
+            " e   e ",
+            " ebcbe "
+          ],
+          [
+            " ccccc ",
+            " c   c ",
+            " c   c ",
+            " c   c ",
+            " c   c ",
+            " c   c ",
+            " ccccc "
+          ],
+          [
+            "ccccccc",
+            "c     c",
+            "c     c",
+            "c  0  c",
+            "c     c",
+            "c     c",
+            "cccfccc"
+          ],
+          [
+            "cccgchc",
+            "cciiicj",
+            "cciiicc",
+            "kciiicj",
+            "cciiicc",
+            "cciiicj",
+            "ccccccc"
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
     },
     {
       "type": "patchouli:crafting",

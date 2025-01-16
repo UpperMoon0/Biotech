@@ -5,8 +5,8 @@ import com.nstut.biotech.blocks.block_entites.hatches.EnergyInputHatchBlockEntit
 import com.nstut.biotech.blocks.block_entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemOutputHatchBlockEntity;
-import com.nstut.biotech.networking.PacketRegistries;
-import com.nstut.biotech.networking.SlaughterhousePacket;
+import com.nstut.biotech.network.PacketRegistries;
+import com.nstut.biotech.network.SlaughterhousePacket;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
 import com.nstut.biotech.views.machines.menu.SlaughterhouseMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;

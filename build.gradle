@@ -152,7 +152,7 @@ dependencies {
     implementation fg.deobf("curse.maven:itank-256991:4647928")
     implementation fg.deobf("curse.maven:generatorgalore-691049:4661531")
     implementation fg.deobf("curse.maven:patchouli-306770:4966125")
-    implementation 'com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.4'
+    implementation 'com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.6'
     implementation 'com.google.code.gson:gson:2.11.0'
 
     // compile against the JEI API but do not include it at runtime

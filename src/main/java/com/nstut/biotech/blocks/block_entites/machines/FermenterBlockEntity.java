@@ -5,8 +5,8 @@ import com.nstut.biotech.blocks.block_entites.hatches.EnergyInputHatchBlockEntit
 import com.nstut.biotech.blocks.block_entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemOutputHatchBlockEntity;
-import com.nstut.biotech.networking.FermenterPacket;
-import com.nstut.biotech.networking.PacketRegistries;
+import com.nstut.biotech.network.FermenterPacket;
+import com.nstut.biotech.network.PacketRegistries;
 import com.nstut.biotech.recipes.FermenterRecipe;
 import com.nstut.biotech.views.machines.menu.FermenterMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;

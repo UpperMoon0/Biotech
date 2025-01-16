@@ -8,30 +8,78 @@
       "text": "The Terrestrial Habitat rapidly grows baby animals into adults.$(br)$(br)Provide the machine with the baby animal, along with their respective food, water, and energy to operate."
     },
     {
-      "type": "patchouli:multiblock",
       "multiblock": {
-        "pattern": [
-          [ "       ", "       ", "       ", "   CPPC", "   PGGP", "   PGGP", "   CPPC" ],
-          [ "       ", "       ", "       ", "   BBBB", "   B  B", "   B  B", "   BBBB" ],
-          [ "       ", "       ", "       ", "   BBBB", "      B", "      B", "   BBBB" ],
-          [ "CPPPPPC", "P     P", "P     P", "P  BBBB", "P     B", "P     B", "CPPBBBB" ],
-          [ "BBBBBBB", "B     B", "B     B", "M 0BBBB", "B     B", "B     B", "BBBBBBB" ],
-          [ "BBBOBBB", "BDDDDDB", "BDDDDDB", "BDDBBBE", "BDDBBBB", "BDDBBBF", "BIBIBIB" ]
-        ],
         "mapping": {
-          "C": "minecraft:yellow_concrete",
-          "P": "minecraft:yellow_stained_glass",
-          "G": "minecraft:glowstone",
-          "D": "minecraft:grass_block",
-          "B": "biotech:biotech_machine_casing",
-          "M": "biotech:terrestrial_habitat[facing=north]",
-          "I": "biotech:item_input_hatch[facing=east]",
-          "O": "biotech:item_output_hatch[facing=west]",
-          "F": "biotech:fluid_input_hatch[facing=south]",
-          "E": "biotech:energy_input_hatch[facing=south]"
+          "b": "minecraft:yellow_concrete",
+          "c": "minecraft:yellow_stained_glass",
+          "d": "minecraft:glowstone",
+          "e": "biotech:biotech_machine_casing",
+          "f": "biotech:terrestrial_habitat[facing=east, operating=false]",
+          "g": "biotech:energy_input_hatch[facing=west]",
+          "h": "biotech:fluid_input_hatch[facing=west]",
+          "i": "minecraft:grass_block[snowy=false]",
+          "j": "biotech:item_input_hatch[facing=south]",
+          "k": "biotech:item_output_hatch[facing=north]"
         },
-        "symmetrical": true
-      }
+        "symmetrical": true,
+        "pattern": [
+          [
+            "   bccb",
+            "   cddc",
+            "   cddc",
+            "   bccb",
+            "       ",
+            "       ",
+            "       "
+          ],
+          [
+            "   eeee",
+            "   edde",
+            "   edde",
+            "   eeee",
+            "       ",
+            "       ",
+            "       "
+          ],
+          [
+            "   eeee",
+            "   e  e",
+            "   e  e",
+            "   eeee",
+            "       ",
+            "       ",
+            "       "
+          ],
+          [
+            "bcceeee",
+            "c  e  e",
+            "c  e  e",
+            "c  e  e",
+            "c     c",
+            "c     c",
+            "bcccccb"
+          ],
+          [
+            "eeeeeee",
+            "e  e  e",
+            "e  e  e",
+            "e  e  e",
+            "e  0  e",
+            "e     e",
+            "eeefeee"
+          ],
+          [
+            "eeegehe",
+            "eiieeej",
+            "eiieeee",
+            "kiieeej",
+            "eiiiiie",
+            "eiiiiij",
+            "eeeeeee"
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
     },
     {
       "type": "patchouli:crafting",

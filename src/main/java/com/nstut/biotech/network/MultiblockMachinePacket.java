@@ -1,4 +1,4 @@
-package com.nstut.biotech.networking;
+package com.nstut.biotech.network;
 
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.core.BlockPos;

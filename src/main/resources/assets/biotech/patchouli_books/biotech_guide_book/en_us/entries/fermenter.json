@@ -8,6 +8,159 @@
       "text": "A fermenter works by breaking down organic materials through microbial activity, producing valuable by-products.$(br)$(br)The fermenter can make fertilizer for your crops to help increase their yields."
     },
     {
+      "multiblock": {
+        "mapping": {
+          "b": "biotech:biotech_machine_casing",
+          "c": "minecraft:glowstone",
+          "d": "minecraft:brown_stained_glass",
+          "e": "minecraft:brown_terracotta",
+          "f": "minecraft:iron_block",
+          "g": "biotech:item_output_hatch[facing=north]",
+          "h": "biotech:item_input_hatch[facing=south]",
+          "i": "minecraft:smooth_stone_slab[waterlogged=false, type=bottom]",
+          "j": "biotech:fermenter[facing=east, operating=false]",
+          "k": "biotech:energy_input_hatch[facing=west]",
+          "l": "biotech:fluid_input_hatch[facing=west]"
+        },
+        "symmetrical": true,
+        "pattern": [
+          [
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "  bbb  ",
+            " bbbbb ",
+            " bbcbb ",
+            " bbbbb ",
+            "  bbb  ",
+            "       "
+          ],
+          [
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "  ddd  ",
+            " deeed ",
+            " deeed ",
+            " deeed ",
+            "  ddd  ",
+            "       "
+          ],
+          [
+            " bb bb ",
+            "bbbbbbb",
+            "bbbbbbb",
+            " bb bb ",
+            "  ddd  ",
+            " deeed ",
+            " deeed ",
+            " deeed ",
+            "  ddd  ",
+            "       "
+          ],
+          [
+            " dd dd ",
+            "deedeed",
+            "deedeed",
+            " dd dd ",
+            "  ddd  ",
+            " deeed ",
+            " deeed ",
+            " deeed ",
+            "  ddd  ",
+            "       "
+          ],
+          [
+            " dd dd ",
+            "deedeed",
+            "deedeed",
+            " dd dd ",
+            "  ddd  ",
+            " deeed ",
+            " deeed ",
+            " deeed ",
+            "  ddd  ",
+            "       "
+          ],
+          [
+            " dd dd ",
+            "deedeed",
+            "deedeed",
+            " dd dd ",
+            "  ddd  ",
+            " deeed ",
+            " deeed ",
+            " deeed ",
+            "  ddd  ",
+            "       "
+          ],
+          [
+            " bb bb ",
+            "bbbbbbb",
+            "bbbbbbb",
+            " bb bb ",
+            "  bbb  ",
+            " bbbbb ",
+            " bbbbb ",
+            " bbbbb ",
+            "  bbb  ",
+            "       "
+          ],
+          [
+            " bb bb ",
+            "bbbcbbb",
+            "bcbbbcb",
+            " cbbbc ",
+            " bbbbb ",
+            " cbbbc ",
+            " cbbbc ",
+            " bbbbb ",
+            "  bbb  ",
+            "       "
+          ],
+          [
+            "       ",
+            " bbcbb ",
+            "fbbbbbf",
+            "fbbbbbf",
+            " gbbbh ",
+            "fbbbbbf",
+            "fbbbbbf",
+            " bbbbb ",
+            " bbbbb ",
+            "       "
+          ],
+          [
+            "       ",
+            "fbbcbbf",
+            "ib   bi",
+            "ib   bi",
+            "fb   bf",
+            "ib 0 bi",
+            "ib   bi",
+            "fb   bf",
+            " bbbbb ",
+            " bbjbb "
+          ],
+          [
+            "       ",
+            "fbkblbf",
+            "ibbbbbi",
+            "ibbbbbi",
+            "fbbbbbf",
+            "ibbbbbi",
+            "ibbbbbi",
+            "fbbbbbf",
+            " bbbbb ",
+            " bbbbb "
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "biotech:fermenter"
     }

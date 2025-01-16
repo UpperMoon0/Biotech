@@ -1,7 +1,7 @@
-package com.nstut.biotech.networking;
+package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.machines.SlaughterhouseBlockEntity;
-import com.nstut.biotech.views.machines.menu.SlaughterhouseMenu;
+import com.nstut.biotech.blocks.block_entites.machines.GreenhouseBlockEntity;
+import com.nstut.biotech.views.machines.menu.GreenhouseMenu;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -12,12 +12,12 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class SlaughterhousePacket extends MultiblockMachinePacket {
+public class GreenhousePacket extends MultiblockMachinePacket {
 
     private final int fluidCapacity;
     private final FluidStack fluidStored;
 
-    public SlaughterhousePacket(int energyCapacity,
+    public GreenhousePacket(int energyCapacity,
                                 int energyStored,
                                 int energyConsumeRate,
                                 int consumedEnergy,
@@ -39,7 +39,7 @@ public class SlaughterhousePacket extends MultiblockMachinePacket {
         this.recipe = recipe;
     }
 
-    public SlaughterhousePacket(FriendlyByteBuf buf) {
+    public GreenhousePacket(FriendlyByteBuf buf) {
         this.energyCapacity = buf.readInt();
         this.energyStored = buf.readInt();
         this.energyConsumeRate = buf.readInt();
@@ -77,10 +77,10 @@ public class SlaughterhousePacket extends MultiblockMachinePacket {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            if(Minecraft.getInstance().level != null && Minecraft.getInstance().level.getBlockEntity(pos) instanceof SlaughterhouseBlockEntity) {
+            if(Minecraft.getInstance().level != null && Minecraft.getInstance().level.getBlockEntity(pos) instanceof GreenhouseBlockEntity) {
                 LocalPlayer player = Minecraft.getInstance().player;
                 if(player != null
-                        && player.containerMenu instanceof SlaughterhouseMenu menu
+                        && player.containerMenu instanceof GreenhouseMenu menu
                         && menu.getBlockEntity().getBlockPos().equals(pos)) {
                     menu.setEnergyCapacity(energyCapacity);
                     menu.setEnergyStored(energyStored);
@@ -96,4 +96,3 @@ public class SlaughterhousePacket extends MultiblockMachinePacket {
         });
     }
 }
-

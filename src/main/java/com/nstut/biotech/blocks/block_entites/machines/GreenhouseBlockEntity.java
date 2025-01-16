@@ -5,8 +5,8 @@ import com.nstut.biotech.blocks.block_entites.hatches.EnergyInputHatchBlockEntit
 import com.nstut.biotech.blocks.block_entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemOutputHatchBlockEntity;
-import com.nstut.biotech.networking.PacketRegistries;
-import com.nstut.biotech.networking.GreenhousePacket;
+import com.nstut.biotech.network.PacketRegistries;
+import com.nstut.biotech.network.GreenhousePacket;
 import com.nstut.biotech.recipes.GreenhouseRecipe;
 import com.nstut.biotech.views.machines.menu.GreenhouseMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
@@ -20,9 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -34,7 +32,6 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 

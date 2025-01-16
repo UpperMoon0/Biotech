@@ -5,8 +5,8 @@ import com.nstut.biotech.blocks.block_entites.hatches.EnergyInputHatchBlockEntit
 import com.nstut.biotech.blocks.block_entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.block_entites.hatches.ItemOutputHatchBlockEntity;
-import com.nstut.biotech.networking.PacketRegistries;
-import com.nstut.biotech.networking.TerrestrialHabitatPacket;
+import com.nstut.biotech.network.PacketRegistries;
+import com.nstut.biotech.network.TerrestrialHabitatPacket;
 import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
 import com.nstut.biotech.views.machines.menu.TerrestrialHabitatMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;

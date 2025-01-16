@@ -1,7 +1,7 @@
-package com.nstut.biotech.networking;
+package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.machines.FermenterBlockEntity;
-import com.nstut.biotech.views.machines.menu.FermenterMenu;
+import com.nstut.biotech.blocks.block_entites.machines.BreedingChamberBlockEntity;
+import com.nstut.biotech.views.machines.menu.BreedingChamberMenu;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -12,21 +12,21 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class FermenterPacket extends MultiblockMachinePacket {
+public class BreedingChamberPacket extends MultiblockMachinePacket {
 
     private final int fluidCapacity;
     private final FluidStack fluidStored;
 
-    public FermenterPacket(int energyCapacity,
-                           int energyStored,
-                           int energyConsumeRate,
-                           int consumedEnergy,
-                           int recipeEnergyCost,
-                           int fluidCapacity,
-                           FluidStack fluidStored,
-                           boolean isStructureValid,
-                           BlockPos pos,
-                           ModRecipeData recipe) {
+    public BreedingChamberPacket(int energyCapacity,
+                                 int energyStored,
+                                 int energyConsumeRate,
+                                 int consumedEnergy,
+                                 int recipeEnergyCost,
+                                 int fluidCapacity,
+                                 FluidStack fluidStored,
+                                 boolean isStructureValid,
+                                 BlockPos pos,
+                                 ModRecipeData recipe) {
         this.energyCapacity = energyCapacity;
         this.energyStored = energyStored;
         this.energyConsumeRate = energyConsumeRate;
@@ -39,7 +39,7 @@ public class FermenterPacket extends MultiblockMachinePacket {
         this.recipe = recipe;
     }
 
-    public FermenterPacket(FriendlyByteBuf buf) {
+    public BreedingChamberPacket(FriendlyByteBuf buf) {
         this.energyCapacity = buf.readInt();
         this.energyStored = buf.readInt();
         this.energyConsumeRate = buf.readInt();
@@ -77,10 +77,10 @@ public class FermenterPacket extends MultiblockMachinePacket {
     public void handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            if(Minecraft.getInstance().level != null && Minecraft.getInstance().level.getBlockEntity(pos) instanceof FermenterBlockEntity) {
+            if(Minecraft.getInstance().level != null && Minecraft.getInstance().level.getBlockEntity(pos) instanceof BreedingChamberBlockEntity) {
                 LocalPlayer player = Minecraft.getInstance().player;
                 if(player != null
-                        && player.containerMenu instanceof FermenterMenu menu
+                        && player.containerMenu instanceof BreedingChamberMenu menu
                         && menu.getBlockEntity().getBlockPos().equals(pos)) {
                     menu.setEnergyCapacity(energyCapacity);
                     menu.setEnergyStored(energyStored);

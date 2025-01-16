@@ -2,8 +2,8 @@ package com.nstut.biotech.blocks.block_entites.hatches;
 
 import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.block_entites.CapabilityBlockEntity;
-import com.nstut.biotech.networking.FluidHatchPacket;
-import com.nstut.biotech.networking.PacketRegistries;
+import com.nstut.biotech.network.FluidHatchPacket;
+import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
