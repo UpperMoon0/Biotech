@@ -1,5 +1,9 @@
 {
   "variants": {
+    "facing=south,operating=false": {
+      "y": 180,
+      "model": "biotech:block/greenhouse_off"
+    },
     "facing=north,operating=true": {
       "model": "biotech:block/greenhouse_on"
     },
@@ -25,10 +29,6 @@
     "facing=east,operating=true": {
       "y": 90,
       "model": "biotech:block/greenhouse_on"
-    },
-    "facing=south,operating=false": {
-      "y": 180,
-      "model": "biotech:block/greenhouse_off"
     }
   }
 }

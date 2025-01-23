@@ -1,0 +1,8 @@
+{
+  "textures": {
+    "front": "biotech:block/mixer_off",
+    "top": "biotech:block/biotech_machine_casing",
+    "side": "biotech:block/biotech_machine_casing"
+  },
+  "parent": "minecraft:block/orientable"
+}

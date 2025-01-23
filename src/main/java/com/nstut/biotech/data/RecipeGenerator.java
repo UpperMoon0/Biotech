@@ -38,18 +38,21 @@ public class RecipeGenerator extends DataGenerator {
             List<Food> foods = CreatureData.FOODS.get(creature);
 
             for (Food food : foods) {
+                int foodToConsume = food.tier() == 1 ? 2 : 5;
                 IngredientItemJsonObj[] ingredientItems = new IngredientItemJsonObj[]{
                         new IngredientItemJsonObj(new ItemStackJsonObj(creature.id(), 2), false),
-                        new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), 2), true)
+                        new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), foodToConsume), true)
                 };
+                int fluidToConsume = food.tier() == 1 ? 200 : 500;
                 FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
-                        new FluidJsonObj(CreatureData.FLUID_WATER, 200)
+                        new FluidJsonObj(CreatureData.FLUID_WATER, fluidToConsume)
                 };
+                int creatureToOutput = food.tier() == 1 ? 1 : 3;
                 OutputItemJsonObj[] outputItems = new OutputItemJsonObj[]{
-                        new OutputItemJsonObj(new ItemStackJsonObj(creature.babyId(), 1))
+                        new OutputItemJsonObj(new ItemStackJsonObj(creature.babyId(), creatureToOutput))
                 };
                 FluidJsonObj[] fluidOutputs = new FluidJsonObj[]{};
-                int energy = 20000;
+                int energy = food.tier() == 1 ? 20000 : 45000;
 
                 String creatureName = creature.id().substring(creature.id().indexOf(":") + 1);
                 String foodName = food.id().substring(food.id().indexOf(":") + 1);
@@ -72,19 +75,23 @@ public class RecipeGenerator extends DataGenerator {
             List<Food> foods = CreatureData.FOODS.get(creature);
 
             for (Food food : foods) {
+                int foodToConsume = food.tier() == 1 ? 4 : 10;
+                int creatureToOutput = food.tier() == 1 ? 1 : 3;
                 IngredientItemJsonObj[] itemInputs = new IngredientItemJsonObj[]{
-                        new IngredientItemJsonObj(new ItemStackJsonObj(creature.babyId(), 1), true),
-                        new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), 4), true)
+                        new IngredientItemJsonObj(new ItemStackJsonObj(creature.babyId(), creatureToOutput), true),
+                        new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), foodToConsume), true)
                 };
+                int fluidToConsume = food.tier() == 1 ? 400 : 1000;
                 FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
-                        new FluidJsonObj(CreatureData.FLUID_WATER, 400)
+                        new FluidJsonObj(CreatureData.FLUID_WATER, fluidToConsume)
                 };
+                int manureToOutput = food.tier() == 1 ? 2 : 6;
                 OutputItemJsonObj[] itemOutputs = new OutputItemJsonObj[]{
-                        new OutputItemJsonObj(new ItemStackJsonObj(creature.id(), 1)),
-                        new OutputItemJsonObj(new ItemStackJsonObj("biotech:manure", 2))
+                        new OutputItemJsonObj(new ItemStackJsonObj(creature.id(), creatureToOutput)),
+                        new OutputItemJsonObj(new ItemStackJsonObj("biotech:manure", manureToOutput))
                 };
                 FluidJsonObj[] fluidOutputs = new FluidJsonObj[]{};
-                int energy = 48000;
+                int energy = food.tier() == 1 ? 48000 : 120000;
 
                 String creatureName = creature.id().substring(creature.id().indexOf(":") + 1);
                 String foodName = food.id().substring(food.id().indexOf(":") + 1);

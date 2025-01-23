@@ -1,7 +1,7 @@
 package com.nstut.biotech.views.machines.menu;
 
-import com.nstut.biotech.blocks.block_entites.machines.FermenterBlockEntity;
-import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
+import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
+import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import lombok.Getter;
 import lombok.Setter;

@@ -29,7 +29,8 @@ public class MachineGenerator extends DataGenerator {
             "terrestrial_habitat",
             "slaughterhouse",
             "greenhouse",
-            "fermenter"
+            "fermenter",
+            "mixer"
         );
 
         for (String machineId : machineIds) {

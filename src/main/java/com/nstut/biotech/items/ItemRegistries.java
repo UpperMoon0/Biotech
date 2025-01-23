@@ -34,6 +34,12 @@ public class ItemRegistries {
     public static final RegistryObject<Item> RABBIT = ITEMS.register("rabbit", () -> new MobItem(9));
     public static final RegistryObject<Item> BABY_RABBIT = ITEMS.register("baby_rabbit", () -> new MobItem(10));
 
+    public static final RegistryObject<Item> COW_FEED = ITEMS.register("cow_feed", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> CHICKEN_FEED = ITEMS.register("chicken_feed", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> PIG_FEED = ITEMS.register("pig_feed", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> SHEEP_FEED = ITEMS.register("sheep_feed", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> RABBIT_FEED = ITEMS.register("rabbit_feed", () -> new Item(new Item.Properties()));
+
     public static final RegistryObject<Item> MANURE = ITEMS.register("manure", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> PAPER_BAG = ITEMS.register("paper_bag", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> FERTILIZER = ITEMS.register("fertilizer", () -> new Item(new Item.Properties()));

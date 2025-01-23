@@ -1,8 +1,10 @@
 package com.nstut.biotech.views.io_hatches.energy;
 
 import com.nstut.biotech.blocks.BlockRegistries;
-import com.nstut.biotech.blocks.block_entites.hatches.EnergyHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.EnergyHatchBlockEntity;
 import com.nstut.biotech.views.machines.menu.MachineMenu;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -14,8 +16,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class EnergyHatchMenu extends MachineMenu {
 
+    @Getter
     private final EnergyHatchBlockEntity blockEntity;
     private final Level level;
+    @Setter
+    @Getter
     private int energy;
 
     public EnergyHatchMenu(MenuType menu, int pContainerId, Inventory inventory, BlockEntity blockEntity) {
@@ -34,18 +39,6 @@ public class EnergyHatchMenu extends MachineMenu {
     @Override
     public boolean stillValid(@NotNull Player player) {
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player, BlockRegistries.ENERGY_INPUT_HATCH.get());
-    }
-
-    public int getEnergy() {
-        return energy;
-    }
-
-    public void setEnergy(int energy) {
-        this.energy = energy;
-    }
-
-    public EnergyHatchBlockEntity getBlockEntity() {
-        return blockEntity;
     }
 
     public int getEnergyHeight()

@@ -1,8 +1,10 @@
 package com.nstut.biotech.views.machines.menu;
 
-import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
-import com.nstut.biotech.blocks.block_entites.machines.TerrestrialHabitatBlockEntity;
+import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.blocks.entites.machines.TerrestrialHabitatBlockEntity;
 import com.nstut.nstutlib.recipes.ModRecipeData;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,78 +21,52 @@ import java.util.Objects;
 public class TerrestrialHabitatMenu extends MachineMenu {
 
     private final Level level;
+
+    // Getters
+    @Getter
     private final TerrestrialHabitatBlockEntity blockEntity;
     private final BlockPos pos;
 
+    @Setter
+    @Getter
     private FluidStack fluidStored;
+    @Setter
+    @Getter
     private ModRecipeData recipe;
+
+    // Setters
+    @Setter
     private int energyCapacity;
+    @Setter
+    @Getter
     private int energyStored;
+    @Setter
+    @Getter
     private int energyConsumeRate;
+    @Setter
+    @Getter
     private int energyConsumed;
+    @Setter
+    @Getter
     private int recipeEnergyCost;
+    @Setter
     private int fluidCapacity;
     private boolean isStructureValid;
 
-    // Getters
-    public TerrestrialHabitatBlockEntity getBlockEntity() {
-        return blockEntity;
-    }
     public int getEnergyCapacity() {
         return energyCapacity > 0? energyCapacity : 1;
     }
-    public int getEnergyStored() {
-        return energyStored;
-    }
-    public int getEnergyConsumeRate() {
-        return energyConsumeRate;
-    }
-    public int getEnergyConsumed() {
-        return energyConsumed;
-    }
+
     public int getFluidCapacity() {
         return fluidCapacity > 0? fluidCapacity : 1;
     }
-    public FluidStack getFluidStored() {
-        return fluidStored;
-    }
+
     public boolean getStructureValid() {
         return isStructureValid;
     }
-    public ModRecipeData getRecipe() {
-        return recipe;
-    }
-    public int getRecipeEnergyCost() {
-        return recipeEnergyCost;
-    }
 
-    // Setters
-    public void setEnergyCapacity(int energy) {
-        this.energyCapacity = energy;
-    }
-    public void setEnergyStored(int energy) {
-        this.energyStored = energy;
-    }
-    public void setEnergyConsumeRate(int energyConsumeRate) {
-        this.energyConsumeRate = energyConsumeRate;
-    }
-    public void setEnergyConsumed(int energyConsumed) {
-        this.energyConsumed = energyConsumed;
-    }
-    public void setRecipeEnergyCost(int recipeEnergyCost) {
-        this.recipeEnergyCost = recipeEnergyCost;
-    }
-    public void setFluidCapacity(int fluidCapacity) {
-        this.fluidCapacity = fluidCapacity;
-    }
-    public void setFluidStored(FluidStack fluidStored) {
-        this.fluidStored = fluidStored;
-    }
     public void setStructureValid(boolean structureValid) {
         isStructureValid = structureValid;
-    }
-    public void setRecipe(ModRecipeData recipeEntity) {
-        this.recipe = recipeEntity;
     }
 
     public TerrestrialHabitatMenu(int pContainerId, Inventory inventory, FriendlyByteBuf friendlyByteBuf) {

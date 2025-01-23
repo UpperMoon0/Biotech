@@ -1,0 +1,43 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:baby_rabbit",
+        "Count": 3
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "biotech:rabbit_feed",
+        "Count": 10
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:rabbit",
+        "Count": 3
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "Count": 6
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 1000
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 120000
+}

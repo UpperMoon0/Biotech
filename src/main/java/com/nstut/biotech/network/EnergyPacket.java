@@ -1,6 +1,6 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.hatches.EnergyHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.EnergyHatchBlockEntity;
 import com.nstut.biotech.views.io_hatches.energy.EnergyHatchMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;

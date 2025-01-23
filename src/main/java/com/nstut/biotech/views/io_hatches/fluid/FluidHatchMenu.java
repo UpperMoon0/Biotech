@@ -1,7 +1,7 @@
 package com.nstut.biotech.views.io_hatches.fluid;
 
 import com.nstut.biotech.blocks.BlockRegistries;
-import com.nstut.biotech.blocks.block_entites.hatches.FluidHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.FluidHatchBlockEntity;
 import com.nstut.biotech.views.machines.menu.MachineMenu;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;

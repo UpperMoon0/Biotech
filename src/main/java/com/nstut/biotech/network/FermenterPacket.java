@@ -1,6 +1,6 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.machines.FermenterBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.views.machines.menu.FermenterMenu;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.client.Minecraft;

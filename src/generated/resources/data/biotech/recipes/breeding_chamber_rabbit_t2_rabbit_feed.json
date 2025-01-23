@@ -1,0 +1,36 @@
+{
+  "type": "biotech:breeding_chamber",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:rabbit",
+        "Count": 2
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "biotech:rabbit_feed",
+        "Count": 5
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:baby_rabbit",
+        "Count": 3
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 500
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 45000
+}

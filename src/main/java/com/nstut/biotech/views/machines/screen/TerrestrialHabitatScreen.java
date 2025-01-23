@@ -1,7 +1,7 @@
 package com.nstut.biotech.views.machines.screen;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
+import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.views.machines.menu.TerrestrialHabitatMenu;
 import com.nstut.biotech.views.renderer.BiotechFluidRenderer;
 import com.nstut.biotech.views.renderer.BiotechFluidTankRenderer;

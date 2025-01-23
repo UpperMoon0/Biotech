@@ -1,7 +1,7 @@
 package com.nstut.biotech.jei;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
+import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.recipes.GreenhouseRecipe;
 import com.nstut.nstutlib.recipes.OutputItem;
 import mezz.jei.api.constants.VanillaTypes;

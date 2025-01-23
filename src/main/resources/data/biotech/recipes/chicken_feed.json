@@ -1,0 +1,52 @@
+{
+  "type": "biotech:mixer",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:paper_bag",
+        "Count": 12
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:wheat_seeds",
+        "Count": 2
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:beetroot_seeds",
+        "Count": 2
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:melon_seeds",
+        "Count": 2
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:pumpkin_seeds",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:chicken_feed",
+        "Count": 12
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [],
+  "fluidOutputs": [],
+  "energy": 24000
+}

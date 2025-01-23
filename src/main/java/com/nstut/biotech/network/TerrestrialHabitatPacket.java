@@ -1,6 +1,6 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.machines.TerrestrialHabitatBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.TerrestrialHabitatBlockEntity;
 import com.nstut.biotech.views.machines.menu.TerrestrialHabitatMenu;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.client.Minecraft;

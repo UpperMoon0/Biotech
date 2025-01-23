@@ -33,23 +33,28 @@ public class CreatureData {
                 new Food("minecraft:melon_seeds", 1),
                 new Food("minecraft:pumpkin_seeds", 1),
                 new Food("minecraft:torchflower_seeds", 1),
-                new Food("minecraft:pitcher_pod", 1)
+                new Food("minecraft:pitcher_pod", 1),
+                new Food("biotech:chicken_feed", 2)
         ));
         put(CREATURE_COW, List.of(
-                new Food("minecraft:wheat", 1)
+                new Food("minecraft:wheat", 1),
+                new Food("biotech:cow_feed", 2)
         ));
         put(CREATURE_PIG, List.of(
                 new Food("minecraft:carrot", 1),
                 new Food("minecraft:potato", 1),
-                new Food("minecraft:beetroot", 1)
+                new Food("minecraft:beetroot", 1),
+                new Food("biotech:pig_feed", 2)
         ));
         put(CREATURE_SHEEP, List.of(
-                new Food("minecraft:wheat", 1)
+                new Food("minecraft:wheat", 1),
+                new Food("biotech:sheep_feed", 2)
         ));
         put(CREATURE_RABBIT, List.of(
                 new Food("minecraft:carrot", 1),
                 new Food("minecraft:golden_carrot", 1),
-                new Food("minecraft:dandelion", 1)
+                new Food("minecraft:dandelion", 1),
+                new Food("biotech:rabbit_feed", 2)
         ));
     }};
 

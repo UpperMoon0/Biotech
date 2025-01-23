@@ -2,8 +2,8 @@ package com.nstut.biotech;
 
 import com.mojang.logging.LogUtils;
 import com.nstut.biotech.blocks.BlockRegistries;
-import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
-import com.nstut.biotech.blocks.block_entites.BlockEntityRegistries;
+import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.blocks.entites.BlockEntityRegistries;
 import com.nstut.biotech.creative_tabs.CreativeTabRegistries;
 import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.network.PacketRegistries;

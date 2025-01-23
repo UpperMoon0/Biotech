@@ -1,6 +1,6 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.machines.GreenhouseBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
 import com.nstut.biotech.views.machines.menu.GreenhouseMenu;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.client.Minecraft;

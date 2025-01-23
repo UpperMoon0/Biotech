@@ -1,7 +1,7 @@
 package com.nstut.biotech.views.machines.screen;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.blocks.block_entites.machines.MachineRegistries;
+import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.views.machines.menu.BreedingChamberMenu;
 import com.nstut.biotech.views.renderer.BiotechFluidRenderer;
 import com.nstut.biotech.views.renderer.BiotechFluidTankRenderer;
@@ -120,6 +120,7 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
         int x = 106 - font.width(machineName) / 2;
         pGuiGraphics.drawString(font, machineName, x, 3, 0x3F3F3F, false);
     }
+
     @Override
     protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         renderBackground(graphics);

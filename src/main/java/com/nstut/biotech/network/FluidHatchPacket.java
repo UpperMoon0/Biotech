@@ -1,6 +1,6 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.block_entites.hatches.FluidHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.FluidHatchBlockEntity;
 import com.nstut.biotech.views.io_hatches.fluid.FluidHatchMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;

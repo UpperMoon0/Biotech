@@ -8,6 +8,7 @@
   "block.biotech.slaughterhouse": "Slaughterhouse",
   "block.biotech.greenhouse": "Greenhouse",
   "block.biotech.fermenter": "Fermenter",
+  "block.biotech.mixer": "Mixer",
 
   "block.biotech.item_input_hatch": "Item Input Hatch",
   "block.biotech.item_output_hatch": "Item Output Hatch",
@@ -25,6 +26,11 @@
   "item.biotech.baby_sheep": "Baby Sheep",
   "item.biotech.rabbit": "Rabbit",
   "item.biotech.baby_rabbit": "Baby Rabbit",
+  "item.biotech.cow_feed": "Cow Feed",
+  "item.biotech.chicken_feed": "Chicken Feed",
+  "item.biotech.pig_feed": "Pig Feed",
+  "item.biotech.sheep_feed": "Sheep Feed",
+  "item.biotech.rabbit_feed": "Rabbit Feed",
   "item.biotech.manure": "Manure",
   "item.biotech.paper_bag": "Paper Bag",
   "item.biotech.fertilizer": "Fertilizer",
@@ -36,6 +42,7 @@
   "menu.title.biotech.slaughterhouse": "Slaughterhouse",
   "menu.title.biotech.greenhouse": "Greenhouse",
   "menu.title.biotech.fermenter": "Fermenter",
+  "menu.title.biotech.mixer": "Mixer",
 
   "menu.title.biotech.item_input_hatch": "Item Input Hatch",
   "menu.title.biotech.item_output_hatch": "Item Output Hatch",
