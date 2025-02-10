@@ -72,7 +72,7 @@ public class MobItem extends Item {
                 case 8: { // Sheep (adult for 7, baby for 8)
                     Sheep sheep = new Sheep(EntityType.SHEEP, world);
                     // Check if the item has stored sheep color; if so, apply it; otherwise, use white as default
-                    if (stack.hasTag() && stack.getTag().contains("SheepColor")) {
+                    if (stack.hasTag() && Objects.requireNonNull(stack.getTag()).contains("SheepColor")) {
                         int colorId = stack.getTag().getInt("SheepColor");
                         DyeColor color = DyeColor.byId(colorId);
                         sheep.setColor(color);
