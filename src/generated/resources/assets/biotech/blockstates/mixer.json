@@ -1,5 +1,9 @@
 {
   "variants": {
+    "facing=east,operating=true": {
+      "y": 90,
+      "model": "biotech:block/mixer_on"
+    },
     "facing=south,operating=false": {
       "y": 180,
       "model": "biotech:block/mixer_off"
@@ -24,10 +28,6 @@
     },
     "facing=west,operating=true": {
       "y": 270,
-      "model": "biotech:block/mixer_on"
-    },
-    "facing=east,operating=true": {
-      "y": 90,
       "model": "biotech:block/mixer_on"
     }
   }

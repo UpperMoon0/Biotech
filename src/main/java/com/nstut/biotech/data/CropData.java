@@ -28,6 +28,13 @@ public class CropData {
     final static Crop PUMPKIN = new Crop("pumpkin_seeds", List.of(
         new Drop("pumpkin", 1)
     ));
+    // cactus and sugarcane
+    final static Crop CACTUS = new Crop("cactus", List.of(
+        new Drop("cactus", 3)
+    ));
+    final static Crop SUGARCANE = new Crop("sugar_cane", List.of(
+        new Drop("sugar_cane", 3)
+    ));
 
     public static final List<Crop> CROPS = List.of(
         WHEAT,
@@ -35,6 +42,8 @@ public class CropData {
         CARROT,
         POTATO,
         MELON,
-        PUMPKIN
+        PUMPKIN,
+        CACTUS,
+        SUGARCANE
     );
 }
