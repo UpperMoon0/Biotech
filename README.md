@@ -1,12 +1,11 @@
 # Biotech
-Biotech is a mod that lets you biologically engineer Minecraft.  
-CurseForge link: [https://www.curseforge.com/minecraft/mc-mods/biotech](https://www.curseforge.com/minecraft/mc-mods/biotech)
+
+## Overview
+Biotech is a Minecraft mod that allows players to biologically engineer and manipulate various elements within the game.
 
 ---
 
-## Overview
-Biotech introduces a range of custom machine recipes that process items and fluids into new, innovative products. All machine recipes in Biotech use a unified JSON format—only the `"type"` field changes to specify the target machine (e.g. `"biotech:mixer"`, `"biotech:blender"`, etc.).  
-This design makes it easy for modpack makers and server admins to add or modify recipes using KubeJS without altering the mod’s core files.
+CurseForge link: [https://www.curseforge.com/minecraft/mc-mods/biotech](https://www.curseforge.com/minecraft/mc-mods/biotech)
 
 ---
 
