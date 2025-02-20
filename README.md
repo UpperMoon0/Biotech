@@ -111,7 +111,7 @@ ServerEvents.recipes(event => {
     // For example, to add a blender recipe, you might use:
     /*
     event.custom({
-        "type": "biotech:blender",
+        "type": "biotech:breeding_chamber",
         "itemInputs": [ ... ],
         "itemOutputs": [ ... ],
         "fluidInputs": [ ... ],
