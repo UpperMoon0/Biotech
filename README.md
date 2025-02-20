@@ -3,8 +3,6 @@
 ## Overview
 Biotech is a Minecraft mod that allows players to biologically engineer and manipulate various elements within the game.
 
----
-
 CurseForge link: [https://www.curseforge.com/minecraft/mc-mods/biotech](https://www.curseforge.com/minecraft/mc-mods/biotech)
 
 ---
@@ -31,59 +29,98 @@ Every machine recipe follows this structure:
 
 - **`energy`**: An integer that represents the total energy cost for processing the recipe.
 
-### Example Recipe
-Below is an example JSON for a recipe:
+---
 
-```json
-{
-    "type": "biotech:mixer",
-    "itemInputs": [
-        {
-            "itemStack": {
-                "id": "biotech:paper_bag",
-                "Count": 12
+## How to Add Custom Recipes with KubeJS
+
+Biotech supports dynamic recipe customization through KubeJS. This allows modpack makers and server admins to add or modify machine recipes without altering the mod’s core files. All recipes use the unified JSON format described above—only the `"type"` field changes to target different machines.
+
+### Step 1: Set Up the KubeJS Folder Structure
+
+Ensure your Minecraft directory includes a `kubejs` folder with the following structure:
+
+.minecraft/ 
+    └── kubejs/ 
+        └── server_scripts/ 
+            └── biotech_recipes.js
+
+
+*If these folders do not exist, create them manually.*
+
+### Step 2: Create the KubeJS Script
+
+Inside the `server_scripts` folder, create a file named **biotech_recipes.js**.
+
+### Step 3: Add Your Custom Recipe Script
+
+Paste the following script into **biotech_recipes.js** (or a file name you want). This example adds a custom mixer recipe using the unified recipe format:
+
+```js
+ServerEvents.recipes(event => {
+    // Adds a custom mixer recipe for Biotech (machine type "biotech:mixer")
+    event.custom({
+        "type": "biotech:mixer",
+        "itemInputs": [
+            {
+                "itemStack": {
+                    "id": "biotech:paper_bag",
+                    "Count": 12
+                },
+                "isConsumable": true
             },
-            "isConsumable": true
-        },
-        {
-            "itemStack": {
-                "id": "minecraft:wheat",
-                "Count": 3
+            {
+                "itemStack": {
+                    "id": "minecraft:diamond",
+                    "Count": 3
+                },
+                "isConsumable": true
             },
-            "isConsumable": true
-        },
-        {
-            "itemStack": {
-                "id": "minecraft:carrot",
-                "Count": 2
+            {
+                "itemStack": {
+                    "id": "minecraft:carrot",
+                    "Count": 2
+                },
+                "isConsumable": true
             },
-            "isConsumable": true
-        },
-        {
-            "itemStack": {
-                "id": "minecraft:potato",
-                "Count": 2
+            {
+                "itemStack": {
+                    "id": "minecraft:potato",
+                    "Count": 2
+                },
+                "isConsumable": true
             },
-            "isConsumable": true
-        },
-        {
-            "itemStack": {
-                "id": "minecraft:apple",
-                "Count": 1
-            },
-            "isConsumable": true
-        }
-    ],
-    "itemOutputs": [
-        {
-            "itemStack": {
-                "id": "biotech:cow_feed",
-                "Count": 12
-            },
-            "chance": 1.0
-        }
-    ],
-    "fluidInputs": [],
-    "fluidOutputs": [],
-    "energy": 24000
-}
+            {
+                "itemStack": {
+                    "id": "minecraft:apple",
+                    "Count": 1
+                },
+                "isConsumable": true
+            }
+        ],
+        "itemOutputs": [
+            {
+                "itemStack": {
+                    "id": "biotech:cow_feed",
+                    "Count": 12
+                },
+                "chance": 1.0
+            }
+        ],
+        "fluidInputs": [],
+        "fluidOutputs": [],
+        "energy": 24000
+    });
+    
+    // To add recipes for other machines, simply change the "type" field.
+    // For example, to add a blender recipe, you might use:
+    /*
+    event.custom({
+        "type": "biotech:blender",
+        "itemInputs": [ ... ],
+        "itemOutputs": [ ... ],
+        "fluidInputs": [ ... ],
+        "fluidOutputs": [ ... ],
+        "energy": 18000
+    });
+    */
+});
