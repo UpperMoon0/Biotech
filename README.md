@@ -108,7 +108,7 @@ ServerEvents.recipes(event => {
     });
     
     // To add recipes for other machines, simply change the "type" field.
-    // For example, to add a blender recipe, you might use:
+    // For example, to add a breeding chamber recipe, you might use:
     /*
     event.custom({
         "type": "biotech:breeding_chamber",
