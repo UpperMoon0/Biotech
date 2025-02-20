@@ -152,6 +152,9 @@ dependencies {
     implementation fg.deobf("curse.maven:itank-256991:4647928")
     implementation fg.deobf("curse.maven:generatorgalore-691049:4661531")
     implementation fg.deobf("curse.maven:patchouli-306770:4966125")
+    implementation fg.deobf("curse.maven:kubejs-238086:5853326")
+    implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
+    implementation fg.deobf("curse.maven:rhino-416294:6186971")
     implementation 'com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.7'
     implementation 'com.google.code.gson:gson:2.11.0'
 
