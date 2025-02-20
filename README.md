@@ -39,11 +39,7 @@ Biotech supports dynamic recipe customization through KubeJS. This allows modpac
 
 Ensure your Minecraft directory includes a `kubejs` folder with the following structure:
 
-.minecraft/ 
-    └── kubejs/ 
-        └── server_scripts/ 
-            └── biotech_recipes.js
-
+.minecraft/kubejs/server_scripts/biotech_recipes.js
 
 *If these folders do not exist, create them manually.*
 
