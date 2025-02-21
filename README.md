@@ -45,11 +45,11 @@ Ensure your Minecraft directory includes a `kubejs` folder with the following st
 
 ### Step 2: Create the KubeJS Script
 
-Inside the `server_scripts` folder, create a file named **biotech_recipes.js**.
+Inside the `server_scripts` folder, create a file named **biotech_recipes.js** (or any name you want).
 
 ### Step 3: Add Your Custom Recipe Script
 
-Paste the following script into **biotech_recipes.js** (or a file name you want). This example adds a custom mixer recipe using the unified recipe format:
+Paste the following script into **biotech_recipes.js**. This example adds a custom mixer recipe using the unified recipe format:
 
 ```js
 ServerEvents.recipes(event => {
