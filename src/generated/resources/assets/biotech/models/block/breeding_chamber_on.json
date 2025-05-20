@@ -1,8 +1,0 @@
-{
-  "textures": {
-    "front": "biotech:block/breeding_chamber_on",
-    "top": "biotech:block/biotech_machine_casing",
-    "side": "biotech:block/biotech_machine_casing"
-  },
-  "parent": "minecraft:block/orientable"
-}

@@ -1,27 +1,91 @@
-# eclipse
-bin
-*.launch
-.settings
-.metadata
-.classpath
-.project
-
-# idea
-out
+# IntelliJ IDEA
+.idea/
+*.iml
 *.ipr
 *.iws
-*.iml
-.idea
+out/
 
-# gradle
-build
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Gradle
 .gradle
+build/
+!build/resources # Keep resources in build folder, common for MC mods
+# Ignore Gradle GUI config
+gradle-app.setting
 
-# other
-eclipse
-run
+# Gradle cache files
+.gradletasknamecache
+GRADLE_USER_HOME/caches/
+GRADLE_USER_HOME/daemon/
+GRADLE_USER_HOME/native/
+GRADLE_USER_HOME/wrapper/
 
-# Files from Forge MDK
-forge*changelog.txt
-/run-data
-/script-cropId
+# Minecraft Modding specific
+run/
+runs/
+logs/
+dev/
+versions/
+usercache.json
+usernamecache.json
+launcher_profiles.json
+launcher_accounts.json
+launcher_settings.json
+options.txt
+optionsof.txt
+server.properties
+servers.dat
+crash-reports/
+debug.log
+hs_err_pid*.log
+
+# Architectury specific / Loom
+.cache/
+remapped_src/
+mappings/
+projects/
+architectury-loom-cache/
+loom-cache/
+eclipse/
+idea/
+
+# Common OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Compiled files
+*.class
+*.jar
+*.zip
+*.tar.gz
+*.tgz
+
+# Sensitive information
+*.keystore
+*.jks
+# *.properties # Comment out or remove this line
+!gradle.properties
+!*/gradle.properties
