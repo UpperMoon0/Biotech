@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        mavenCentral() // Added Maven Central
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
@@ -129,8 +130,8 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    mavenCentral() 
     maven {
-        // location of the maven that hosts JEI files since January 2023
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
     }
@@ -141,7 +142,12 @@ repositories {
         }
     }
     maven {
-        url "file://${rootProject.projectDir}/../MC-Mod-NsTut-Lib/mcmodsrepo"
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/UpperMoon0/NsTut-Lib")
+        credentials {
+            username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
+        }
     }
 }
 
@@ -155,7 +161,7 @@ dependencies {
     implementation fg.deobf("curse.maven:kubejs-238086:5853326")
     implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
     implementation fg.deobf("curse.maven:rhino-416294:6186971")
-    implementation 'com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.7'
+    implementation 'com.nstut:nstutlib-forge:0.8.0'
     implementation 'com.google.code.gson:gson:2.11.0'
 
     // compile against the JEI API but do not include it at runtime
