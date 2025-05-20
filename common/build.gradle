@@ -10,4 +10,9 @@ dependencies {
 
     // Architectury API. This is optional, and you can comment it out if you don't need it.
     modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+
+    // NsTut-Lib dependency
+    // Depend on NsTut-Lib's common artifact for compile-time access to its common code.
+    // The actual runtime dependency will be handled by Biotech's platform-specific subprojects.
+    compileOnlyApi "com.nstut:nstutlib-common:$rootProject.nstutlib_version"
 }
