@@ -14,5 +14,5 @@ dependencies {
     // NsTut-Lib dependency
     // Depend on NsTut-Lib's common artifact for compile-time access to its common code.
     // The actual runtime dependency will be handled by Biotech's platform-specific subprojects.
-    compileOnlyApi "com.nstut:nstutlib-common:$rootProject.nstutlib_version"
+    api "com.nstut:nstutlib-common:$rootProject.nstutlib_version"
 }

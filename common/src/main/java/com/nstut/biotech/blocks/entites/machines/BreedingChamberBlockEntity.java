@@ -14,6 +14,13 @@ import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import com.nstut.nstutlib.models.MultiblockBlock;
 import com.nstut.nstutlib.models.MultiblockPattern;
 import com.nstut.nstutlib.recipes.ModRecipe;
+import dev.architectury.fluid.FluidStack;
+import dev.architectury.transfer.energy.EnergyStorage;
+import dev.architectury.transfer.fluid.FluidStorage;
+import dev.architectury.transfer.item.ItemStorage;
+import dev.architectury.transfer.item.ItemTransfer;
+import dev.architectury.transfer.storage.Storage;
+import dev.architectury.transfer.storage.item.CombinedStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -23,18 +30,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class BreedingChamberBlockEntity extends MachineBlockEntity {
 
@@ -52,66 +55,138 @@ public class BreedingChamberBlockEntity extends MachineBlockEntity {
     public AbstractContainerMenu createMenu(int pContainerId,
                                             @NotNull Inventory pPlayerInventory,
                                             @NotNull Player pPlayer) {
+        // Ensure hatches are not null before accessing capabilities
+        long energyCapacity = energyInputHatch != null ? energyInputHatch.ENERGY_CAPACITY : 0;
+        long currentEnergy = 0;
+        if (energyInputHatch != null) {
+            Storage<dev.architectury.transfer.energy.EnergyVariant> energyStorage = energyInputHatch.getHandlerStorage().get(EnergyStorage.SIDED, getFacingForHatch(energyInputHatch));
+            if (energyStorage != null) {
+                currentEnergy = energyStorage.getAmount();
+            }
+        }
+        long energyThroughput = energyInputHatch != null ? energyInputHatch.ENERGY_THROUGHPUT : 0;
+        long fluidCapacity = fluidInputHatch != null ? FluidInputHatchBlockEntity.TANK_CAPACITY : 0;
+        FluidStack currentFluid = FluidStack.empty();
+        if (fluidInputHatch != null) {
+            Storage<dev.architectury.fluid.FluidVariant> fluidStorage = fluidInputHatch.getHandlerStorage().get(FluidStorage.SIDED, getFacingForHatch(fluidInputHatch));
+            if (fluidStorage != null && !fluidStorage.iterator().next().isResourceBlank()) {
+                 currentFluid = FluidStack.create(fluidStorage.iterator().next().getResource().getFluid(), fluidStorage.iterator().next().getAmount());
+            }
+        }
+
+        PacketRegistries.sendToClients(new BreedingChamberPacket(
+                energyCapacity,
+                currentEnergy,
+                energyThroughput,
+                energyConsumed,
+                recipeEnergyCost,
+                fluidCapacity,
+                currentFluid,
+                isStructureValid,
+                worldPosition,
+                recipeHandler.map(ModRecipe::getRecipe).orElse(null)
+        ));
         return new BreedingChamberMenu(pContainerId, pPlayerInventory, this);
+    }
+
+    private Direction getFacingForHatch(@Nullable BlockEntity hatch) {
+        if (hatch != null && hatch.getBlockState().hasProperty(IOHatchBlock.FACING)) {
+            return hatch.getBlockState().getValue(IOHatchBlock.FACING);
+        }
+        return null;
     }
 
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
-        IItemHandler combinedInputItemHandler = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch1.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new),
-                (IItemHandlerModifiable) itemInputHatch2.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new),
-                (IItemHandlerModifiable) itemInputHatch3.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new)
-        );
-        IItemHandler outputItemHandler = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler inputFluidHandler = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IEnergyStorage energyStorage = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(NullPointerException::new);
+        if (itemInputHatch1 == null || itemInputHatch2 == null || itemInputHatch3 == null || itemOutputHatch == null || energyInputHatch == null || fluidInputHatch == null) {
+            // Hatches are not yet loaded or set, defer processing
+            return;
+        }
 
-        int energyCapacity = energyInputHatch.ENERGY_CAPACITY;
-        int energyStored = energyStorage.getEnergyStored();
-        int energyConsumeRate = energyInputHatch.ENERGY_THROUGHPUT;
-        int fluidCapacity = FluidInputHatchBlockEntity.TANK_CAPACITY;
-        FluidStack fluidStored = inputFluidHandler.getFluidInTank(0);
+        Storage<dev.architectury.transfer.item.ItemVariant> itemInput1 = itemInputHatch1.getHandlerStorage().get(ItemStorage.SIDED, getFacingForHatch(itemInputHatch1));
+        Storage<dev.architectury.transfer.item.ItemVariant> itemInput2 = itemInputHatch2.getHandlerStorage().get(ItemStorage.SIDED, getFacingForHatch(itemInputHatch2));
+        Storage<dev.architectury.transfer.item.ItemVariant> itemInput3 = itemInputHatch3.getHandlerStorage().get(ItemStorage.SIDED, getFacingForHatch(itemInputHatch3));
+        Storage<dev.architectury.transfer.item.ItemVariant> outputItemHandler = itemOutputHatch.getHandlerStorage().get(ItemStorage.SIDED, getFacingForHatch(itemOutputHatch));
+        Storage<dev.architectury.fluid.FluidVariant> inputFluidHandler = fluidInputHatch.getHandlerStorage().get(FluidStorage.SIDED, getFacingForHatch(fluidInputHatch));
+        Storage<dev.architectury.transfer.energy.EnergyVariant> energyHandler = energyInputHatch.getHandlerStorage().get(EnergyStorage.SIDED, getFacingForHatch(energyInputHatch));
+
+
+        if (itemInput1 == null || itemInput2 == null || itemInput3 == null || outputItemHandler == null || inputFluidHandler == null || energyHandler == null) {
+            // A capability is missing, cannot process
+            return;
+        }
+
+        Storage<dev.architectury.transfer.item.ItemVariant> combinedInputItemHandler = new CombinedStorage<>(List.of(itemInput1, itemInput2, itemInput3));
+
+
+        long energyCapacity = energyInputHatch.ENERGY_CAPACITY;
+        long energyStored = energyHandler.getAmount();
+        long energyConsumeRate = energyInputHatch.ENERGY_THROUGHPUT;
+        long fluidCapacity = FluidInputHatchBlockEntity.TANK_CAPACITY;
+        FluidStack fluidStored = FluidStack.empty();
+        if (!inputFluidHandler.iterator().next().isResourceBlank()){
+            fluidStored = FluidStack.create(inputFluidHandler.iterator().next().getResource().getFluid(), inputFluidHandler.iterator().next().getAmount());
+        }
+
 
         if (recipeHandler.isEmpty()) {
             energyConsumed = 0;
-            recipeHandler = level
+            Optional<BreedingChamberRecipe> foundRecipe = level
                     .getRecipeManager()
                     .getAllRecipesFor(BreedingChamberRecipe.TYPE)
                     .stream()
-                    .filter(r -> r.recipeMatch(
+                    .filter(r -> r.recipeMatchArch(
                             combinedInputItemHandler,
                             List.of(inputFluidHandler),
                             outputItemHandler,
                             null))
                     .findFirst();
+            if (foundRecipe.isPresent()) {
+                recipeHandler = Optional.of(foundRecipe.get());
+            }
+
         } else {
-            BreedingChamberRecipe recipeHandler = (BreedingChamberRecipe) this.recipeHandler.get();
-            recipeEnergyCost = recipeHandler.getTotalEnergy();
+            BreedingChamberRecipe currentRecipe = (BreedingChamberRecipe) this.recipeHandler.get();
+            recipeEnergyCost = currentRecipe.getTotalEnergy();
 
             if (energyConsumed == 0) {
-                recipeHandler.consumeIngredients(combinedInputItemHandler, List.of(inputFluidHandler));
+                // Consume ingredients only if the recipe is new or was just completed
+                if (currentRecipe.canCraftArch(combinedInputItemHandler, List.of(inputFluidHandler), outputItemHandler, null)) {
+                    currentRecipe.consumeIngredientsArch(combinedInputItemHandler, List.of(inputFluidHandler));
+                } else {
+                    // Ingredients no longer available, reset recipe
+                    recipeHandler = Optional.empty();
+                    energyConsumed = 0;
+                    return;
+                }
             }
 
-            if (energyStorage.getEnergyStored() >= energyConsumeRate) {
-                int energyToConsume = Math.min(energyConsumeRate, recipeEnergyCost - energyConsumed);
-                energyConsumed += energyToConsume;
-                energyStorage.extractEnergy(energyToConsume, false);
+            if (energyHandler.getAmount() >= energyConsumeRate) {
+                long energyToConsume = Math.min(energyConsumeRate, recipeEnergyCost - energyConsumed);
+                long extracted = energyHandler.extract(dev.architectury.transfer.energy.EnergyVariant.blank(), energyToConsume, dev.architectury.transfer.tx.Transaction.openOuter());
+                energyConsumed += extracted;
+
             }
 
-            if (energyConsumed == recipeEnergyCost) {
-                energyConsumed = 0;
-                recipeHandler.assemble(outputItemHandler, null);
-
-                this.recipeHandler = level
+            if (energyConsumed >= recipeEnergyCost) {
+                currentRecipe.assembleArch(outputItemHandler, null);
+                energyConsumed = 0; // Reset for the next cycle
+                 Optional<BreedingChamberRecipe> foundRecipe = level
                         .getRecipeManager()
                         .getAllRecipesFor(BreedingChamberRecipe.TYPE)
                         .stream()
-                        .filter(r -> r.recipeMatch(
+                        .filter(r -> r.recipeMatchArch(
                                 combinedInputItemHandler,
                                 List.of(inputFluidHandler),
                                 outputItemHandler,
                                 null))
-                        .findFirst();            }
+                        .findFirst();
+                if (foundRecipe.isPresent()) {
+                    recipeHandler = Optional.of(foundRecipe.get());
+                } else {
+                    recipeHandler = Optional.empty();
+                }
+            }
         }
 
         PacketRegistries.sendToClients(new BreedingChamberPacket(
