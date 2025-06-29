@@ -1,11 +1,24 @@
 package com.nstut.biotech.machines;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.blocks.entites.machines.*;
+import com.nstut.biotech.blocks.AquariumBlock;
+import com.nstut.biotech.blocks.ArborariumBlock;
+import com.nstut.biotech.blocks.GeneExtractorBlock;
+import com.nstut.biotech.blocks.entites.machines.AquariumBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.ArborariumBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.GeneExtractorBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.DarkChamberBlockEntity;
 import com.nstut.biotech.items.ItemRegistries;
+import com.nstut.biotech.recipes.ArborariumRecipe;
 import com.nstut.biotech.recipes.*;
-import com.nstut.biotech.views.machines.menu.*;
-import com.nstut.biotech.views.machines.screen.*;
+import com.nstut.biotech.views.machines.menu.AquariumMenu;
+import com.nstut.biotech.views.machines.menu.ArborariumMenu;
+import com.nstut.biotech.views.machines.menu.GeneExtractorMenu;
+import com.nstut.biotech.views.machines.menu.DarkChamberMenu;
+import com.nstut.biotech.views.machines.screen.AquariumScreen;
+import com.nstut.biotech.views.machines.screen.ArborariumScreen;
+import com.nstut.biotech.views.machines.screen.GeneExtractorScreen;
+import com.nstut.biotech.views.machines.screen.DarkChamberScreen;
 import com.nstut.nstutlib.blocks.MachineBlock;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import com.nstut.nstutlib.recipes.ModRecipe;
@@ -87,6 +100,38 @@ public class MachineRegistries {
             MixerMenu::new,
             MixerScreen::new,
             MixerRecipe.SERIALIZER
+    );
+
+    public static MachineRegistry<ArborariumBlockEntity, ArborariumMenu, ArborariumRecipe> ARBORARIUM = register(
+            "arborarium",
+            ArborariumBlockEntity.class,
+            ArborariumMenu::new,
+            ArborariumScreen::new,
+            ArborariumRecipe.SERIALIZER
+    );
+
+    public static MachineRegistry<AquariumBlockEntity, AquariumMenu, ModRecipe> AQUARIUM = register(
+            "aquarium",
+            AquariumBlockEntity.class,
+            AquariumMenu::new,
+            AquariumScreen::new,
+            null // No specific recipe serializer required for now
+    );
+
+    public static MachineRegistry<GeneExtractorBlockEntity, GeneExtractorMenu, ModRecipe> GENE_EXTRACTOR = register(
+            "gene_extractor",
+            GeneExtractorBlockEntity.class,
+            GeneExtractorMenu::new,
+            GeneExtractorScreen::new,
+            null // No specific recipe serializer required for now
+    );
+
+    public static MachineRegistry<DarkChamberBlockEntity, DarkChamberMenu, ModRecipe> DARK_CHAMBER = register(
+            "dark_chamber",
+            DarkChamberBlockEntity.class,
+            DarkChamberMenu::new,
+            DarkChamberScreen::new,
+            null // No specific recipe serializer required for now
     );
 
     public static <T extends MachineBlockEntity,

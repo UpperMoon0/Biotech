@@ -9,6 +9,10 @@
   "block.biotech.greenhouse": "Greenhouse",
   "block.biotech.fermenter": "Fermenter",
   "block.biotech.mixer": "Mixer",
+  "block.biotech.arborarium": "Arborarium",
+  "block.biotech.aquarium": "Aquarium",
+  "block.biotech.gene_extractor": "Gene Extractor",
+  "block.biotech.dark_chamber": "Dark Chamber",
 
   "block.biotech.item_input_hatch": "Item Input Hatch",
   "block.biotech.item_output_hatch": "Item Output Hatch",
@@ -43,6 +47,10 @@
   "menu.title.biotech.greenhouse": "Greenhouse",
   "menu.title.biotech.fermenter": "Fermenter",
   "menu.title.biotech.mixer": "Mixer",
+  "menu.title.biotech.arborarium": "Arborarium",
+  "container.biotech.aquarium": "Aquarium",
+  "container.biotech.gene_extractor": "Gene Extractor",
+  "container.biotech.dark_chamber": "Dark Chamber",
 
   "menu.title.biotech.item_input_hatch": "Item Input Hatch",
   "menu.title.biotech.item_output_hatch": "Item Output Hatch",
