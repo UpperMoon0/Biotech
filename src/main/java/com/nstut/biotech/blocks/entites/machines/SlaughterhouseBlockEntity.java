@@ -32,11 +32,6 @@ import java.util.List;
 
 public class SlaughterhouseBlockEntity extends MachineBlockEntity {
 
-    private ItemInputHatchBlockEntity itemInputHatch1;
-    private ItemInputHatchBlockEntity itemInputHatch2;
-    private ItemOutputHatchBlockEntity itemOutputHatch;
-    private EnergyInputHatchBlockEntity energyInputHatch;
-    private FluidInputHatchBlockEntity fluidInputHatch;
 
     public SlaughterhouseBlockEntity(BlockPos pos, BlockState state) {
         super(MachineRegistries.SLAUGHTERHOUSE.blockEntity().get(), pos, state, 2, 1, 0);
@@ -51,12 +46,12 @@ public class SlaughterhouseBlockEntity extends MachineBlockEntity {
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
         IItemHandler combinedInputItemHandler = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch1.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new),
-                (IItemHandlerModifiable) itemInputHatch2.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new)
+                (IItemHandlerModifiable) ((ItemInputHatchBlockEntity) getHatchBlockEntity("item_input_1")).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new),
+                (IItemHandlerModifiable) ((ItemInputHatchBlockEntity) getHatchBlockEntity("item_input_2")).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new)
         );
-        IItemHandler outputItemHandler = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler inputFluidHandler = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IEnergyStorage energyStorage = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(NullPointerException::new);
+        IItemHandler outputItemHandler = ((ItemOutputHatchBlockEntity) getHatchBlockEntity("item_output")).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new);
+        IFluidHandler inputFluidHandler = ((FluidInputHatchBlockEntity) getHatchBlockEntity("fluid_input")).getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
+        IEnergyStorage energyStorage = ((EnergyInputHatchBlockEntity) getHatchBlockEntity("energy_input")).getCapability(ForgeCapabilities.ENERGY).orElseThrow(NullPointerException::new);
 
         int energyCapacity = energyInputHatch.ENERGY_CAPACITY;
         int energyStored = energyStorage.getEnergyStored();
@@ -118,15 +113,6 @@ public class SlaughterhouseBlockEntity extends MachineBlockEntity {
         ));
     }
 
-    @Override
-    protected void setHatches(BlockPos blockPos, Level level) {
-        super.setHatches(blockPos, level);
-        itemInputHatch1 = (ItemInputHatchBlockEntity) getHatchBlockEntity("item_input_1");
-        itemInputHatch2 = (ItemInputHatchBlockEntity) getHatchBlockEntity("item_input_2");
-        itemOutputHatch = (ItemOutputHatchBlockEntity) getHatchBlockEntity("item_output");
-        energyInputHatch = (EnergyInputHatchBlockEntity) getHatchBlockEntity("energy_input");
-        fluidInputHatch = (FluidInputHatchBlockEntity) getHatchBlockEntity("fluid_input");
-    }
 
     @Override
     public @NotNull Component getDisplayName() {
