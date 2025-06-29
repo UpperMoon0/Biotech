@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 public class DarkChamberBlockEntity extends MachineBlockEntity {
 
     public DarkChamberBlockEntity(BlockPos pos, BlockState state) {
-        super(pos, state, MachineType.DARK_CHAMBER);
+        super(MachineType.DARK_CHAMBER.getBlockEntityType(), pos, state, 0, 0, 0);
     }
 
     @Override

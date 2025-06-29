@@ -1,0 +1,20 @@
+{
+  "machine_type": "gene_extractor",
+  "required_hatches": [
+    {
+      "type": "ENERGY",
+      "direction": "INPUT",
+      "relative_pos": [0, 1, 0]
+    },
+    {
+      "type": "FLUID",
+      "direction": "INPUT",
+      "relative_pos": [0, -1, 0]
+    },
+    {
+      "type": "ITEM",
+      "direction": "OUTPUT",
+      "relative_pos": [1, 0, 0]
+    }
+  ]
+}

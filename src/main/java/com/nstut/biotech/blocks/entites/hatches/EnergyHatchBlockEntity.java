@@ -2,6 +2,9 @@ package com.nstut.biotech.blocks.entites.hatches;
 
 import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
+import com.nstut.biotech.capabilities.IMachineHatch;
+import com.nstut.biotech.capabilities.IMachineHatch.HatchDirection;
+import com.nstut.biotech.capabilities.IMachineHatch.HatchType;
 import com.nstut.biotech.network.EnergyPacket;
 import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
@@ -18,7 +21,7 @@ import net.minecraftforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
+public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity implements IMachineHatch {
     public final int ENERGY_THROUGHPUT = 512;
     public final int ENERGY_CAPACITY = ENERGY_THROUGHPUT * 1200;
 
@@ -50,5 +53,14 @@ public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
 
     public void setEnergy(int energy) {
         energyStorage.receiveEnergy(energy, false);
+    }
+    @Override
+    public HatchType getType() {
+        return HatchType.ENERGY;
+    }
+
+    @Override
+    public HatchDirection getDirection() {
+        return HatchDirection.BOTH; // Energy hatches can be both input and output
     }
 }

@@ -2,6 +2,9 @@ package com.nstut.biotech.blocks.entites.hatches;
 
 import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
+import com.nstut.biotech.capabilities.IMachineHatch;
+import com.nstut.biotech.capabilities.IMachineHatch.HatchDirection;
+import com.nstut.biotech.capabilities.IMachineHatch.HatchType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
@@ -15,7 +18,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
+public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity implements IMachineHatch {
     public final int INVENTORY_SIZE = 9;
     protected final ItemStackHandler slots = new ItemStackHandler(INVENTORY_SIZE) {
         @Override
@@ -45,5 +48,14 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
         }
 
         Containers.dropContents(this.level, this.worldPosition, inventory);
+    }
+    @Override
+    public HatchType getType() {
+        return HatchType.ITEM;
+    }
+
+    @Override
+    public HatchDirection getDirection() {
+        return HatchDirection.BOTH; // Item hatches can be both input and output
     }
 }

@@ -1,0 +1,25 @@
+{
+  "machine_type": "greenhouse",
+  "required_hatches": [
+    {
+      "type": "ENERGY",
+      "direction": "INPUT",
+      "relative_pos": [0, 1, 0]
+    },
+    {
+      "type": "FLUID",
+      "direction": "INPUT",
+      "relative_pos": [0, -1, 0]
+    },
+    {
+      "type": "ITEM",
+      "direction": "OUTPUT",
+      "relative_pos": [1, 0, 0]
+    }
+  ],
+  "structure": [
+    [
+      ["biotech:greenhouse_block"]
+    ]
+  ]
+}

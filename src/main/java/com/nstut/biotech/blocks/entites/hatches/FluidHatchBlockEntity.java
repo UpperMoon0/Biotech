@@ -2,6 +2,9 @@ package com.nstut.biotech.blocks.entites.hatches;
 
 import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
+import com.nstut.biotech.capabilities.IMachineHatch;
+import com.nstut.biotech.capabilities.IMachineHatch.HatchDirection;
+import com.nstut.biotech.capabilities.IMachineHatch.HatchType;
 import com.nstut.biotech.network.FluidHatchPacket;
 import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
@@ -29,7 +32,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
+public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity implements IMachineHatch {
     public static final int TANK_CAPACITY = FluidType.BUCKET_VOLUME * 32;
 
     protected final ItemStackHandler slots = new ItemStackHandler(2) {
@@ -115,5 +118,14 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
 
     public void setFluid(FluidStack fluidStack) {
         tank.setFluid(fluidStack);
+    }
+    @Override
+    public HatchType getType() {
+        return HatchType.FLUID;
+    }
+
+    @Override
+    public HatchDirection getDirection() {
+        return HatchDirection.BOTH; // Fluid hatches can be both input and output
     }
 }
