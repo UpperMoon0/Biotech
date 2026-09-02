@@ -10,7 +10,6 @@ base { archivesName = "biotech-neoforge-${rootProject.minecraft_version_1_21_1}"
 java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
 neoForge {
     version = rootProject.neoforge_version_1_21_1
-    addModdingDependenciesTo(sourceSets.test)
     runs {
         client { client() }
         server { server(); programArgument '--nogui' }
@@ -18,6 +17,10 @@ neoForge {
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
+    unitTest {
+        enable()
+        testedMod = mods."${rootProject.mod_id}"
+    }
 }
 repositories {
     mavenLocal()
