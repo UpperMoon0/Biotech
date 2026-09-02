@@ -71,6 +71,11 @@ public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
         super(type, pos, state);
     }
 
+    /** Internal mutable energy storage used by a validated multiblock machine transaction. */
+    public final EnergyStorage getInternalEnergyStorage() {
+        return energyStorage;
+    }
+
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
         if (capability == ForgeCapabilities.ENERGY) {
