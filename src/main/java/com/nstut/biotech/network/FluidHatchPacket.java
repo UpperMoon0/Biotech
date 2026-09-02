@@ -3,6 +3,8 @@ package com.nstut.biotech.network;
 import com.nstut.biotech.blocks.entites.hatches.FluidHatchBlockEntity;
 import com.nstut.biotech.views.io_hatches.fluid.FluidHatchMenu;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fluids.FluidStack;
@@ -15,7 +17,7 @@ public class FluidHatchPacket {
     private final BlockPos pos;
 
     public FluidHatchPacket(FluidStack fluidStack, BlockPos pos) {
-        this.fluidStack = fluidStack;
+        this.fluidStack = fluidStack.copy();
         this.pos = pos;
     }
 
@@ -32,15 +34,21 @@ public class FluidHatchPacket {
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            if(Minecraft.getInstance().level.getBlockEntity(pos) instanceof FluidHatchBlockEntity blockEntity) {
+            Minecraft minecraft = Minecraft.getInstance();
+            ClientLevel level = minecraft.level;
+            LocalPlayer player = minecraft.player;
+            if (level == null || player == null) {
+                return;
+            }
+            if (level.getBlockEntity(pos) instanceof FluidHatchBlockEntity blockEntity) {
                 blockEntity.setFluid(fluidStack);
-
-                if(Minecraft.getInstance().player.containerMenu instanceof FluidHatchMenu menu &&
-                        menu.getFluidHatchBlockEntity().getBlockPos().equals(pos)) {
-                    menu.setFluidStack(fluidStack);
+                if (player.containerMenu instanceof FluidHatchMenu menu
+                        && menu.getFluidHatchBlockEntity().getBlockPos().equals(pos)) {
+                    menu.setFluidStack(fluidStack.copy());
                 }
             }
         });
+        context.setPacketHandled(true);
         return true;
     }
 }
