@@ -14,6 +14,12 @@ public class FluidOutputHatchBlockEntity extends FluidHatchBlockEntity {
     public FluidOutputHatchBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistries.FLUID_OUTPUT_HATCH.get(), pos, state);
     }
+
+    @Override
+    protected boolean isInputHatch() {
+        return false;
+    }
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("menu.title.biotech.fluid_output_hatch");
@@ -21,7 +27,7 @@ public class FluidOutputHatchBlockEntity extends FluidHatchBlockEntity {
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return new FluidOutputHatchMenu(pContainerId, pPlayerInventory, this);
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new FluidOutputHatchMenu(containerId, inventory, this);
     }
 }
