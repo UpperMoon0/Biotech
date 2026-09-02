@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +24,7 @@ public class BiotechJEIPlugin implements IModPlugin {
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return new ResourceLocation(Biotech.MOD_ID, "jei_plugin");
+        return ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "jei_plugin");
     }
 
     @Override
@@ -48,29 +49,28 @@ public class BiotechJEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(@NotNull IRecipeRegistration registration) {
-
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) {
             return;
         }
         RecipeManager recipeManager = level.getRecipeManager();
 
-        List<BreedingChamberRecipe> breedingRecipes = recipeManager.getAllRecipesFor(BreedingChamberRecipe.TYPE);
+        List<BreedingChamberRecipe> breedingRecipes = recipeManager.getAllRecipesFor(BreedingChamberRecipe.TYPE).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(BreedingChamberCategory.TYPE, breedingRecipes);
 
-        List<TerrestrialHabitatRecipe> terrestrialRecipes = recipeManager.getAllRecipesFor(TerrestrialHabitatRecipe.TYPE);
+        List<TerrestrialHabitatRecipe> terrestrialRecipes = recipeManager.getAllRecipesFor(TerrestrialHabitatRecipe.TYPE).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(TerrestrialHabitatCategory.TYPE, terrestrialRecipes);
 
-        List<SlaughterhouseRecipe> slaughterhouseRecipes = recipeManager.getAllRecipesFor(SlaughterhouseRecipe.TYPE);
+        List<SlaughterhouseRecipe> slaughterhouseRecipes = recipeManager.getAllRecipesFor(SlaughterhouseRecipe.TYPE).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(SlaughterhouseCategory.TYPE, slaughterhouseRecipes);
 
-        List<GreenhouseRecipe> greenhouseRecipes = recipeManager.getAllRecipesFor(GreenhouseRecipe.TYPE);
+        List<GreenhouseRecipe> greenhouseRecipes = recipeManager.getAllRecipesFor(GreenhouseRecipe.TYPE).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(GreenhouseCategory.TYPE, greenhouseRecipes);
 
-        List<FermenterRecipe> fermenterRecipes = recipeManager.getAllRecipesFor(FermenterRecipe.TYPE);
+        List<FermenterRecipe> fermenterRecipes = recipeManager.getAllRecipesFor(FermenterRecipe.TYPE).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(FermenterCategory.TYPE, fermenterRecipes);
 
-        List<MixerRecipe> mixerRecipes = recipeManager.getAllRecipesFor(MixerRecipe.TYPE);
+        List<MixerRecipe> mixerRecipes = recipeManager.getAllRecipesFor(MixerRecipe.TYPE).stream().map(RecipeHolder::value).toList();
         registration.addRecipes(MixerCategory.TYPE, mixerRecipes);
     }
 }

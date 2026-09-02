@@ -43,7 +43,7 @@ public final class ItemRegistries {
     public static final DeferredItem<Item> PAPER_BAG = ITEMS.register("paper_bag", () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> FERTILIZER = ITEMS.register("fertilizer", () -> new Item(new Item.Properties()));
 
-    public static final Set<Supplier<Item>> ITEM_SET = new HashSet<>(ITEMS.getEntries());
+    public static final Set<Supplier<? extends Item>> ITEM_SET = new HashSet<>(ITEMS.getEntries());
 
     private ItemRegistries() {
     }

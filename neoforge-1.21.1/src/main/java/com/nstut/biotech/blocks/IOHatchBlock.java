@@ -1,5 +1,6 @@
 package com.nstut.biotech.blocks;
 
+import com.mojang.serialization.MapCodec;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.*;
 import net.minecraft.core.BlockPos;
@@ -29,6 +30,12 @@ public class IOHatchBlock extends BaseEntityBlock {
         super(BlockBehaviour.Properties.ofFullCopy(Blocks.GRAY_CONCRETE).strength(2f).sound(SoundType.METAL));
         this.type = type;
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        // Hatch type is fixed by the owning registry entry, not decoded from data.
+        return MapCodec.unit(this);
     }
 
     @Override

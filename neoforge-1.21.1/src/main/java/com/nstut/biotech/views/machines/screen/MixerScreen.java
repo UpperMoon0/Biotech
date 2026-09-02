@@ -45,7 +45,7 @@ public class MixerScreen extends AbstractContainerScreen<MixerMenu> {
 
     @Override
     protected void renderBg(@NotNull GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        renderBackground(g); g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        renderBackground(g, mouseX, mouseY, partialTick); g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (!menu.getStructureValid()) return;
         if (menu.getEnergyStored() > 0) { int h = getEnergyHeight(); g.blit(TEXTURE, leftPos + 7, topPos + 64 - h, 142, 40 - h, 8, h); }
         if (!menu.getIsOperating()) return;

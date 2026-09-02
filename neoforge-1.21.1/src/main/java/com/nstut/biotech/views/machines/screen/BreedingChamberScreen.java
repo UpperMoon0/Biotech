@@ -71,7 +71,7 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
 
     @Override
     protected void renderBg(@NotNull GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        renderBackground(g);
+        renderBackground(g, mouseX, mouseY, partialTick);
         g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (!menu.getStructureValid()) return;
         if (menu.getEnergyStored() > 0) { int h = getEnergyHeight(); g.blit(TEXTURE, leftPos + 4, topPos + 119 - h, 212, 95 - h, 9, h); }
