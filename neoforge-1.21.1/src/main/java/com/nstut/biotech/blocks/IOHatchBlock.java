@@ -1,5 +1,6 @@
 package com.nstut.biotech.blocks;
 
+import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -58,14 +59,16 @@ public class IOHatchBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof ItemHatchBlockEntity itemHatch) {
-            itemHatch.dropItem();
-        } else if (blockEntity instanceof FluidHatchBlockEntity fluidHatch) {
-            fluidHatch.dropItem();
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ItemHatchBlockEntity itemHatch) {
+                itemHatch.dropItem();
+            } else if (blockEntity instanceof FluidHatchBlockEntity fluidHatch) {
+                fluidHatch.dropItem();
+            }
         }
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
