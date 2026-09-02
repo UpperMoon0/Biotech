@@ -12,33 +12,33 @@ jobs:
   build:
     name: ${{ matrix.target }}
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         include:
           - target: forge-1.20.1
             nstut_target: forge-1.20.1
-            java: '17'
+            java: '21'
           - target: neoforge-1.21.1
             nstut_target: neoforge-1.21.1
             java: '21'
           - target: neoforge-26.1.2
             nstut_target: neoforge-26.1.2
-            java: '21'
+            java: '25'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: 611023e4f9833128f4019ad6ef9192a68ed7be35
+          ref: fix/audit-hardening-0.8
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
           cache: gradle
-      - name: Publish pinned NsTut Lib target to Maven Local
+      - name: Publish NsTut Lib target to Maven Local
         working-directory: .ci/nstut-lib
         run: ./gradlew :${{ matrix.nstut_target }}:publishToMavenLocal --no-daemon --stacktrace
       - name: Unit tests and build
