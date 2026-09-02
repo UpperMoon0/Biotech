@@ -1,6 +1,7 @@
 package com.nstut.biotech.blocks.entites.hatches;
 
-import net.minecraftforge.energy.EnergyStorage;
+import net.minecraft.util.Mth;
+import net.neoforged.neoforge.energy.EnergyStorage;
 
 import java.util.Objects;
 
@@ -28,5 +29,9 @@ final class DirtyEnergyStorage extends EnergyStorage {
             onChanged.run();
         }
         return extracted;
+    }
+
+    void setAbsoluteEnergy(int energy) {
+        this.energy = Mth.clamp(energy, 0, capacity);
     }
 }
