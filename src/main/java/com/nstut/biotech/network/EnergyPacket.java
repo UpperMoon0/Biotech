@@ -33,17 +33,21 @@ public class EnergyPacket {
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            ClientLevel level = Minecraft.getInstance().level;
-            if(level != null && level.getBlockEntity(pos) instanceof EnergyHatchBlockEntity blockEntity) {
+            Minecraft minecraft = Minecraft.getInstance();
+            ClientLevel level = minecraft.level;
+            LocalPlayer player = minecraft.player;
+            if (level == null || player == null) {
+                return;
+            }
+            if (level.getBlockEntity(pos) instanceof EnergyHatchBlockEntity blockEntity) {
                 blockEntity.setEnergy(energy);
-
-                LocalPlayer player = Minecraft.getInstance().player;
-                if(player != null && player.containerMenu instanceof EnergyHatchMenu menu &&
-                        menu.getBlockEntity().getBlockPos().equals(pos)) {
+                if (player.containerMenu instanceof EnergyHatchMenu menu
+                        && menu.getBlockEntity().getBlockPos().equals(pos)) {
                     menu.setEnergy(energy);
                 }
             }
         });
+        context.setPacketHandled(true);
         return true;
     }
 }
