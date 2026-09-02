@@ -23,7 +23,7 @@ class CompatibilityTest {
         assertEquals("47.3.12", properties.getProperty("forge_version"));
         assertEquals("[47.3.12,48)", properties.getProperty("forge_version_range"));
         assertEquals("[47,48)", properties.getProperty("loader_version_range"));
-        assertEquals("60c49e10ed967615cc6fb72e0e87a6e41b99a47f", properties.getProperty("nstut_lib_version"));
+        assertEquals("dcb077ec173ed7cc4ddbbd1a9b57ba287e077a91", properties.getProperty("nstut_lib_version"));
 
         String modsToml = Files.readString(Path.of("src/main/resources/META-INF/mods.toml"));
         assertTrue(modsToml.contains("versionRange=\"[0.8,0.9)\""));
