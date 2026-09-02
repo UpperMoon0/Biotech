@@ -6,6 +6,7 @@ import com.nstut.biotech.network.FluidHatchPacket;
 import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -17,15 +18,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,10 +81,6 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         }
     };
 
-    private LazyOptional<IItemHandler> lazySlots = LazyOptional.of(() -> slots);
-    private LazyOptional<IFluidHandler> lazyTank = LazyOptional.of(() -> tank);
-    private LazyOptional<IFluidHandler> lazyExternalTank = LazyOptional.of(() -> externalTank);
-
     private FluidStack lastSyncedFluid = FluidStack.EMPTY;
 
     protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -100,57 +94,38 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         return tank;
     }
 
-    @Override
-    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
-        if (capability == ForgeCapabilities.FLUID_HANDLER) {
-            if (facing == null) {
-                return lazyTank.cast();
-            }
-            if (facing == getBlockState().getValue(IOHatchBlock.FACING)) {
-                return lazyExternalTank.cast();
-            }
+    /** Internal bucket slots. Exposed only for an unsided machine query. */
+    public final @Nullable IItemHandler getItemCapability(@Nullable Direction facing) {
+        return facing == null ? slots : null;
+    }
+
+    /** NeoForge fluid capability view. Automation only sees the hatch-facing directional wrapper. */
+    public final @Nullable IFluidHandler getFluidCapability(@Nullable Direction facing) {
+        if (facing == null) {
+            return tank;
         }
-        if (capability == ForgeCapabilities.ITEM_HANDLER && facing == null) {
-            return lazySlots.cast();
-        }
-        return super.getCapability(capability, facing);
+        return facing == getBlockState().getValue(IOHatchBlock.FACING) ? externalTank : null;
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         if (tag.contains("item")) {
-            slots.deserializeNBT(tag.getCompound("item"));
+            slots.deserializeNBT(registries, tag.getCompound("item"));
         }
         if (tag.contains("fluid")) {
-            tank.readFromNBT(tag.getCompound("fluid"));
+            tank.readFromNBT(registries, tag.getCompound("fluid"));
         }
         lastSyncedFluid = FluidStack.EMPTY;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.put("item", slots.serializeNBT());
+    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("item", slots.serializeNBT(registries));
         CompoundTag fluidTag = new CompoundTag();
-        tank.writeToNBT(fluidTag);
+        tank.writeToNBT(registries, fluidTag);
         tag.put("fluid", fluidTag);
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        lazySlots.invalidate();
-        lazyTank.invalidate();
-        lazyExternalTank.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        lazySlots = LazyOptional.of(() -> slots);
-        lazyTank = LazyOptional.of(() -> tank);
-        lazyExternalTank = LazyOptional.of(() -> externalTank);
     }
 
     public void dropItem() {
@@ -165,7 +140,7 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
     }
 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos pos, BlockState state, T value) {
-        if (!(value instanceof FluidHatchBlockEntity blockEntity) || level.isClientSide()) {
+        if (!(value instanceof FluidHatchBlockEntity blockEntity) || level.isClientSide) {
             return;
         }
 
@@ -222,6 +197,6 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         if (first.isEmpty() && second.isEmpty()) {
             return true;
         }
-        return first.getAmount() == second.getAmount() && first.isFluidEqual(second);
+        return first.getAmount() == second.getAmount() && FluidStack.isSameFluidSameComponents(first, second);
     }
 }
