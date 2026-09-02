@@ -52,6 +52,7 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    mavenLocal()
     maven {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
@@ -63,11 +64,15 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
+def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
+        .orElse("com.github.UpperMoon0:NsTut-Lib:${nstut_lib_version}")
+        .get()
+
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:4966125")
-    implementation fg.deobf("com.github.UpperMoon0:NsTut-Lib:${nstut_lib_version}")
+    implementation fg.deobf(nstutLibDependency)
 
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
