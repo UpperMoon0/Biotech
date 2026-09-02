@@ -18,6 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -26,7 +27,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 public class FermenterBlockEntity extends MachineBlockEntity {
-
     private ItemInputHatchBlockEntity itemInputHatch;
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
@@ -46,90 +45,48 @@ public class FermenterBlockEntity extends MachineBlockEntity {
     public FermenterBlockEntity(BlockPos pos, BlockState state) {
         super(MachineRegistries.FERMENTER.blockEntity().get(), pos, state, 3, 1, 0);
     }
+
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId,
-                                            @NotNull Inventory pPlayerInventory,
-                                            @NotNull Player pPlayer) {
-        return new FermenterMenu(pContainerId, pPlayerInventory, this);
+    public AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory, @NotNull Player player) {
+        return new FermenterMenu(containerId, inventory, this);
     }
 
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
-        IItemHandler combinedInputItemHandler = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new)
-        );
-        IItemHandler outputItemHandler = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler inputFluidHandler = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IEnergyStorage energyStorage = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(NullPointerException::new);
+        IItemHandler inputItems = new CombinedInvWrapper(
+                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow());
+        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow();
+        IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
+        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow();
 
-        int energyCapacity = energyInputHatch.ENERGY_CAPACITY;
-        int energyStored = energyStorage.getEnergyStored();
-        int energyConsumeRate = energyInputHatch.ENERGY_THROUGHPUT;
-        int fluidCapacity = FluidInputHatchBlockEntity.TANK_CAPACITY;
-        FluidStack fluidStored = inputFluidHandler.getFluidInTank(0);
+        processRecipeTransaction(
+                level,
+                FermenterRecipe.TYPE,
+                inputItems,
+                List.of(inputFluid),
+                outputItems,
+                List.of(),
+                energy,
+                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT);
 
-        if (recipeHandler.isEmpty()) {
-            energyConsumed = 0;
-            recipeHandler = level
-                    .getRecipeManager()
-                    .getAllRecipesFor(FermenterRecipe.TYPE)
-                    .stream()
-                    .filter(r -> r.recipeMatch(
-                            combinedInputItemHandler,
-                            List.of(inputFluidHandler),
-                            outputItemHandler,
-                            null))
-                    .findFirst();
-        } else {
-            FermenterRecipe recipeHandler = (FermenterRecipe) this.recipeHandler.get();
-            recipeEnergyCost = recipeHandler.getTotalEnergy();
-
-            if (energyConsumed == 0) {
-                recipeHandler.consumeIngredients(combinedInputItemHandler, List.of(inputFluidHandler));
-            }
-
-            if (energyStorage.getEnergyStored() >= energyConsumeRate) {
-                int energyToConsume = Math.min(energyConsumeRate, recipeEnergyCost - energyConsumed);
-                energyConsumed += energyToConsume;
-                energyStorage.extractEnergy(energyToConsume, false);
-            }
-
-            if (energyConsumed == recipeEnergyCost) {
-                energyConsumed = 0;
-                recipeHandler.assemble(outputItemHandler, null);
-
-                this.recipeHandler = level
-                        .getRecipeManager()
-                        .getAllRecipesFor(FermenterRecipe.TYPE)
-                        .stream()
-                        .filter(r -> r.recipeMatch(
-                                combinedInputItemHandler,
-                                List.of(inputFluidHandler),
-                                outputItemHandler,
-                                null))
-                        .findFirst();
-            }
+        if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
+            PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new FermenterPacket(
+                    EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
+                    energy.getEnergyStored(),
+                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    energyConsumed,
+                    recipeEnergyCost,
+                    FluidInputHatchBlockEntity.TANK_CAPACITY,
+                    inputFluid.getFluidInTank(0).copy(),
+                    isStructureValid,
+                    blockPos,
+                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
         }
-
-        PacketRegistries.sendToClients(new FermenterPacket(
-                energyCapacity,
-                energyStored,
-                energyConsumeRate,
-                energyConsumed,
-                recipeEnergyCost,
-                fluidCapacity,
-                fluidStored,
-                isStructureValid,
-                blockPos,
-                recipeHandler.map(ModRecipe::getRecipe).orElse(null)
-        ));
     }
 
     @Override
     protected void setHatches(BlockPos blockPos, Level level) {
         Direction facing = getBlockState().getValue(getFacingProperty());
-
-        // Define the south offset
         Vec3i[] southOffset = {
                 new Vec3i(-2, 1, -5),
                 new Vec3i(2, 1, -5),
@@ -137,16 +94,15 @@ public class FermenterBlockEntity extends MachineBlockEntity {
                 new Vec3i(-1, -1, -8)
         };
 
-        // Rotate the south offset and get the hatches
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
             BlockPos hatchPos = blockPos.offset(rotatedOffset);
-
             switch (i) {
                 case 0 -> itemInputHatch = (ItemInputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 1 -> itemOutputHatch = (ItemOutputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 2 -> energyInputHatch = (EnergyInputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 3 -> fluidInputHatch = (FluidInputHatchBlockEntity) level.getBlockEntity(hatchPos);
+                default -> throw new IllegalStateException("Unexpected hatch index " + i);
             }
         }
     }
