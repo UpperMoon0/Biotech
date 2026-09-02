@@ -1,16 +1,29 @@
 package com.nstut.biotech.machines;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.blocks.entites.machines.*;
+import com.nstut.biotech.blocks.entites.machines.BreedingChamberBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.MixerBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.SlaughterhouseBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.TerrestrialHabitatBlockEntity;
 import com.nstut.biotech.items.ItemRegistries;
-import com.nstut.biotech.recipes.*;
-import com.nstut.biotech.views.machines.menu.*;
-import com.nstut.biotech.views.machines.screen.*;
+import com.nstut.biotech.recipes.BreedingChamberRecipe;
+import com.nstut.biotech.recipes.FermenterRecipe;
+import com.nstut.biotech.recipes.GreenhouseRecipe;
+import com.nstut.biotech.recipes.MixerRecipe;
+import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
+import com.nstut.biotech.views.machines.menu.BreedingChamberMenu;
+import com.nstut.biotech.views.machines.menu.FermenterMenu;
+import com.nstut.biotech.views.machines.menu.GreenhouseMenu;
+import com.nstut.biotech.views.machines.menu.MachineMenu;
+import com.nstut.biotech.views.machines.menu.MixerMenu;
+import com.nstut.biotech.views.machines.menu.SlaughterhouseMenu;
+import com.nstut.biotech.views.machines.menu.TerrestrialHabitatMenu;
 import com.nstut.nstutlib.blocks.MachineBlock;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import com.nstut.nstutlib.recipes.ModRecipe;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -21,104 +34,49 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.BiFunction;
 
-public class MachineRegistries {
-
+public final class MachineRegistries {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPE_REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Biotech.MOD_ID);
     private static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, Biotech.MOD_ID);
     private static final DeferredRegister<MenuType<?>> MENU_REGISTER = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Biotech.MOD_ID);
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZER_REGISTER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Biotech.MOD_ID);
     private static final DeferredRegister<Block> BLOCK_REGISTER = DeferredRegister.create(ForgeRegistries.BLOCKS, Biotech.MOD_ID);
 
-    private static final List<Runnable> SCREEN_REGISTRIES = new ArrayList<>();
+    public static final MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register(
+            "breeding_chamber", BreedingChamberBlockEntity::new, BreedingChamberMenu::new, BreedingChamberRecipe.SERIALIZER);
+    public static final MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register(
+            "terrestrial_habitat", TerrestrialHabitatBlockEntity::new, TerrestrialHabitatMenu::new, TerrestrialHabitatRecipe.SERIALIZER);
+    public static final MachineRegistry<SlaughterhouseBlockEntity, SlaughterhouseMenu, SlaughterhouseRecipe> SLAUGHTERHOUSE = register(
+            "slaughterhouse", SlaughterhouseBlockEntity::new, SlaughterhouseMenu::new, SlaughterhouseRecipe.SERIALIZER);
+    public static final MachineRegistry<GreenhouseBlockEntity, GreenhouseMenu, GreenhouseRecipe> GREENHOUSE = register(
+            "greenhouse", GreenhouseBlockEntity::new, GreenhouseMenu::new, GreenhouseRecipe.SERIALIZER);
+    public static final MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register(
+            "fermenter", FermenterBlockEntity::new, FermenterMenu::new, FermenterRecipe.SERIALIZER);
+    public static final MachineRegistry<MixerBlockEntity, MixerMenu, MixerRecipe> MIXER = register(
+            "mixer", MixerBlockEntity::new, MixerMenu::new, MixerRecipe.SERIALIZER);
 
-    public static MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register(
-            "breeding_chamber",
-            BreedingChamberBlockEntity.class,
-            BreedingChamberMenu::new,
-            BreedingChamberScreen::new,
-            BreedingChamberRecipe.SERIALIZER
-    );
+    private MachineRegistries() {
+    }
 
-    public static MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register(
-            "terrestrial_habitat",
-            TerrestrialHabitatBlockEntity.class,
-            TerrestrialHabitatMenu::new,
-            TerrestrialHabitatScreen::new,
-            TerrestrialHabitatRecipe.SERIALIZER
-    );
-
-    public static MachineRegistry<SlaughterhouseBlockEntity, SlaughterhouseMenu, SlaughterhouseRecipe> SLAUGHTERHOUSE = register(
-            "slaughterhouse",
-            SlaughterhouseBlockEntity.class,
-            SlaughterhouseMenu::new,
-            SlaughterhouseScreen::new,
-            SlaughterhouseRecipe.SERIALIZER
-    );
-
-    public static MachineRegistry<GreenhouseBlockEntity, GreenhouseMenu, GreenhouseRecipe> GREENHOUSE = register(
-            "greenhouse",
-            GreenhouseBlockEntity.class,
-            GreenhouseMenu::new,
-            GreenhouseScreen::new,
-            GreenhouseRecipe.SERIALIZER
-    );
-
-    public static MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register(
-            "fermenter",
-            FermenterBlockEntity.class,
-            FermenterMenu::new,
-            FermenterScreen::new,
-            FermenterRecipe.SERIALIZER
-    );
-
-    public static MachineRegistry<MixerBlockEntity, MixerMenu, MixerRecipe> MIXER = register(
-            "mixer",
-            MixerBlockEntity.class,
-            MixerMenu::new,
-            MixerScreen::new,
-            MixerRecipe.SERIALIZER
-    );
-
-    public static <T extends MachineBlockEntity,
-            U extends MachineMenu,
-            V extends AbstractContainerScreen<U>,
-            Y extends ModRecipe<Y>>
-    MachineRegistry<T, U, Y> register(
-            String id,
-            Class<T> blockEntityClass,
-            IContainerFactory<U> containerFactory,
-            MenuScreens.ScreenConstructor<U, V> screenConstructor,
-            RecipeSerializer<Y> recipeSerializer
-    )
-    {
-        BlockEntityType.BlockEntitySupplier<T> blockEntitySupplier = (pos, state) -> {
-            try {
-                return blockEntityClass.getConstructor(BlockPos.class, BlockState.class).newInstance(pos, state);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create block entity supplier for " + blockEntityClass.getName(), e);
-            }
-        };
-
-        RegistryObject<Block> block = BLOCK_REGISTER.register(id, () -> new MachineBlock(blockEntityClass));
-        RegistryObject<BlockEntityType<T>> blockEntity = BLOCK_ENTITY_TYPE_REGISTER.register(id, () -> BlockEntityType.Builder.of(blockEntitySupplier, block.get()).build(null));
+    private static <T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>>
+    MachineRegistry<T, U, Y> register(String id,
+                                      BiFunction<BlockPos, BlockState, T> blockEntityFactory,
+                                      IContainerFactory<U> containerFactory,
+                                      RecipeSerializer<Y> recipeSerializer) {
+        RegistryObject<Block> block = BLOCK_REGISTER.register(id, () -> new MachineBlock(blockEntityFactory));
+        RegistryObject<BlockEntityType<T>> blockEntity = BLOCK_ENTITY_TYPE_REGISTER.register(
+                id,
+                () -> BlockEntityType.Builder.of(blockEntityFactory::apply, block.get()).build(null));
         RegistryObject<Item> blockItem = ITEM_REGISTER.register(id, () -> new BlockItem(block.get(), new Item.Properties()));
         ItemRegistries.ITEM_SET.add(blockItem);
         RegistryObject<MenuType<U>> menu = MENU_REGISTER.register(id, () -> IForgeMenuType.create(containerFactory));
-        RegistryObject<RecipeSerializer<Y>> recipeSerializerRegistry =
-                RECIPE_SERIALIZER_REGISTER.register(id, () -> recipeSerializer);
-
-        SCREEN_REGISTRIES.add(() -> MenuScreens.register(menu.get(), screenConstructor));
-
+        RegistryObject<RecipeSerializer<Y>> recipeSerializerRegistry = RECIPE_SERIALIZER_REGISTER.register(id, () -> recipeSerializer);
         return new MachineRegistry<>(id, block, blockEntity, blockItem, menu, recipeSerializerRegistry);
     }
 
@@ -128,15 +86,6 @@ public class MachineRegistries {
         ITEM_REGISTER.register(modEventBus);
         MENU_REGISTER.register(modEventBus);
         RECIPE_SERIALIZER_REGISTER.register(modEventBus);
-
-        modEventBus.addListener(MachineRegistries::onClientSetup);
-    }
-
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        for (Runnable registration : SCREEN_REGISTRIES) {
-            registration.run();
-        }
     }
 
     public record MachineRegistry<T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>>(
@@ -145,7 +94,6 @@ public class MachineRegistries {
             RegistryObject<BlockEntityType<T>> blockEntity,
             RegistryObject<Item> blockItem,
             RegistryObject<MenuType<U>> menu,
-            RegistryObject<RecipeSerializer<Y>> recipeSerializer
-    ) {
+            RegistryObject<RecipeSerializer<Y>> recipeSerializer) {
     }
 }
