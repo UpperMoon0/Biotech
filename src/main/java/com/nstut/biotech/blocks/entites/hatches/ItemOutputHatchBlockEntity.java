@@ -11,8 +11,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class ItemOutputHatchBlockEntity extends ItemHatchBlockEntity {
-    public ItemOutputHatchBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super(BlockEntityRegistries.ITEM_OUTPUT_HATCH.get(), pPos, pBlockState);
+    public ItemOutputHatchBlockEntity(BlockPos pos, BlockState state) {
+        super(BlockEntityRegistries.ITEM_OUTPUT_HATCH.get(), pos, state);
+    }
+
+    @Override
+    protected boolean isInputHatch() {
+        return false;
     }
 
     @Override
@@ -22,7 +27,7 @@ public class ItemOutputHatchBlockEntity extends ItemHatchBlockEntity {
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return new ItemOutputHatchMenu(pContainerId, pPlayerInventory, this);
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new ItemOutputHatchMenu(containerId, inventory, this);
     }
 }
