@@ -29,3 +29,5 @@ jobs:
         run: ./gradlew publishToMavenLocal --no-daemon --stacktrace
       - name: Validate and build
         run: ./gradlew test build --no-daemon --stacktrace -Pnstut_lib_dependency=com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.8
+      - name: Forge GameTests
+        run: ./gradlew runGameTestServer --no-daemon --stacktrace -Pnstut_lib_dependency=com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.8
