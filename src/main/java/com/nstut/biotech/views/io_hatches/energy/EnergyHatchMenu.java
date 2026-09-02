@@ -15,25 +15,24 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 
 public class EnergyHatchMenu extends MachineMenu {
-
     @Getter
     private final EnergyHatchBlockEntity blockEntity;
     private final Level level;
+
     @Setter
     @Getter
     private int energy;
 
-    public EnergyHatchMenu(MenuType menu, int pContainerId, Inventory inventory, BlockEntity blockEntity) {
-        super(menu, pContainerId);
+    public EnergyHatchMenu(MenuType<?> menu, int containerId, Inventory inventory, BlockEntity blockEntity) {
+        super(menu, containerId);
         this.blockEntity = (EnergyHatchBlockEntity) blockEntity;
-        level = inventory.player.level();
-
+        this.level = inventory.player.level();
         addInventorySlots(inventory);
     }
 
     @Override
-    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int i) {
-        return null;
+    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -41,8 +40,8 @@ public class EnergyHatchMenu extends MachineMenu {
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player, BlockRegistries.ENERGY_INPUT_HATCH.get());
     }
 
-    public int getEnergyHeight()
-    {
-        return Math.max(energy * 52 / blockEntity.ENERGY_CAPACITY, 1);
+    public int getEnergyHeight() {
+        int clamped = Math.max(0, Math.min(blockEntity.ENERGY_CAPACITY, energy));
+        return clamped * 52 / blockEntity.ENERGY_CAPACITY;
     }
 }
