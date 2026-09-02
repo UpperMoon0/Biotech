@@ -42,6 +42,7 @@ public class Biotech {
 
         modEventBus.addListener(Config::onLoad);
         modEventBus.addListener(PacketRegistries::register);
+        modEventBus.addListener(BlockEntityRegistries::registerCapabilities);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
