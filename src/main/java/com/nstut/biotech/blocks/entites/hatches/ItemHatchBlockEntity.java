@@ -69,6 +69,11 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
 
     protected abstract boolean isInputHatch();
 
+    /** Internal mutable storage used by a validated multiblock machine transaction. */
+    public final ItemStackHandler getInternalItemStorage() {
+        return slots;
+    }
+
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction facing) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
