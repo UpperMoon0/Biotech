@@ -18,25 +18,21 @@ import com.nstut.biotech.views.machines.screen.GreenhouseScreen;
 import com.nstut.biotech.views.machines.screen.MixerScreen;
 import com.nstut.biotech.views.machines.screen.SlaughterhouseScreen;
 import com.nstut.biotech.views.machines.screen.TerrestrialHabitatScreen;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 @Mod(Biotech.MOD_ID)
 public class Biotech {
     public static final String MOD_ID = "biotech";
     public static boolean IS_DEV_ENV;
 
-    public Biotech(FMLJavaModLoadingContext context) {
-        IEventBus modEventBus = context.getModEventBus();
-        modEventBus.addListener(this::commonSetup);
-
+    public Biotech(IEventBus modEventBus, ModContainer modContainer) {
         BlockRegistries.BLOCKS.register(modEventBus);
         BlockEntityRegistries.BLOCK_ENTITIES.register(modEventBus);
         MachineRegistries.register(modEventBus);
@@ -44,34 +40,30 @@ public class Biotech {
         CreativeTabRegistries.CREATIVE_MODE_TABS.register(modEventBus);
         MenuRegistries.MENUS.register(modEventBus);
 
-        context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modEventBus.addListener(Config::onLoad);
+        modEventBus.addListener(PacketRegistries::register);
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    private void commonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(PacketRegistries::register);
-    }
-
-    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
     public static final class ClientModEvents {
         private ClientModEvents() {
         }
 
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            event.enqueueWork(() -> {
-                MenuScreens.register(MenuRegistries.ITEM_INPUT_HATCH.get(), ItemInputHatchScreen::new);
-                MenuScreens.register(MenuRegistries.ITEM_OUTPUT_HATCH.get(), ItemOutputHatchScreen::new);
-                MenuScreens.register(MenuRegistries.FLUID_INPUT_HATCH.get(), FluidInputHatchScreen::new);
-                MenuScreens.register(MenuRegistries.FLUID_OUTPUT_HATCH.get(), FluidOutputHatchScreen::new);
-                MenuScreens.register(MenuRegistries.ENERGY_INPUT_HATCH.get(), EnergyInputHatchScreen::new);
+        public static void registerMenuScreens(RegisterMenuScreensEvent event) {
+            event.register(MenuRegistries.ITEM_INPUT_HATCH.get(), ItemInputHatchScreen::new);
+            event.register(MenuRegistries.ITEM_OUTPUT_HATCH.get(), ItemOutputHatchScreen::new);
+            event.register(MenuRegistries.FLUID_INPUT_HATCH.get(), FluidInputHatchScreen::new);
+            event.register(MenuRegistries.FLUID_OUTPUT_HATCH.get(), FluidOutputHatchScreen::new);
+            event.register(MenuRegistries.ENERGY_INPUT_HATCH.get(), EnergyInputHatchScreen::new);
 
-                MenuScreens.register(MachineRegistries.BREEDING_CHAMBER.menu().get(), BreedingChamberScreen::new);
-                MenuScreens.register(MachineRegistries.TERRESTRIAL_HABITAT.menu().get(), TerrestrialHabitatScreen::new);
-                MenuScreens.register(MachineRegistries.SLAUGHTERHOUSE.menu().get(), SlaughterhouseScreen::new);
-                MenuScreens.register(MachineRegistries.GREENHOUSE.menu().get(), GreenhouseScreen::new);
-                MenuScreens.register(MachineRegistries.FERMENTER.menu().get(), FermenterScreen::new);
-                MenuScreens.register(MachineRegistries.MIXER.menu().get(), MixerScreen::new);
-            });
+            event.register(MachineRegistries.BREEDING_CHAMBER.menu().get(), BreedingChamberScreen::new);
+            event.register(MachineRegistries.TERRESTRIAL_HABITAT.menu().get(), TerrestrialHabitatScreen::new);
+            event.register(MachineRegistries.SLAUGHTERHOUSE.menu().get(), SlaughterhouseScreen::new);
+            event.register(MachineRegistries.GREENHOUSE.menu().get(), GreenhouseScreen::new);
+            event.register(MachineRegistries.FERMENTER.menu().get(), FermenterScreen::new);
+            event.register(MachineRegistries.MIXER.menu().get(), MixerScreen::new);
         }
     }
 }
