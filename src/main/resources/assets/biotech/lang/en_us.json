@@ -34,6 +34,7 @@
   "item.biotech.manure": "Manure",
   "item.biotech.paper_bag": "Paper Bag",
   "item.biotech.fertilizer": "Fertilizer",
+  "tooltip.biotech.sheep_color": "Color: %s",
 
   "itemGroup.biotech": "Biotech",
 
