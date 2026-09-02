@@ -25,10 +25,11 @@ public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
     public static final int ENERGY_THROUGHPUT = 512;
     public static final int ENERGY_CAPACITY = ENERGY_THROUGHPUT * 1200;
 
-    protected final EnergyStorage energyStorage = new EnergyStorage(
+    protected final EnergyStorage energyStorage = new DirtyEnergyStorage(
             ENERGY_CAPACITY,
             ENERGY_THROUGHPUT,
-            ENERGY_THROUGHPUT);
+            ENERGY_THROUGHPUT,
+            this::setChanged);
 
     private final IEnergyStorage externalEnergy = new IEnergyStorage() {
         @Override

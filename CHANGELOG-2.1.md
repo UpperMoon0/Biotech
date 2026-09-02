@@ -9,6 +9,7 @@
 - Correct Mixer fluid-output commits.
 - Make input/output item and fluid hatches directional for external automation.
 - Make energy input hatches externally receive-only and synchronize absolute energy correctly.
+- Mark successful FE receive/extract mutations dirty so hatch energy persists across chunk unloads.
 - Restrict network protocol compatibility and scope machine/hatch packets to tracking chunks.
 - Send hatch state only when changed and machine UI state at a reduced cadence.
 - Make fluid packet handling safe during client world transitions.

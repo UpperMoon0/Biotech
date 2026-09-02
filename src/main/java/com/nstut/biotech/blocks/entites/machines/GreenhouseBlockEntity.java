@@ -55,10 +55,10 @@ public class GreenhouseBlockEntity extends MachineBlockEntity {
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
         IItemHandler inputItems = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow());
-        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow();
-        IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
-        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow();
+                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new));
+        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
         processRecipeTransaction(
                 level,

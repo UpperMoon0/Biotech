@@ -57,12 +57,12 @@ public class BreedingChamberBlockEntity extends MachineBlockEntity {
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
         IItemHandler inputItems = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch1.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(),
-                (IItemHandlerModifiable) itemInputHatch2.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(),
-                (IItemHandlerModifiable) itemInputHatch3.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow());
-        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow();
-        IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
-        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow();
+                (IItemHandlerModifiable) itemInputHatch1.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new),
+                (IItemHandlerModifiable) itemInputHatch2.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new),
+                (IItemHandlerModifiable) itemInputHatch3.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new));
+        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+        IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
         processRecipeTransaction(
                 level,
