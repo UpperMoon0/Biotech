@@ -4,6 +4,7 @@
 - Migrate all machine processing to NsTut Lib's persisted transactional recipe engine.
 - Prevent duplicate/chance-overrolled/overstacked outputs and NBT-insensitive recipe matching through NsTut Lib 0.8.
 - Roll back partial machine item/fluid input and output commits when a capability diverges during execution.
+- Preserve rolled-back active recipes and retry capability divergence with bounded backoff instead of failing the server tick.
 - Preserve active recipes across chunk/world reloads and pause safely through invalid multiblocks.
 - Consume only the exact remaining FE on the final processing tick.
 - Correct Mixer fluid-output commits.
