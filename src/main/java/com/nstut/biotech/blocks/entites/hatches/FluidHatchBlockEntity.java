@@ -6,16 +6,16 @@ import com.nstut.biotech.network.FluidHatchPacket;
 import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -39,81 +39,184 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         }
     };
 
-    protected FluidTank tank = new FluidTank(TANK_CAPACITY) {
+    protected final FluidTank tank = new FluidTank(TANK_CAPACITY) {
         @Override
         protected void onContentsChanged() {
             setChanged();
         }
     };
 
-    protected final LazyOptional<IItemHandler> lazySlots = LazyOptional.of(() -> slots);
+    private final IFluidHandler externalTank = new IFluidHandler() {
+        @Override
+        public int getTanks() {
+            return tank.getTanks();
+        }
 
-    protected final LazyOptional<IFluidHandler> lazyTank = LazyOptional.of(() -> tank);
+        @Override
+        public @NotNull FluidStack getFluidInTank(int tankIndex) {
+            return tank.getFluidInTank(tankIndex);
+        }
 
-    public FluidHatchBlockEntity(@NotNull BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state)
-    {
-        super(blockEntityType, pos, state);
+        @Override
+        public int getTankCapacity(int tankIndex) {
+            return tank.getTankCapacity(tankIndex);
+        }
+
+        @Override
+        public boolean isFluidValid(int tankIndex, @NotNull FluidStack stack) {
+            return isInputHatch() && tank.isFluidValid(tankIndex, stack);
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            return isInputHatch() ? tank.fill(resource, action) : 0;
+        }
+
+        @Override
+        public @NotNull FluidStack drain(FluidStack resource, FluidAction action) {
+            return isInputHatch() ? FluidStack.EMPTY : tank.drain(resource, action);
+        }
+
+        @Override
+        public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
+            return isInputHatch() ? FluidStack.EMPTY : tank.drain(maxDrain, action);
+        }
+    };
+
+    private LazyOptional<IItemHandler> lazySlots = LazyOptional.of(() -> slots);
+    private LazyOptional<IFluidHandler> lazyTank = LazyOptional.of(() -> tank);
+    private LazyOptional<IFluidHandler> lazyExternalTank = LazyOptional.of(() -> externalTank);
+
+    private FluidStack lastSyncedFluid = FluidStack.EMPTY;
+
+    protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
+    protected abstract boolean isInputHatch();
+
     @Override
-    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing)
-    {
-        if (capability == ForgeCapabilities.FLUID_HANDLER)
-            if (facing == getBlockState().getValue(IOHatchBlock.FACING) || facing == null)
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
+        if (capability == ForgeCapabilities.FLUID_HANDLER) {
+            if (facing == null) {
                 return lazyTank.cast();
-        if(capability == ForgeCapabilities.ITEM_HANDLER) {
-            if (facing == null)
-                return lazySlots.cast();
+            }
+            if (facing == getBlockState().getValue(IOHatchBlock.FACING)) {
+                return lazyExternalTank.cast();
+            }
+        }
+        if (capability == ForgeCapabilities.ITEM_HANDLER && facing == null) {
+            return lazySlots.cast();
         }
         return super.getCapability(capability, facing);
     }
 
+    @Override
+    public void load(@NotNull CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("item")) {
+            slots.deserializeNBT(tag.getCompound("item"));
+        }
+        if (tag.contains("fluid")) {
+            tank.readFromNBT(tag.getCompound("fluid"));
+        }
+        lastSyncedFluid = FluidStack.EMPTY;
+    }
+
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.put("item", slots.serializeNBT());
+        CompoundTag fluidTag = new CompoundTag();
+        tank.writeToNBT(fluidTag);
+        tag.put("fluid", fluidTag);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        lazySlots.invalidate();
+        lazyTank.invalidate();
+        lazyExternalTank.invalidate();
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+        lazySlots = LazyOptional.of(() -> slots);
+        lazyTank = LazyOptional.of(() -> tank);
+        lazyExternalTank = LazyOptional.of(() -> externalTank);
+    }
+
     public void dropItem() {
+        if (level == null) {
+            return;
+        }
         SimpleContainer inventory = new SimpleContainer(slots.getSlots());
         for (int i = 0; i < slots.getSlots(); i++) {
             inventory.setItem(i, slots.getStackInSlot(i));
         }
-
-        Containers.dropContents(level, this.worldPosition, inventory);
+        Containers.dropContents(level, worldPosition, inventory);
     }
 
-    public static <T extends BlockEntity> void serverTick(Level level, BlockPos blockPos, BlockState blockState, T t) {
-        FluidHatchBlockEntity blockEntity = (FluidHatchBlockEntity) t;
-        if (!level.isClientSide()) {
-            blockEntity.bucketHandling(blockEntity);
-            PacketRegistries.sendToClients(new FluidHatchPacket(blockEntity.tank.getFluid(), blockPos));
-            setChanged(level, blockPos, blockState);
+    public static <T extends BlockEntity> void serverTick(Level level, BlockPos pos, BlockState state, T value) {
+        if (!(value instanceof FluidHatchBlockEntity blockEntity) || level.isClientSide()) {
+            return;
+        }
+
+        blockEntity.bucketHandling();
+        FluidStack current = blockEntity.tank.getFluid().copy();
+        if (!sameFluidAndAmount(current, blockEntity.lastSyncedFluid)) {
+            blockEntity.lastSyncedFluid = current.copy();
+            if (level instanceof ServerLevel serverLevel) {
+                PacketRegistries.sendToTrackingChunk(serverLevel, pos, new FluidHatchPacket(current, pos));
+            }
         }
     }
 
-    protected void bucketHandling(FluidHatchBlockEntity blockEntity) {
-        blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
-            ItemStack slot0 = handler.getStackInSlot(0);
-            ItemStack slot1 = handler.getStackInSlot(1);
-            Item item0 = slot0.getItem();
-            int tankCapacity = tank.getCapacity();
-            int tankAmount = tank.getFluidAmount();
-            Fluid tankFluid = tank.getFluidInTank(0).getFluid();
+    private void bucketHandling() {
+        ItemStack input = slots.getStackInSlot(0);
+        ItemStack output = slots.getStackInSlot(1);
 
-            if (item0.equals(Items.WATER_BUCKET)
-                    && tankAmount <= tankCapacity - 1000
-                    && (slot1.isEmpty() || (slot1.getItem().equals(Items.BUCKET)) && slot1.getCount() < 64)) {
-                tank.fill(new FluidStack(Fluids.WATER, 1000), IFluidHandler.FluidAction.EXECUTE);
-                handler.extractItem(0, 1, false);
-                handler.insertItem(1, Items.BUCKET.getDefaultInstance(), false);
+        if (isInputHatch()) {
+            if (input.is(Items.WATER_BUCKET)
+                    && tank.getFluidAmount() <= tank.getCapacity() - FluidType.BUCKET_VOLUME
+                    && (output.isEmpty() || (output.is(Items.BUCKET) && output.getCount() < output.getMaxStackSize()))) {
+                int accepted = tank.fill(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.SIMULATE);
+                if (accepted == FluidType.BUCKET_VOLUME) {
+                    tank.fill(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
+                    slots.extractItem(0, 1, false);
+                    ItemStack remainder = slots.insertItem(1, new ItemStack(Items.BUCKET), false);
+                    if (!remainder.isEmpty()) {
+                        throw new IllegalStateException("Fluid input hatch bucket output changed during commit");
+                    }
+                }
             }
-            else if (item0.equals(Items.BUCKET)
-                    && tankAmount >= 1000
-                    && tankFluid.equals(Fluids.WATER)
-                    && slot1.isEmpty()) {
-                tank.drain(1000, IFluidHandler.FluidAction.EXECUTE);
-                handler.extractItem(0, 1, false);
-                handler.insertItem(1, Items.WATER_BUCKET.getDefaultInstance(), false);
+        } else if (input.is(Items.BUCKET)
+                && tank.getFluidAmount() >= FluidType.BUCKET_VOLUME
+                && tank.getFluid().getFluid() == Fluids.WATER
+                && output.isEmpty()) {
+            FluidStack request = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
+            FluidStack simulated = tank.drain(request, IFluidHandler.FluidAction.SIMULATE);
+            if (simulated.getAmount() == FluidType.BUCKET_VOLUME) {
+                tank.drain(request, IFluidHandler.FluidAction.EXECUTE);
+                slots.extractItem(0, 1, false);
+                ItemStack remainder = slots.insertItem(1, new ItemStack(Items.WATER_BUCKET), false);
+                if (!remainder.isEmpty()) {
+                    throw new IllegalStateException("Fluid output hatch bucket output changed during commit");
+                }
             }
-        });
+        }
     }
 
     public void setFluid(FluidStack fluidStack) {
-        tank.setFluid(fluidStack);
+        tank.setFluid(fluidStack.copy());
+    }
+
+    private static boolean sameFluidAndAmount(FluidStack first, FluidStack second) {
+        if (first.isEmpty() && second.isEmpty()) {
+            return true;
+        }
+        return first.getAmount() == second.getAmount() && first.isFluidEqual(second);
     }
 }
