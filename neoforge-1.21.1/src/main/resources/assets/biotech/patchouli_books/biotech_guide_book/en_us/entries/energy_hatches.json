@@ -1,0 +1,20 @@
+{
+  "name": "Energy Hatches",
+  "icon": "biotech:energy_input_hatch",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Your machines need energy to keep running.$(br)$(br)Use an Energy Input Hatch to supply energy to the machines."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:energy_input_hatch",
+      "text": "Each Energy Input Hatch can hold 614,400 FE and consume 512 FE / t."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:energy_input_hatch"
+    }
+  ]
+}

@@ -10,24 +10,38 @@ permissions:
 
 jobs:
   build:
+    name: ${{ matrix.target }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: forge-1.20.1
+            nstut_target: forge-1.20.1
+            java: '17'
+          - target: neoforge-1.21.1
+            nstut_target: neoforge-1.21.1
+            java: '21'
+          - target: neoforge-26.1.2
+            nstut_target: neoforge-26.1.2
+            java: '21'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: f64b907bfdf804203304e2ac9cca488203a6b1fd
+          ref: 611023e4f9833128f4019ad6ef9192a68ed7be35
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: ${{ matrix.java }}
           cache: gradle
-      - name: Publish pinned NsTut Lib to local Maven
+      - name: Publish pinned NsTut Lib target to Maven Local
         working-directory: .ci/nstut-lib
-        run: ./gradlew publishToMavenLocal --no-daemon --stacktrace
-      - name: Validate and build
-        run: ./gradlew test build --no-daemon --stacktrace -Pnstut_lib_dependency=com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.8
-      - name: Forge GameTests
-        run: ./gradlew runGameTestServer --no-daemon --stacktrace -Pnstut_lib_dependency=com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.8
+        run: ./gradlew :${{ matrix.nstut_target }}:publishToMavenLocal --no-daemon --stacktrace
+      - name: Unit tests and build
+        run: ./gradlew :${{ matrix.target }}:test :${{ matrix.target }}:build --no-daemon --stacktrace
+      - name: Forge/NeoForge GameTests
+        run: ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace

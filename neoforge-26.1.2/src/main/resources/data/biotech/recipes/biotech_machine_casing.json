@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "minecraft:polished_deepslate"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    }
+  },
+  "pattern": [
+    "PIP",
+    "IEI",
+    "PIP"
+  ],
+  "result": {
+    "item": "biotech:biotech_machine_casing",
+    "count": 4
+  },
+  "show_notification": true
+}

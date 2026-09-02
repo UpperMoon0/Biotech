@@ -1,0 +1,36 @@
+{
+  "type": "biotech:greenhouse",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "wheat_seeds",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "wheat",
+        "Count": 4
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "wheat_seeds",
+        "Count": 6
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 400
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 128000
+}

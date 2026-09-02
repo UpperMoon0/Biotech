@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "biotech:biotech_machine_casing"
+    },
+    "E": {
+      "item": "minecraft:wheat_seeds"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CEC",
+    "CCC"
+  ],
+  "result": {
+    "item": "biotech:greenhouse"
+  },
+  "show_notification": true
+}

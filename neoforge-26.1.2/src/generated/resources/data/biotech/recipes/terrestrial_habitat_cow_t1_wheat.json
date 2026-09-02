@@ -1,0 +1,43 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:baby_cow",
+        "Count": 1
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:wheat",
+        "Count": 4
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:cow",
+        "Count": 1
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "Count": 2
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 400
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 48000
+}

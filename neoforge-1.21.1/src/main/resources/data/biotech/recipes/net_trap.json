@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "minecraft:stick"
+    },
+    "$": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "#$#",
+    "$$$",
+    "#$#"
+  ],
+  "result": {
+    "item": "biotech:net_trap"
+  },
+  "show_notification": true
+}

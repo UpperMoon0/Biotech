@@ -1,0 +1,36 @@
+{
+  "type": "biotech:greenhouse",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "sugar_cane",
+        "Count": 2
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "biotech:fertilizer",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "sugar_cane",
+        "Count": 9
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 500
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 160000
+}

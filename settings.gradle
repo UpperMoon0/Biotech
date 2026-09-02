@@ -1,14 +1,27 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven {
-            name = 'MinecraftForge'
-            url = 'https://maven.minecraftforge.net/'
-        }
-        maven { url = 'https://maven.parchmentmc.org' } // Add this line
+        maven { name = 'MinecraftForge'; url = 'https://maven.minecraftforge.net/' }
+        maven { name = 'NeoForge'; url = 'https://maven.neoforged.net/releases' }
     }
 }
 
 plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.9.0'
 }
+
+rootProject.name = 'Biotech'
+
+def allProjects = ['forge-1.20.1', 'neoforge-1.21.1', 'neoforge-26.1.2'] as Set
+def requestedTasks = gradle.startParameter.taskNames
+def targetedProjects = requestedTasks
+        .findAll { it.startsWith(':') }
+        .collect { it.split(':')[1] }
+        .findAll { it in allProjects } as Set
+def needsWholeWorkspace = requestedTasks.isEmpty() || requestedTasks.any {
+    !it.startsWith(':') || it in ['buildAll', 'testAllVersions', 'gameTestAll', 'publishAllToMavenLocal']
+}
+def selected = [] as Set
+if (needsWholeWorkspace || targetedProjects.isEmpty()) selected.addAll(allProjects)
+else selected.addAll(targetedProjects)
+selected.each { include it }

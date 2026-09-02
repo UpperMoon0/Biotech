@@ -1,133 +1,21 @@
-plugins {
-    id 'eclipse'
-    id 'idea'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+allprojects {
+    group = rootProject.mod_group_id
+    version = rootProject.mod_version
 }
 
-version = mod_version
-group = mod_group_id
-
-base {
-    archivesName = mod_id
+tasks.register('buildAll') {
+    group = 'build'
+    dependsOn ':forge-1.20.1:build', ':neoforge-1.21.1:build', ':neoforge-26.1.2:build'
 }
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-
-minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    copyIdeResources = true
-
-    runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        client {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-        server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
-        }
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-        data {
-            workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-        }
-    }
+tasks.register('testAllVersions') {
+    group = 'verification'
+    dependsOn ':forge-1.20.1:test', ':neoforge-1.21.1:test', ':neoforge-26.1.2:test'
 }
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-repositories {
-    mavenLocal()
-    maven {
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
-    }
-    maven {
-        url 'https://www.cursemaven.com'
-        content { includeGroup "curse.maven" }
-    }
-    maven { url 'https://jitpack.io' }
+tasks.register('gameTestAll') {
+    group = 'verification'
+    dependsOn ':forge-1.20.1:runGameTestServer', ':neoforge-1.21.1:runGameTestServer', ':neoforge-26.1.2:runGameTestServer'
 }
-
-def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
-        .orElse("com.github.UpperMoon0:NsTut-Lib:${nstut_lib_version}")
-        .get()
-
-dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-
-    runtimeOnly fg.deobf("curse.maven:patchouli-306770:4966125")
-    implementation fg.deobf(nstutLibDependency)
-
-    compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
-    compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
-    runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
-
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-tasks.named('processResources', ProcessResources).configure {
-    var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
-    ]
-    inputs.properties replaceProperties
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
-}
-
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                'Specification-Title'     : mod_id,
-                'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1',
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
-}
-
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            artifact jar
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
-        }
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+tasks.register('publishAllToMavenLocal') {
+    group = 'publishing'
+    dependsOn ':forge-1.20.1:publishToMavenLocal', ':neoforge-1.21.1:publishToMavenLocal', ':neoforge-26.1.2:publishToMavenLocal'
 }

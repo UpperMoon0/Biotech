@@ -1,0 +1,7 @@
+{
+  "name": "Biotech Guide Book",
+  "landing_text": "Welcome to Biotech, where you can build powerful, lag-free machines to breed, raise, and slaughter animals.",
+  "version": 1,
+  "creative_tab": "biotech:biotech",
+  "use_resource_pack": true
+}

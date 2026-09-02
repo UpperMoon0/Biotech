@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "biotech:biotech_machine_casing"
+    },
+    "A": {
+      "item": "minecraft:golden_apple"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CAC",
+    "CCC"
+  ],
+  "result": {
+    "item": "biotech:breeding_chamber"
+  },
+  "show_notification": true
+}

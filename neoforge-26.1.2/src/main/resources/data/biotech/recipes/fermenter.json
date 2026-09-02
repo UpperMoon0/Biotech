@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "biotech:biotech_machine_casing"
+    },
+    "M": {
+      "item": "biotech:manure"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CMC",
+    "CCC"
+  ],
+  "result": {
+    "item": "biotech:fermenter"
+  },
+  "show_notification": true
+}

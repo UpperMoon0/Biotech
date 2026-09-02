@@ -1,0 +1,62 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+version = rootProject.mod_version
+group = rootProject.mod_group_id
+base { archivesName = "biotech-forge-${rootProject.minecraft_version_1_20_1}" }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: rootProject.minecraft_version_1_20_1
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'info'
+            mods { "${rootProject.mod_id}" { source sourceSets.main } }
+        }
+        client { property 'forge.enabledGameTestNamespaces', rootProject.mod_id }
+        server { property 'forge.enabledGameTestNamespaces', rootProject.mod_id; args '--nogui' }
+        gameTestServer { property 'forge.enabledGameTestNamespaces', rootProject.mod_id }
+        data {
+            workingDirectory project.file('run-data')
+            args '--mod', rootProject.mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
+    }
+}
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+repositories {
+    mavenLocal()
+    maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
+    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+}
+def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
+        .orElse("com.nstut.nstutlib:nstutlib-forge-1.20.1:${rootProject.nstut_lib_version}").get()
+dependencies {
+    minecraft "net.minecraftforge:forge:${rootProject.minecraft_version_1_20_1}-${rootProject.forge_version_1_20_1}"
+    implementation fg.deobf(nstutLibDependency)
+    runtimeOnly fg.deobf("curse.maven:patchouli-306770:${rootProject.patchouli_file_1_20_1}")
+    compileOnly fg.deobf("mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-common-api:${rootProject.jei_version_1_20_1}")
+    compileOnly fg.deobf("mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-forge-api:${rootProject.jei_version_1_20_1}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-forge:${rootProject.jei_version_1_20_1}")
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+}
+test { useJUnitPlatform() }
+tasks.named('processResources', ProcessResources).configure {
+    def p = [minecraft_version_range: rootProject.minecraft_version_range_1_20_1,
+             forge_version_range: rootProject.forge_version_range_1_20_1,
+             loader_version_range: rootProject.forge_loader_range_1_20_1,
+             mod_id: rootProject.mod_id, mod_name: rootProject.mod_name, mod_license: rootProject.mod_license,
+             mod_version: rootProject.mod_version, mod_authors: rootProject.mod_authors, mod_description: rootProject.mod_description]
+    inputs.properties p
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand p }
+}
+tasks.named('jar', Jar).configure { manifest { attributes('Specification-Title': rootProject.mod_id, 'Specification-Vendor': rootProject.mod_authors, 'Implementation-Title': project.name, 'Implementation-Version': project.version) } }
+publishing { publications { mavenJava(MavenPublication) { from components.java; artifactId = base.archivesName.get() } } }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

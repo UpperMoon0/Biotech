@@ -1,0 +1,80 @@
+{
+  "name": "Breeding Chamber",
+  "icon": "biotech:breeding_chamber",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Breeding Chamber produces baby animals in large quantity, allowing you to bypass the normal animals breeding cooldown.$(br)$(br)For the machine to work, provide it with the parent animals, their respective food, water and energy."
+    },
+    {
+      "multiblock": {
+        "mapping": {
+          "b": "minecraft:pink_stained_glass",
+          "c": "biotech:biotech_machine_casing",
+          "d": "minecraft:glowstone",
+          "e": "minecraft:pink_concrete",
+          "f": "biotech:breeding_chamber[facing=east, operating=false]",
+          "g": "biotech:energy_input_hatch[facing=west]",
+          "h": "biotech:fluid_input_hatch[facing=west]",
+          "i": "minecraft:grass_block[snowy=false]",
+          "j": "biotech:item_input_hatch[facing=south]",
+          "k": "biotech:item_output_hatch[facing=north]"
+        },
+        "symmetrical": true,
+        "pattern": [
+          [
+            "  bcb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bdb  ",
+            "  bcb  "
+          ],
+          [
+            " ebcbe ",
+            " e   e ",
+            " e   e ",
+            " e   e ",
+            " e   e ",
+            " e   e ",
+            " ebcbe "
+          ],
+          [
+            " ccccc ",
+            " c   c ",
+            " c   c ",
+            " c   c ",
+            " c   c ",
+            " c   c ",
+            " ccccc "
+          ],
+          [
+            "ccccccc",
+            "c     c",
+            "c     c",
+            "c  0  c",
+            "c     c",
+            "c     c",
+            "cccfccc"
+          ],
+          [
+            "cccgchc",
+            "cciiicj",
+            "cciiicc",
+            "kciiicj",
+            "cciiicc",
+            "cciiicj",
+            "ccccccc"
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:breeding_chamber"
+    }
+  ]
+}

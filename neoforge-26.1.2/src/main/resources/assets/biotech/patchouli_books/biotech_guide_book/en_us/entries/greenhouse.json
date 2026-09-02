@@ -1,0 +1,97 @@
+{
+  "name": "Greenhouse",
+  "icon": "biotech:greenhouse",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Greenhouse rapidly grows crops with improved yield. Provide seeds, water, and energy to run it. You can supply fertilizer to further increase the yield."
+    },
+    {
+      "multiblock": {
+        "mapping": {
+          "b": "minecraft:prismarine_brick_slab[waterlogged=false, type=bottom]",
+          "c": "minecraft:lime_concrete",
+          "d": "minecraft:glowstone",
+          "e": "biotech:biotech_machine_casing",
+          "f": "minecraft:prismarine_brick_slab[waterlogged=false, type=top]",
+          "g": "minecraft:lime_stained_glass",
+          "h": "minecraft:diorite_wall[east=none, waterlogged=false, south=none, north=none, west=none, up=true]",
+          "i": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=north]",
+          "j": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=south]",
+          "k": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=west]",
+          "l": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=east]",
+          "m": "biotech:energy_input_hatch[facing=west]",
+          "n": "biotech:fluid_input_hatch[facing=west]",
+          "o": "minecraft:farmland[moisture=0]",
+          "p": "biotech:item_output_hatch[facing=north]",
+          "q": "minecraft:water[level=0]",
+          "r": "biotech:item_input_hatch[facing=south]",
+          "s": "biotech:greenhouse[facing=east, operating=false]"
+        },
+        "symmetrical": true,
+        "pattern": [
+          [
+            "       ",
+            "   b   ",
+            "  ccc  ",
+            " bcdcb ",
+            "  ccc  ",
+            "   b   ",
+            "       "
+          ],
+          [
+            "  bbb  ",
+            " eeeee ",
+            "be   eb",
+            "be   eb",
+            "be   eb",
+            " eeeee ",
+            "  bbb  "
+          ],
+          [
+            "bf   fb",
+            "fegggef",
+            " g   g ",
+            " g   g ",
+            " g   g ",
+            "fegggef",
+            "bf   fb"
+          ],
+          [
+            "h     h",
+            " eggge ",
+            " g   g ",
+            " g   g ",
+            " g   g ",
+            " eggge ",
+            "h     h"
+          ],
+          [
+            "ci   jc",
+            "kegggek",
+            " g   g ",
+            " g 0 g ",
+            " g   g ",
+            "legggel",
+            "ci   jc"
+          ],
+          [
+            "eeemene",
+            "eeeeeee",
+            "eeoooee",
+            "peoqoer",
+            "eeoooee",
+            "eeeeeee",
+            "eeeseee"
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:greenhouse"
+    }
+  ]
+}

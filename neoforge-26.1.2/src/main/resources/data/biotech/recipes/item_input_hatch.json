@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "biotech:biotech_machine_casing"
+    },
+    "W": {
+      "item": "minecraft:chest"
+    }
+  },
+  "pattern": [
+    "W",
+    "C"
+  ],
+  "result": {
+    "item": "biotech:item_input_hatch"
+  },
+  "show_notification": true
+}

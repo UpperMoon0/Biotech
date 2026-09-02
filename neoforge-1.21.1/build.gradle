@@ -1,0 +1,50 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'idea'
+}
+version = rootProject.mod_version
+group = rootProject.mod_group_id
+base { archivesName = "biotech-neoforge-${rootProject.minecraft_version_1_21_1}" }
+java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
+neoForge {
+    version = rootProject.neoforge_version_1_21_1
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+        gameTestServer { type = 'gameTestServer' }
+        configureEach { logLevel = org.slf4j.event.Level.INFO }
+    }
+    mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
+}
+repositories {
+    mavenLocal()
+    maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
+    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+}
+def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
+        .orElse("com.nstut.nstutlib:nstutlib-neoforge-1.21.1:${rootProject.nstut_lib_version}").get()
+dependencies {
+    implementation nstutLibDependency
+    runtimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_1_21_1}"
+    compileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-common-api:${rootProject.jei_version_1_21_1}"
+    compileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-neoforge-api:${rootProject.jei_version_1_21_1}"
+    runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-neoforge:${rootProject.jei_version_1_21_1}"
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+test { useJUnitPlatform() }
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    def p = [mod_id: rootProject.mod_id, mod_name: rootProject.mod_name, mod_version: rootProject.mod_version,
+             mod_description: rootProject.mod_description, mod_authors: rootProject.mod_authors, mod_license: rootProject.mod_license,
+             minecraft_version_range: rootProject.minecraft_version_range_1_21_1, neo_version: '21.1', patchouli_version_range: '[1.21.1-93,)']
+    inputs.properties p; expand p; from 'src/main/templates'; into layout.buildDirectory.dir('generated/sources/modMetadata')
+}
+sourceSets.main.resources.srcDir(generateModMetadata)
+neoForge.ideSyncTask(generateModMetadata)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+publishing { publications { mavenJava(MavenPublication) { from components.java; artifactId = base.archivesName.get() } } }

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "biotech:block/energy_input_hatch"
+    },
+    "facing=east": {
+      "model": "biotech:block/energy_input_hatch",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "biotech:block/energy_input_hatch",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "biotech:block/energy_input_hatch",
+      "y": 270
+    }
+  }
+}

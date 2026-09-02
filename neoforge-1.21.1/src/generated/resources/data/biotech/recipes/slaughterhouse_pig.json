@@ -1,0 +1,36 @@
+{
+  "type": "biotech:slaughterhouse",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:pig",
+        "Count": 1
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "minecraft:porkchop",
+        "Count": 4
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:bone",
+        "Count": 2
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 200
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 16000
+}
