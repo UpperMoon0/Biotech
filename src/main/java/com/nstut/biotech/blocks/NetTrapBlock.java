@@ -50,10 +50,7 @@ public class NetTrapBlock extends Block {
             return;
         }
 
-        CompoundTag entityData = new CompoundTag();
-        if (!entity.saveWithoutId(entityData)) {
-            return;
-        }
+        CompoundTag entityData = entity.saveWithoutId(new CompoundTag());
         captured.getOrCreateTag().put(CAPTURED_ENTITY_TAG, entityData);
 
         // Keep the legacy sheep-color key so old UI/tooltips and old saves remain compatible.
@@ -62,18 +59,24 @@ public class NetTrapBlock extends Block {
             captured.getOrCreateTag().putInt("SheepColor", color.getId());
         }
 
-        // Consume the trap only after the complete capture payload is ready.
+        // The trap and animal are only consumed once the captured-item entity is accepted.
         if (!level.destroyBlock(pos, false)) {
             return;
         }
 
-        entity.remove(Entity.RemovalReason.DISCARDED);
-        level.addFreshEntity(new ItemEntity(
+        ItemEntity drop = new ItemEntity(
                 level,
                 pos.getX() + 0.5,
                 pos.getY() + 0.15,
                 pos.getZ() + 0.5,
-                captured));
+                captured);
+        if (!level.addFreshEntity(drop)) {
+            // Restore the trap if the world rejected the drop; the animal remains untouched.
+            level.setBlock(pos, state, 3);
+            return;
+        }
+
+        entity.remove(Entity.RemovalReason.DISCARDED);
     }
 
     private static ItemStack createCapturedStack(Entity entity) {

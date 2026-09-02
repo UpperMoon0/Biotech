@@ -100,23 +100,27 @@ public class MobItem extends Item {
     private void restoreCapturedState(Mob mob, ItemStack stack) {
         CompoundTag root = stack.getTag();
         if (root != null && root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).copy();
-            // A released animal is a new world entity. Preserve gameplay state, not the old
-            // world identity/coordinates/velocity that could conflict with another entity.
-            captured.remove("UUID");
-            captured.remove("Pos");
-            captured.remove("Motion");
-            captured.remove("Rotation");
-            captured.remove("FallDistance");
-            captured.remove("PortalCooldown");
-            captured.remove("Leash");
-            mob.load(captured);
+            mob.load(sanitizeCapturedEntityTag(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
             return;
         }
 
         if (mob instanceof Sheep sheep && root != null && root.contains("SheepColor")) {
             sheep.setColor(DyeColor.byId(root.getInt("SheepColor")));
         }
+    }
+
+    static CompoundTag sanitizeCapturedEntityTag(CompoundTag source) {
+        CompoundTag captured = source.copy();
+        // A released animal is a new world entity. Preserve gameplay state, not the old
+        // world identity/coordinates/velocity that could conflict with another entity.
+        captured.remove("UUID");
+        captured.remove("Pos");
+        captured.remove("Motion");
+        captured.remove("Rotation");
+        captured.remove("FallDistance");
+        captured.remove("PortalCooldown");
+        captured.remove("Leash");
+        return captured;
     }
 
     @Override
