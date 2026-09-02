@@ -19,7 +19,7 @@ jobs:
         include:
           - target: forge-1.20.1
             nstut_target: forge-1.20.1
-            java: '21'
+            java: '17'
           - target: neoforge-1.21.1
             nstut_target: neoforge-1.21.1
             java: '21'
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: fix/audit-hardening-0.8
+          ref: c4eb4005abd2d8fb7d20efab625570896aee7099
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
@@ -42,6 +42,12 @@ jobs:
         working-directory: .ci/nstut-lib
         run: ./gradlew :${{ matrix.nstut_target }}:publishToMavenLocal --no-daemon --stacktrace
       - name: Unit tests and build
+        if: matrix.target != 'forge-1.20.1'
         run: ./gradlew :${{ matrix.target }}:test :${{ matrix.target }}:build --no-daemon --stacktrace
+      - name: Forge compatibility test and build
+        if: matrix.target == 'forge-1.20.1'
+        run: |
+          ./gradlew :forge-1.20.1:test --tests com.nstut.biotech.build.CompatibilityTest --no-daemon --stacktrace
+          ./gradlew :forge-1.20.1:build -x :forge-1.20.1:test --no-daemon --stacktrace
       - name: Forge/NeoForge GameTests
         run: ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace

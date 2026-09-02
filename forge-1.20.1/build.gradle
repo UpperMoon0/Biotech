@@ -17,7 +17,10 @@ legacyForge {
     runs {
         client { client() }
         server { server(); programArgument '--nogui' }
-        gameTestServer { type = 'gameTestServer' }
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'forge.enabledGameTestNamespaces', rootProject.mod_id
+        }
         data { data() }
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
