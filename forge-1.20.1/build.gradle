@@ -13,6 +13,7 @@ java { toolchain.languageVersion = JavaLanguageVersion.of(17); withSourcesJar() 
 legacyForge {
     version = "${rootProject.minecraft_version_1_20_1}-${rootProject.forge_version_1_20_1}"
     validateAccessTransformers = true
+    addModdingDependenciesTo(sourceSets.test)
     runs {
         client { client() }
         server { server(); programArgument '--nogui' }
@@ -36,8 +37,8 @@ dependencies {
     modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-common-api:${rootProject.jei_version_1_20_1}"
     modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-forge-api:${rootProject.jei_version_1_20_1}"
     modRuntimeOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-forge:${rootProject.jei_version_1_20_1}"
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    compileOnly "org.projectlombok:lombok:${rootProject.lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${rootProject.lombok_version}"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
 }
