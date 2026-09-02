@@ -4,17 +4,15 @@ import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,9 +58,6 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
         }
     };
 
-    private LazyOptional<IItemHandler> lazySlots = LazyOptional.of(() -> slots);
-    private LazyOptional<IItemHandler> lazyExternalSlots = LazyOptional.of(() -> externalSlots);
-
     protected ItemHatchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -74,45 +69,26 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
         return slots;
     }
 
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction facing) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            if (facing == null) {
-                return lazySlots.cast();
-            }
-            if (facing == getBlockState().getValue(IOHatchBlock.FACING)) {
-                return lazyExternalSlots.cast();
-            }
+    /** NeoForge capability view. Null side is reserved for the machine's internal mutable storage. */
+    public final @Nullable IItemHandler getItemCapability(@Nullable Direction facing) {
+        if (facing == null) {
+            return slots;
         }
-        return super.getCapability(cap, facing);
+        return facing == getBlockState().getValue(IOHatchBlock.FACING) ? externalSlots : null;
     }
 
     @Override
-    public void load(@NotNull CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         if (tag.contains("item")) {
-            slots.deserializeNBT(tag.getCompound("item"));
+            slots.deserializeNBT(registries, tag.getCompound("item"));
         }
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.put("item", slots.serializeNBT());
-    }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        lazySlots.invalidate();
-        lazyExternalSlots.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
-        super.reviveCaps();
-        lazySlots = LazyOptional.of(() -> slots);
-        lazyExternalSlots = LazyOptional.of(() -> externalSlots);
+    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("item", slots.serializeNBT(registries));
     }
 
     public void dropItem() {
