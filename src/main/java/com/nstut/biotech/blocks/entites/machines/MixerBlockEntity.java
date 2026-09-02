@@ -1,7 +1,11 @@
 package com.nstut.biotech.blocks.entites.machines;
 
 import com.nstut.biotech.blocks.BlockRegistries;
-import com.nstut.biotech.blocks.entites.hatches.*;
+import com.nstut.biotech.blocks.entites.hatches.EnergyInputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.FluidInputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.ItemInputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.MixerPacket;
 import com.nstut.biotech.network.PacketRegistries;
@@ -15,16 +19,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -35,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MixerBlockEntity extends MachineBlockEntity {
-
     private ItemInputHatchBlockEntity itemInputHatch;
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
@@ -47,91 +49,49 @@ public class MixerBlockEntity extends MachineBlockEntity {
     public MixerBlockEntity(BlockPos pos, BlockState state) {
         super(MachineRegistries.MIXER.blockEntity().get(), pos, state, 2, 1, 1);
     }
+
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId,
-                                            @NotNull Inventory pPlayerInventory,
-                                            @NotNull Player pPlayer) {
-        return new MixerMenu(pContainerId, pPlayerInventory, this);
+    public AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory, @NotNull Player player) {
+        return new MixerMenu(containerId, inventory, this);
     }
 
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
-        IItemHandler combinedInputItemHandler = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new)
-        );
-        IItemHandler outputItemHandler = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler inputFluidHandler1 = fluidInputHatch1.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler inputFluidHandler2 = fluidInputHatch2.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler inputFluidHandler3 = fluidInputHatch3.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IFluidHandler outputFluidHandler = fluidOutputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(NullPointerException::new);
-        IEnergyStorage energyStorage = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(NullPointerException::new);
+        IItemHandler inputItems = new CombinedInvWrapper(
+                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow());
+        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow();
+        IFluidHandler inputFluid1 = fluidInputHatch1.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
+        IFluidHandler inputFluid2 = fluidInputHatch2.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
+        IFluidHandler inputFluid3 = fluidInputHatch3.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
+        IFluidHandler outputFluid = fluidOutputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow();
+        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow();
 
-        int energyCapacity = energyInputHatch.ENERGY_CAPACITY;
-        int energyStored = energyStorage.getEnergyStored();
-        int energyConsumeRate = energyInputHatch.ENERGY_THROUGHPUT;
-        int fluidCapacity = FluidInputHatchBlockEntity.TANK_CAPACITY;
-        FluidStack fluidStored = inputFluidHandler1.getFluidInTank(0);
+        processRecipeTransaction(
+                level,
+                MixerRecipe.TYPE,
+                inputItems,
+                List.of(inputFluid1, inputFluid2, inputFluid3),
+                outputItems,
+                List.of(outputFluid),
+                energy,
+                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT);
 
-        if (recipeHandler.isEmpty()) {
-            energyConsumed = 0;
-            recipeHandler = level
-                    .getRecipeManager()
-                    .getAllRecipesFor(MixerRecipe.TYPE)
-                    .stream()
-                    .filter(r -> r.recipeMatch(
-                            combinedInputItemHandler,
-                            List.of(inputFluidHandler1, inputFluidHandler2, inputFluidHandler3),
-                            outputItemHandler,
-                            List.of(outputFluidHandler)))
-                    .findFirst();
-        } else {
-            MixerRecipe recipeHandler = (MixerRecipe) this.recipeHandler.get();
-            recipeEnergyCost = recipeHandler.getTotalEnergy();
-
-            if (energyConsumed == 0) {
-                recipeHandler.consumeIngredients(combinedInputItemHandler, List.of(inputFluidHandler1, inputFluidHandler2, inputFluidHandler3));
-            }
-
-            if (energyStorage.getEnergyStored() >= energyConsumeRate) {
-                int energyToConsume = Math.min(energyConsumeRate, recipeEnergyCost - energyConsumed);
-                energyConsumed += energyToConsume;
-                energyStorage.extractEnergy(energyToConsume, false);
-            }
-
-            if (energyConsumed == recipeEnergyCost) {
-                energyConsumed = 0;
-                recipeHandler.assemble(outputItemHandler, null);
-
-                this.recipeHandler = level
-                        .getRecipeManager()
-                        .getAllRecipesFor(MixerRecipe.TYPE)
-                        .stream()
-                        .filter(r -> r.recipeMatch(
-                                combinedInputItemHandler,
-                                List.of(inputFluidHandler1, inputFluidHandler2, inputFluidHandler3),
-                                outputItemHandler,
-                                List.of(outputFluidHandler)))
-                        .findFirst();
-            }
+        if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
+            PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new MixerPacket(
+                    EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
+                    energy.getEnergyStored(),
+                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    energyConsumed,
+                    recipeEnergyCost,
+                    isStructureValid,
+                    blockPos,
+                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
         }
-
-        PacketRegistries.sendToClients(new MixerPacket(
-                energyCapacity,
-                energyStored,
-                energyConsumeRate,
-                energyConsumed,
-                recipeEnergyCost,
-                isStructureValid,
-                blockPos,
-                recipeHandler.map(ModRecipe::getRecipe).orElse(null)
-        ));
     }
 
     @Override
     protected void setHatches(BlockPos blockPos, Level level) {
         Direction facing = getBlockState().getValue(getFacingProperty());
-
-        // Define the south offset
         Vec3i[] southOffset = {
                 new Vec3i(-1, 2, -1),
                 new Vec3i(8, -1, 0),
@@ -142,11 +102,9 @@ public class MixerBlockEntity extends MachineBlockEntity {
                 new Vec3i(8, -1, -2),
         };
 
-        // Rotate the south offset and get the hatches
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
             BlockPos hatchPos = blockPos.offset(rotatedOffset);
-
             switch (i) {
                 case 0 -> itemInputHatch = (ItemInputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 1 -> itemOutputHatch = (ItemOutputHatchBlockEntity) level.getBlockEntity(hatchPos);
@@ -155,6 +113,7 @@ public class MixerBlockEntity extends MachineBlockEntity {
                 case 4 -> fluidInputHatch2 = (FluidInputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 5 -> fluidInputHatch3 = (FluidInputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 6 -> fluidOutputHatch = (FluidOutputHatchBlockEntity) level.getBlockEntity(hatchPos);
+                default -> throw new IllegalStateException("Unexpected hatch index " + i);
             }
         }
     }
@@ -266,8 +225,6 @@ public class MixerBlockEntity extends MachineBlockEntity {
 
         return new MultiblockPattern(blockArray);
     }
-
-
 
     @Override
     public @NotNull Component getDisplayName() {
