@@ -10,6 +10,7 @@ base { archivesName = "biotech-neoforge-${rootProject.minecraft_version_26_1_2}"
 java { toolchain.languageVersion = JavaLanguageVersion.of(25); withSourcesJar() }
 neoForge {
     version = rootProject.neoforge_version_26_1_2
+    addModdingDependenciesTo(sourceSets.test)
     runs {
         client { client() }
         server { server(); programArgument '--nogui' }
@@ -31,8 +32,8 @@ dependencies {
     compileOnly "mezz.jei:jei-${rootProject.minecraft_version_26_1_2}-common-api:${rootProject.jei_version_26_1_2}"
     compileOnly "mezz.jei:jei-${rootProject.minecraft_version_26_1_2}-neoforge-api:${rootProject.jei_version_26_1_2}"
     runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version_26_1_2}-neoforge:${rootProject.jei_version_26_1_2}"
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    compileOnly "org.projectlombok:lombok:${rootProject.lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${rootProject.lombok_version}"
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
