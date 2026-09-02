@@ -95,6 +95,11 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
 
     protected abstract boolean isInputHatch();
 
+    /** Internal restorable tank used by a validated multiblock machine transaction. */
+    public final FluidTank getInternalTank() {
+        return tank;
+    }
+
     @Override
     public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction facing) {
         if (capability == ForgeCapabilities.FLUID_HANDLER) {
