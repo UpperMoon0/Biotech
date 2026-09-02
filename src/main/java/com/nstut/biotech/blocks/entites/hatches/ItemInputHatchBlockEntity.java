@@ -11,16 +11,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 public class ItemInputHatchBlockEntity extends ItemHatchBlockEntity {
-    public ItemInputHatchBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super(BlockEntityRegistries.ITEM_INPUT_HATCH.get(), pPos, pBlockState);
+    public ItemInputHatchBlockEntity(BlockPos pos, BlockState state) {
+        super(BlockEntityRegistries.ITEM_INPUT_HATCH.get(), pos, state);
     }
+
+    @Override
+    protected boolean isInputHatch() {
+        return true;
+    }
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("menu.title.biotech.item_input_hatch");
     }
+
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return new ItemInputHatchMenu(pContainerId, pPlayerInventory, this);
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new ItemInputHatchMenu(containerId, inventory, this);
     }
 }
