@@ -26,12 +26,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -57,14 +55,13 @@ public class MixerBlockEntity extends MachineBlockEntity {
 
     @Override
     protected void processRecipe(Level level, BlockPos blockPos) {
-        IItemHandler inputItems = new CombinedInvWrapper(
-                (IItemHandlerModifiable) itemInputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new));
-        IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
-        IFluidHandler inputFluid1 = fluidInputHatch1.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
-        IFluidHandler inputFluid2 = fluidInputHatch2.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
-        IFluidHandler inputFluid3 = fluidInputHatch3.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
-        IFluidHandler outputFluid = fluidOutputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
-        IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
+        IItemHandler inputItems = new CombinedInvWrapper(itemInputHatch.getInternalItemStorage());
+        IItemHandler outputItems = itemOutputHatch.getInternalItemStorage();
+        IFluidHandler inputFluid1 = fluidInputHatch1.getInternalTank();
+        IFluidHandler inputFluid2 = fluidInputHatch2.getInternalTank();
+        IFluidHandler inputFluid3 = fluidInputHatch3.getInternalTank();
+        IFluidHandler outputFluid = fluidOutputHatch.getInternalTank();
+        IEnergyStorage energy = energyInputHatch.getInternalEnergyStorage();
 
         processRecipeTransaction(
                 level,
