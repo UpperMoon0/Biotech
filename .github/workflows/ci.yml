@@ -14,10 +14,18 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/NsTut-Lib
+          ref: e87e7ca250f6b31ccae28b9c3b4bed86ab38b649
+          path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
+      - name: Publish pinned NsTut Lib to local Maven
+        working-directory: .ci/nstut-lib
+        run: ./gradlew publishToMavenLocal --no-daemon --stacktrace
       - name: Validate and build
-        run: ./gradlew test build --no-daemon --stacktrace
+        run: ./gradlew test build --no-daemon --stacktrace -Pnstut_lib_dependency=com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.8
