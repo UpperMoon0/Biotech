@@ -11,9 +11,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class PacketRegistries {
     public static final String PROTOCOL_VERSION = "2";
-
-    private PacketRegistries() {
-    }
+    private PacketRegistries() {}
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
@@ -28,9 +26,7 @@ public final class PacketRegistries {
     }
 
     public static void sendToTrackingChunk(ServerLevel level, BlockPos pos, CustomPacketPayload message) {
-        if (level.hasChunkAt(pos)) {
-            PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(pos), message);
-        }
+        if (level.hasChunkAt(pos)) PacketDistributor.sendToPlayersTrackingChunk(level, ChunkPos.containing(pos), message);
     }
 
     public static void sendToPlayer(ServerPlayer player, CustomPacketPayload message) {
