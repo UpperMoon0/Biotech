@@ -6,16 +6,16 @@ import com.nstut.biotech.network.EnergyPacket;
 import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.energy.EnergyStorage;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
@@ -23,41 +23,15 @@ public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
     public static final int ENERGY_CAPACITY = ENERGY_THROUGHPUT * 1200;
 
     protected final DirtyEnergyStorage energyStorage = new DirtyEnergyStorage(
-            ENERGY_CAPACITY,
-            ENERGY_THROUGHPUT,
-            ENERGY_THROUGHPUT,
-            this::setChanged);
-
-    private final IEnergyStorage externalEnergy = new IEnergyStorage() {
-        @Override
-        public int receiveEnergy(int maxReceive, boolean simulate) {
-            return energyStorage.receiveEnergy(maxReceive, simulate);
+            ENERGY_CAPACITY, ENERGY_THROUGHPUT, ENERGY_THROUGHPUT, this::setChanged);
+    private final IEnergyStorage internalEnergy = IEnergyStorage.of(energyStorage);
+    private final EnergyHandler externalEnergy = new EnergyHandler() {
+        @Override public long getAmountAsLong() { return energyStorage.getAmountAsLong(); }
+        @Override public long getCapacityAsLong() { return energyStorage.getCapacityAsLong(); }
+        @Override public int insert(int amount, TransactionContext transaction) {
+            return energyStorage.insert(amount, transaction);
         }
-
-        @Override
-        public int extractEnergy(int maxExtract, boolean simulate) {
-            return 0;
-        }
-
-        @Override
-        public int getEnergyStored() {
-            return energyStorage.getEnergyStored();
-        }
-
-        @Override
-        public int getMaxEnergyStored() {
-            return energyStorage.getMaxEnergyStored();
-        }
-
-        @Override
-        public boolean canExtract() {
-            return false;
-        }
-
-        @Override
-        public boolean canReceive() {
-            return true;
-        }
+        @Override public int extract(int amount, TransactionContext transaction) { return 0; }
     };
 
     private int lastSyncedEnergy = Integer.MIN_VALUE;
@@ -66,39 +40,31 @@ public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
         super(type, pos, state);
     }
 
-    /** Internal mutable energy storage used by a validated multiblock machine transaction. */
-    public final EnergyStorage getInternalEnergyStorage() {
-        return energyStorage;
+    public final IEnergyStorage getInternalEnergyStorage() {
+        return internalEnergy;
     }
 
-    /** NeoForge capability view. External automation may only receive energy on the hatch-facing side. */
-    public final @Nullable IEnergyStorage getEnergyCapability(@Nullable Direction facing) {
-        if (facing == null) {
-            return energyStorage;
-        }
+    public final @Nullable EnergyHandler getEnergyCapability(@Nullable Direction facing) {
+        if (facing == null) return energyStorage;
         return facing == getBlockState().getValue(IOHatchBlock.FACING) ? externalEnergy : null;
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("energy")) {
-            energyStorage.deserializeNBT(registries, tag.get("energy"));
-        }
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        energyStorage.setAbsoluteEnergy(input.getIntOr("energy", 0));
         lastSyncedEnergy = Integer.MIN_VALUE;
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("energy", energyStorage.serializeNBT(registries));
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("energy", energyStorage.getAmountAsInt());
     }
 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos pos, BlockState state, T value) {
-        if (!(value instanceof EnergyHatchBlockEntity blockEntity) || level.isClientSide) {
-            return;
-        }
-        int current = blockEntity.energyStorage.getEnergyStored();
+        if (!(value instanceof EnergyHatchBlockEntity blockEntity) || level.isClientSide()) return;
+        int current = blockEntity.energyStorage.getAmountAsInt();
         if (current != blockEntity.lastSyncedEnergy) {
             blockEntity.lastSyncedEnergy = current;
             if (level instanceof ServerLevel serverLevel) {
@@ -107,7 +73,6 @@ public abstract class EnergyHatchBlockEntity extends CapabilityBlockEntity {
         }
     }
 
-    /** Sets client mirror energy to an absolute value instead of accumulating packets. */
     public void setEnergy(int energy) {
         energyStorage.setAbsoluteEnergy(energy);
     }

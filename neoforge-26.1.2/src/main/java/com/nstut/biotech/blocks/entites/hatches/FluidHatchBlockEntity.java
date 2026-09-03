@@ -6,8 +6,6 @@ import com.nstut.biotech.network.FluidHatchPacket;
 import com.nstut.biotech.network.PacketRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
@@ -18,185 +16,135 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
     public static final int TANK_CAPACITY = FluidType.BUCKET_VOLUME * 32;
 
-    protected final ItemStackHandler slots = new ItemStackHandler(2) {
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
+    protected final ItemStacksResourceHandler slots = new ItemStacksResourceHandler(2) {
+        @Override protected void onContentsChanged(int index, ItemStack previousContents) { setChanged(); }
+    };
+    protected final FluidStacksResourceHandler tank = new FluidStacksResourceHandler(1, TANK_CAPACITY) {
+        @Override protected void onContentsChanged(int index, FluidStack previousContents) { setChanged(); }
     };
 
-    protected final FluidTank tank = new FluidTank(TANK_CAPACITY) {
-        @Override
-        protected void onContentsChanged() {
-            setChanged();
+    private final IItemHandler internalSlots = IItemHandler.of(slots);
+    private final IFluidHandler internalTank = IFluidHandler.of(tank);
+    private final ResourceHandler<FluidResource> externalTank = new ResourceHandler<>() {
+        @Override public int size() { return tank.size(); }
+        @Override public FluidResource getResource(int index) { return tank.getResource(index); }
+        @Override public long getAmountAsLong(int index) { return tank.getAmountAsLong(index); }
+        @Override public long getCapacityAsLong(int index, FluidResource resource) { return tank.getCapacityAsLong(index, resource); }
+        @Override public boolean isValid(int index, FluidResource resource) { return isInputHatch() && tank.isValid(index, resource); }
+        @Override public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
+            return isInputHatch() ? tank.insert(index, resource, amount, transaction) : 0;
         }
-    };
-
-    private final IFluidHandler externalTank = new IFluidHandler() {
-        @Override
-        public int getTanks() {
-            return tank.getTanks();
-        }
-
-        @Override
-        public @NotNull FluidStack getFluidInTank(int tankIndex) {
-            return tank.getFluidInTank(tankIndex);
-        }
-
-        @Override
-        public int getTankCapacity(int tankIndex) {
-            return tank.getTankCapacity(tankIndex);
-        }
-
-        @Override
-        public boolean isFluidValid(int tankIndex, @NotNull FluidStack stack) {
-            return isInputHatch() && tank.isFluidValid(tankIndex, stack);
-        }
-
-        @Override
-        public int fill(FluidStack resource, FluidAction action) {
-            return isInputHatch() ? tank.fill(resource, action) : 0;
-        }
-
-        @Override
-        public @NotNull FluidStack drain(FluidStack resource, FluidAction action) {
-            return isInputHatch() ? FluidStack.EMPTY : tank.drain(resource, action);
-        }
-
-        @Override
-        public @NotNull FluidStack drain(int maxDrain, FluidAction action) {
-            return isInputHatch() ? FluidStack.EMPTY : tank.drain(maxDrain, action);
+        @Override public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+            return isInputHatch() ? 0 : tank.extract(index, resource, amount, transaction);
         }
     };
 
     private FluidStack lastSyncedFluid = FluidStack.EMPTY;
 
-    protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
-    }
-
+    protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     protected abstract boolean isInputHatch();
 
-    /** Internal restorable tank used by a validated multiblock machine transaction. */
-    public final FluidTank getInternalTank() {
-        return tank;
-    }
+    /** Legacy views used by existing menu and machine transaction code. */
+    public final IItemHandler getInternalItemStorage() { return internalSlots; }
+    public final IFluidHandler getInternalTank() { return internalTank; }
 
-    /** Internal bucket slots. Exposed only for an unsided machine query. */
-    public final @Nullable IItemHandler getItemCapability(@Nullable Direction facing) {
+    /** Native NeoForge 26 item capability for the hatch's bucket slots. */
+    public final @Nullable ResourceHandler<ItemResource> getItemCapability(@Nullable Direction facing) {
         return facing == null ? slots : null;
     }
 
-    /** NeoForge fluid capability view. Automation only sees the hatch-facing directional wrapper. */
-    public final @Nullable IFluidHandler getFluidCapability(@Nullable Direction facing) {
-        if (facing == null) {
-            return tank;
-        }
+    /** Native NeoForge 26 fluid capability. */
+    public final @Nullable ResourceHandler<FluidResource> getFluidCapability(@Nullable Direction facing) {
+        if (facing == null) return tank;
         return facing == getBlockState().getValue(IOHatchBlock.FACING) ? externalTank : null;
     }
 
-    @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("item")) {
-            slots.deserializeNBT(registries, tag.getCompound("item"));
-        }
-        if (tag.contains("fluid")) {
-            tank.readFromNBT(registries, tag.getCompound("fluid"));
-        }
+    @Override protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        input.child("item").ifPresent(slots::deserialize);
+        input.child("fluid").ifPresent(tank::deserialize);
         lastSyncedFluid = FluidStack.EMPTY;
     }
 
-    @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("item", slots.serializeNBT(registries));
-        CompoundTag fluidTag = new CompoundTag();
-        tank.writeToNBT(registries, fluidTag);
-        tag.put("fluid", fluidTag);
+    @Override protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        slots.serialize(output.child("item"));
+        tank.serialize(output.child("fluid"));
     }
 
     public void dropItem() {
-        if (level == null) {
-            return;
-        }
-        SimpleContainer inventory = new SimpleContainer(slots.getSlots());
-        for (int i = 0; i < slots.getSlots(); i++) {
-            inventory.setItem(i, slots.getStackInSlot(i));
-        }
+        if (level == null) return;
+        SimpleContainer inventory = new SimpleContainer(slots.size());
+        for (int i = 0; i < slots.size(); i++) inventory.setItem(i, ItemUtil.getStack(slots, i));
         Containers.dropContents(level, worldPosition, inventory);
     }
 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos pos, BlockState state, T value) {
-        if (!(value instanceof FluidHatchBlockEntity blockEntity) || level.isClientSide) {
-            return;
-        }
-
+        if (!(value instanceof FluidHatchBlockEntity blockEntity) || level.isClientSide()) return;
         blockEntity.bucketHandling();
-        FluidStack current = blockEntity.tank.getFluid().copy();
+        FluidStack current = FluidUtil.getStack(blockEntity.tank, 0).copy();
         if (!sameFluidAndAmount(current, blockEntity.lastSyncedFluid)) {
             blockEntity.lastSyncedFluid = current.copy();
-            if (level instanceof ServerLevel serverLevel) {
-                PacketRegistries.sendToTrackingChunk(serverLevel, pos, new FluidHatchPacket(current, pos));
-            }
+            if (level instanceof ServerLevel serverLevel) PacketRegistries.sendToTrackingChunk(serverLevel, pos, new FluidHatchPacket(current, pos));
         }
     }
 
     private void bucketHandling() {
-        ItemStack input = slots.getStackInSlot(0);
-        ItemStack output = slots.getStackInSlot(1);
-
+        ItemStack input = internalSlots.getStackInSlot(0);
+        ItemStack output = internalSlots.getStackInSlot(1);
+        FluidStack current = internalTank.getFluidInTank(0);
         if (isInputHatch()) {
             if (input.is(Items.WATER_BUCKET)
-                    && tank.getFluidAmount() <= tank.getCapacity() - FluidType.BUCKET_VOLUME
+                    && current.getAmount() <= TANK_CAPACITY - FluidType.BUCKET_VOLUME
                     && (output.isEmpty() || (output.is(Items.BUCKET) && output.getCount() < output.getMaxStackSize()))) {
-                int accepted = tank.fill(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.SIMULATE);
-                if (accepted == FluidType.BUCKET_VOLUME) {
-                    tank.fill(new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
-                    slots.extractItem(0, 1, false);
-                    ItemStack remainder = slots.insertItem(1, new ItemStack(Items.BUCKET), false);
-                    if (!remainder.isEmpty()) {
-                        throw new IllegalStateException("Fluid input hatch bucket output changed during commit");
-                    }
+                FluidStack water = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
+                if (internalTank.fill(water, IFluidHandler.FluidAction.SIMULATE) == FluidType.BUCKET_VOLUME) {
+                    internalTank.fill(water, IFluidHandler.FluidAction.EXECUTE);
+                    internalSlots.extractItem(0, 1, false);
+                    ItemStack remainder = internalSlots.insertItem(1, new ItemStack(Items.BUCKET), false);
+                    if (!remainder.isEmpty()) throw new IllegalStateException("Fluid input hatch bucket output changed during commit");
                 }
             }
-        } else if (input.is(Items.BUCKET)
-                && tank.getFluidAmount() >= FluidType.BUCKET_VOLUME
-                && tank.getFluid().getFluid() == Fluids.WATER
-                && output.isEmpty()) {
+        } else if (input.is(Items.BUCKET) && current.getAmount() >= FluidType.BUCKET_VOLUME
+                && current.getFluid() == Fluids.WATER && output.isEmpty()) {
             FluidStack request = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
-            FluidStack simulated = tank.drain(request, IFluidHandler.FluidAction.SIMULATE);
+            FluidStack simulated = internalTank.drain(request, IFluidHandler.FluidAction.SIMULATE);
             if (simulated.getAmount() == FluidType.BUCKET_VOLUME) {
-                tank.drain(request, IFluidHandler.FluidAction.EXECUTE);
-                slots.extractItem(0, 1, false);
-                ItemStack remainder = slots.insertItem(1, new ItemStack(Items.WATER_BUCKET), false);
-                if (!remainder.isEmpty()) {
-                    throw new IllegalStateException("Fluid output hatch bucket output changed during commit");
-                }
+                internalTank.drain(request, IFluidHandler.FluidAction.EXECUTE);
+                internalSlots.extractItem(0, 1, false);
+                ItemStack remainder = internalSlots.insertItem(1, new ItemStack(Items.WATER_BUCKET), false);
+                if (!remainder.isEmpty()) throw new IllegalStateException("Fluid output hatch bucket output changed during commit");
             }
         }
     }
 
     public void setFluid(FluidStack fluidStack) {
-        tank.setFluid(fluidStack.copy());
+        if (fluidStack.isEmpty()) tank.set(0, FluidResource.EMPTY, 0);
+        else tank.set(0, FluidResource.of(fluidStack), fluidStack.getAmount());
     }
 
     private static boolean sameFluidAndAmount(FluidStack first, FluidStack second) {
-        if (first.isEmpty() && second.isEmpty()) {
-            return true;
-        }
+        if (first.isEmpty() && second.isEmpty()) return true;
         return first.getAmount() == second.getAmount() && FluidStack.isSameFluidSameComponents(first, second);
     }
 }

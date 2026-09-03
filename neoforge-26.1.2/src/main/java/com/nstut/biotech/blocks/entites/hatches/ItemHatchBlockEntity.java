@@ -4,57 +4,47 @@ import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
     public static final int INVENTORY_SIZE = 9;
 
-    protected final ItemStackHandler slots = new ItemStackHandler(INVENTORY_SIZE) {
+    protected final ItemStacksResourceHandler slots = new ItemStacksResourceHandler(INVENTORY_SIZE) {
         @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int index, ItemStack previousContents) {
             setChanged();
         }
     };
 
-    private final IItemHandler externalSlots = new IItemHandler() {
-        @Override
-        public int getSlots() {
-            return slots.getSlots();
+    private final IItemHandler internalSlots = IItemHandler.of(slots);
+    private final ResourceHandler<ItemResource> externalSlots = new ResourceHandler<>() {
+        @Override public int size() { return slots.size(); }
+        @Override public ItemResource getResource(int index) { return slots.getResource(index); }
+        @Override public long getAmountAsLong(int index) { return slots.getAmountAsLong(index); }
+        @Override public long getCapacityAsLong(int index, ItemResource resource) {
+            return isInputHatch() ? slots.getCapacityAsLong(index, resource) : 0;
         }
-
-        @Override
-        public @NotNull ItemStack getStackInSlot(int slot) {
-            return slots.getStackInSlot(slot);
+        @Override public boolean isValid(int index, ItemResource resource) {
+            return isInputHatch() && slots.isValid(index, resource);
         }
-
-        @Override
-        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            return isInputHatch() ? slots.insertItem(slot, stack, simulate) : stack;
+        @Override public int insert(int index, ItemResource resource, int amount, TransactionContext transaction) {
+            return isInputHatch() ? slots.insert(index, resource, amount, transaction) : 0;
         }
-
-        @Override
-        public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return isInputHatch() ? ItemStack.EMPTY : slots.extractItem(slot, amount, simulate);
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return slots.getSlotLimit(slot);
-        }
-
-        @Override
-        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return isInputHatch() && slots.isItemValid(slot, stack);
+        @Override public int extract(int index, ItemResource resource, int amount, TransactionContext transaction) {
+            return isInputHatch() ? 0 : slots.extract(index, resource, amount, transaction);
         }
     };
 
@@ -64,40 +54,34 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
 
     protected abstract boolean isInputHatch();
 
-    /** Internal mutable storage used by a validated multiblock machine transaction. */
-    public final ItemStackHandler getInternalItemStorage() {
-        return slots;
+    /** Legacy view used by the existing machine transaction and menu code. */
+    public final IItemHandler getInternalItemStorage() {
+        return internalSlots;
     }
 
-    /** NeoForge capability view. Null side is reserved for the machine's internal mutable storage. */
-    public final @Nullable IItemHandler getItemCapability(@Nullable Direction facing) {
-        if (facing == null) {
-            return slots;
-        }
+    /** Native NeoForge 26 transfer capability. */
+    public final @Nullable ResourceHandler<ItemResource> getItemCapability(@Nullable Direction facing) {
+        if (facing == null) return slots;
         return facing == getBlockState().getValue(IOHatchBlock.FACING) ? externalSlots : null;
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("item")) {
-            slots.deserializeNBT(registries, tag.getCompound("item"));
-        }
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        input.child("item").ifPresent(slots::deserialize);
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("item", slots.serializeNBT(registries));
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        slots.serialize(output.child("item"));
     }
 
     public void dropItem() {
-        if (level == null) {
-            return;
-        }
-        SimpleContainer inventory = new SimpleContainer(slots.getSlots());
-        for (int i = 0; i < slots.getSlots(); i++) {
-            inventory.setItem(i, slots.getStackInSlot(i));
+        if (level == null) return;
+        SimpleContainer inventory = new SimpleContainer(slots.size());
+        for (int i = 0; i < slots.size(); i++) {
+            inventory.setItem(i, ItemUtil.getStack(slots, i));
         }
         Containers.dropContents(level, worldPosition, inventory);
     }

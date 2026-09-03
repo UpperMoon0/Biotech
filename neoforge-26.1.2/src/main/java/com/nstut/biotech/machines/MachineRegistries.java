@@ -39,6 +39,7 @@ import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.Set;
 import java.util.function.BiFunction;
 
 public final class MachineRegistries {
@@ -48,30 +49,21 @@ public final class MachineRegistries {
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZER_REGISTER = DeferredRegister.create(Registries.RECIPE_SERIALIZER, Biotech.MOD_ID);
     private static final DeferredRegister<Block> BLOCK_REGISTER = DeferredRegister.create(Registries.BLOCK, Biotech.MOD_ID);
 
-    public static final MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register(
-            "breeding_chamber", BreedingChamberBlockEntity::new, BreedingChamberMenu::new, BreedingChamberRecipe.SERIALIZER);
-    public static final MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register(
-            "terrestrial_habitat", TerrestrialHabitatBlockEntity::new, TerrestrialHabitatMenu::new, TerrestrialHabitatRecipe.SERIALIZER);
-    public static final MachineRegistry<SlaughterhouseBlockEntity, SlaughterhouseMenu, SlaughterhouseRecipe> SLAUGHTERHOUSE = register(
-            "slaughterhouse", SlaughterhouseBlockEntity::new, SlaughterhouseMenu::new, SlaughterhouseRecipe.SERIALIZER);
-    public static final MachineRegistry<GreenhouseBlockEntity, GreenhouseMenu, GreenhouseRecipe> GREENHOUSE = register(
-            "greenhouse", GreenhouseBlockEntity::new, GreenhouseMenu::new, GreenhouseRecipe.SERIALIZER);
-    public static final MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register(
-            "fermenter", FermenterBlockEntity::new, FermenterMenu::new, FermenterRecipe.SERIALIZER);
-    public static final MachineRegistry<MixerBlockEntity, MixerMenu, MixerRecipe> MIXER = register(
-            "mixer", MixerBlockEntity::new, MixerMenu::new, MixerRecipe.SERIALIZER);
+    public static final MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register("breeding_chamber", BreedingChamberBlockEntity::new, BreedingChamberMenu::new, BreedingChamberRecipe.SERIALIZER);
+    public static final MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register("terrestrial_habitat", TerrestrialHabitatBlockEntity::new, TerrestrialHabitatMenu::new, TerrestrialHabitatRecipe.SERIALIZER);
+    public static final MachineRegistry<SlaughterhouseBlockEntity, SlaughterhouseMenu, SlaughterhouseRecipe> SLAUGHTERHOUSE = register("slaughterhouse", SlaughterhouseBlockEntity::new, SlaughterhouseMenu::new, SlaughterhouseRecipe.SERIALIZER);
+    public static final MachineRegistry<GreenhouseBlockEntity, GreenhouseMenu, GreenhouseRecipe> GREENHOUSE = register("greenhouse", GreenhouseBlockEntity::new, GreenhouseMenu::new, GreenhouseRecipe.SERIALIZER);
+    public static final MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register("fermenter", FermenterBlockEntity::new, FermenterMenu::new, FermenterRecipe.SERIALIZER);
+    public static final MachineRegistry<MixerBlockEntity, MixerMenu, MixerRecipe> MIXER = register("mixer", MixerBlockEntity::new, MixerMenu::new, MixerRecipe.SERIALIZER);
 
-    private MachineRegistries() {
-    }
+    private MachineRegistries() {}
 
-    private static <T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>>
-    MachineRegistry<T, U, Y> register(String id,
-                                      BiFunction<BlockPos, BlockState, T> blockEntityFactory,
-                                      IContainerFactory<U> containerFactory,
-                                      RecipeSerializer<Y> recipeSerializer) {
+    private static <T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>> MachineRegistry<T, U, Y> register(
+            String id, BiFunction<BlockPos, BlockState, T> blockEntityFactory,
+            IContainerFactory<U> containerFactory, RecipeSerializer<Y> recipeSerializer) {
         DeferredHolder<Block, Block> block = BLOCK_REGISTER.register(id, () -> new MachineBlock(blockEntityFactory));
         DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> blockEntity = BLOCK_ENTITY_TYPE_REGISTER.register(
-                id, () -> BlockEntityType.Builder.of(blockEntityFactory::apply, block.get()).build(null));
+                id, () -> new BlockEntityType<>(blockEntityFactory::apply, Set.of(block.get())));
         DeferredHolder<Item, Item> blockItem = ITEM_REGISTER.register(id, () -> new BlockItem(block.get(), new Item.Properties()));
         ItemRegistries.ITEM_SET.add(blockItem);
         DeferredHolder<MenuType<?>, MenuType<U>> menu = MENU_REGISTER.register(id, () -> IMenuTypeExtension.create(containerFactory));
@@ -88,11 +80,8 @@ public final class MachineRegistries {
     }
 
     public record MachineRegistry<T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>>(
-            String id,
-            DeferredHolder<Block, Block> block,
+            String id, DeferredHolder<Block, Block> block,
             DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> blockEntity,
-            DeferredHolder<Item, Item> blockItem,
-            DeferredHolder<MenuType<?>, MenuType<U>> menu,
-            DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializer) {
-    }
+            DeferredHolder<Item, Item> blockItem, DeferredHolder<MenuType<?>, MenuType<U>> menu,
+            DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializer) {}
 }
