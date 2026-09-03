@@ -14,8 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CompatibilityTest {
     @Test
     void hardeningReleasePinsValidatedDependencyAndCompatibilityBounds() throws IOException {
+        Path projectDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+        Path repositoryRoot = Files.exists(projectDir.resolve("gradle.properties"))
+                ? projectDir
+                : projectDir.getParent();
+
         Properties properties = new Properties();
-        try (Reader reader = Files.newBufferedReader(Path.of("gradle.properties"))) {
+        try (Reader reader = Files.newBufferedReader(repositoryRoot.resolve("gradle.properties"))) {
             properties.load(reader);
         }
 
@@ -25,7 +30,8 @@ class CompatibilityTest {
         assertEquals("0.8", properties.getProperty("nstut_lib_version"));
         assertEquals("c4eb4005abd2d8fb7d20efab625570896aee7099", properties.getProperty("nstut_lib_ref"));
 
-        String metadataTemplate = Files.readString(Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml"));
+        String metadataTemplate = Files.readString(repositoryRoot.resolve(
+                Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml")));
         assertTrue(metadataTemplate.contains("versionRange = \"[0.8,0.9)\""));
     }
 }
