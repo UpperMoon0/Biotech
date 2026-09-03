@@ -5,6 +5,7 @@ import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -32,25 +33,10 @@ public class IOHatchBlock extends BaseEntityBlock {
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return MapCodec.unit(this);
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> blockStateBuilder) {
-        blockStateBuilder.add(FACING);
-    }
-
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-    }
-
-    @Override
-    protected @NotNull RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
-    }
+    @Override protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(this); }
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING); }
+    @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()); }
+    @Override protected @NotNull RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
     @Nullable
     @Override
@@ -65,13 +51,13 @@ public class IOHatchBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock())) {
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        if (!level.getBlockState(pos).is(state.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ItemHatchBlockEntity itemHatch) itemHatch.dropItem();
             else if (blockEntity instanceof FluidHatchBlockEntity fluidHatch) fluidHatch.dropItem();
         }
-        super.onRemove(state, level, pos, newState, movedByPiston);
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
     }
 
     @Override

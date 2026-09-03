@@ -4,7 +4,9 @@ import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.animal.pig.Pig;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -33,30 +36,31 @@ public class NetTrapBlock extends Block {
 
     @SuppressWarnings("deprecation")
     @Override
-    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level,
+                                        @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return Block.box(0, 0, 0, 16, 1, 16);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
-        if (level.isClientSide) return;
+    protected void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos,
+                                @NotNull Entity entity, @NotNull InsideBlockEffectApplier effects,
+                                boolean canApplyEffects) {
+        if (level.isClientSide()) return;
         ItemStack captured = createCapturedStack(entity);
         if (captured.isEmpty()) return;
 
-        CompoundTag entityData = entity.saveWithoutId(new CompoundTag());
+        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        entity.saveWithoutId(output);
+        CompoundTag entityData = output.buildResult();
         CustomData.update(DataComponents.CUSTOM_DATA, captured, root -> {
             root.put(CAPTURED_ENTITY_TAG, entityData);
-            if (entity instanceof Sheep sheep) {
-                DyeColor color = sheep.getColor();
-                root.putInt("SheepColor", color.getId());
-            }
+            if (entity instanceof Sheep sheep) root.putInt("SheepColor", sheep.getColor().getId());
         });
 
         if (!level.destroyBlock(pos, false)) return;
         ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.15, pos.getZ() + 0.5, captured);
         if (!level.addFreshEntity(drop)) {
-            level.setBlock(pos, state, 3);
+            level.setBlock(pos, state, Block.UPDATE_ALL);
             return;
         }
         entity.remove(Entity.RemovalReason.DISCARDED);
