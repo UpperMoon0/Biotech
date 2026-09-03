@@ -3,6 +3,7 @@ package com.nstut.biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.entites.BlockEntityRegistries;
 import com.nstut.biotech.creative_tabs.CreativeTabRegistries;
+import com.nstut.biotech.gametest.BiotechGameTests;
 import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.PacketRegistries;
@@ -39,10 +40,12 @@ public class Biotech {
         ItemRegistries.ITEMS.register(modEventBus);
         CreativeTabRegistries.CREATIVE_MODE_TABS.register(modEventBus);
         MenuRegistries.MENUS.register(modEventBus);
+        BiotechGameTests.TEST_FUNCTIONS.register(modEventBus);
 
         modEventBus.addListener(Config::onLoad);
         modEventBus.addListener(PacketRegistries::register);
         modEventBus.addListener(BlockEntityRegistries::registerCapabilities);
+        modEventBus.addListener(BiotechGameTests::register);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
