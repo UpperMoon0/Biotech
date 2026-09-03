@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -33,43 +33,19 @@ public class MobItem extends Item {
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-
+        if (level.isClientSide) return InteractionResult.SUCCESS;
         Player player = context.getPlayer();
-        if (player == null) {
-            return InteractionResult.FAIL;
-        }
-
+        if (player == null) return InteractionResult.FAIL;
         ItemStack stack = context.getItemInHand();
         Mob mob = createMob(level);
-        if (mob == null) {
-            return InteractionResult.FAIL;
-        }
+        if (mob == null) return InteractionResult.FAIL;
 
         restoreCapturedState(mob, stack);
-
-        BlockPos clicked = context.getClickedPos();
-        BlockPos spawnPos = clicked.relative(context.getClickedFace());
-        mob.moveTo(
-                spawnPos.getX() + 0.5,
-                spawnPos.getY(),
-                spawnPos.getZ() + 0.5,
-                player.getYRot(),
-                0.0f);
-
-        if (!level.noCollision(mob, mob.getBoundingBox())) {
-            return InteractionResult.FAIL;
-        }
-
-        if (!level.addFreshEntity(mob)) {
-            return InteractionResult.FAIL;
-        }
-
-        if (!player.isCreative()) {
-            stack.shrink(1);
-        }
+        BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
+        mob.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, player.getYRot(), 0.0f);
+        if (!level.noCollision(mob, mob.getBoundingBox())) return InteractionResult.FAIL;
+        if (!level.addFreshEntity(mob)) return InteractionResult.FAIL;
+        if (!player.isCreative()) stack.shrink(1);
         return InteractionResult.CONSUME;
     }
 
@@ -83,19 +59,10 @@ public class MobItem extends Item {
             case 9, 10 -> EntityType.RABBIT;
             default -> null;
         };
-        if (entityType == null) {
-            return null;
-        }
-
+        if (entityType == null) return null;
         Mob mob = entityType.create(level);
-        if (mob == null) {
-            return null;
-        }
-
-        // Backwards compatibility for legacy captured-animal items that predate full NBT capture.
-        if (type == 2 || type == 4 || type == 6 || type == 8 || type == 10) {
-            mob.setBaby(true);
-        }
+        if (mob == null) return null;
+        if (type == 2 || type == 4 || type == 6 || type == 8 || type == 10) mob.setBaby(true);
         return mob;
     }
 
@@ -105,16 +72,11 @@ public class MobItem extends Item {
             mob.load(sanitizeCapturedEntityTag(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
             return;
         }
-
-        if (mob instanceof Sheep sheep && root.contains("SheepColor")) {
-            sheep.setColor(DyeColor.byId(root.getInt("SheepColor")));
-        }
+        if (mob instanceof Sheep sheep && root.contains("SheepColor")) sheep.setColor(DyeColor.byId(root.getInt("SheepColor")));
     }
 
     static CompoundTag sanitizeCapturedEntityTag(CompoundTag source) {
         CompoundTag captured = source.copy();
-        // A released animal is a new world entity. Preserve gameplay state, not the old
-        // world identity/coordinates/velocity that could conflict with another entity.
         captured.remove("UUID");
         captured.remove("Pos");
         captured.remove("Motion");
@@ -126,27 +88,16 @@ public class MobItem extends Item {
     }
 
     @Override
-    public void appendHoverText(@NotNull ItemStack stack,
-                                @NotNull Item.TooltipContext context,
-                                @NotNull List<Component> tooltip,
-                                @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        if (type != 7 && type != 8) {
-            return;
-        }
-
+        if (type != 7 && type != 8) return;
         DyeColor color = DyeColor.WHITE;
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (root.contains("SheepColor")) {
-            color = DyeColor.byId(root.getInt("SheepColor"));
-        } else if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+        if (root.contains("SheepColor")) color = DyeColor.byId(root.getInt("SheepColor"));
+        else if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
             CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG);
-            if (captured.contains("Color")) {
-                color = DyeColor.byId(captured.getByte("Color"));
-            }
+            if (captured.contains("Color")) color = DyeColor.byId(captured.getByte("Color"));
         }
-
-        String name = color.getName().replace('_', ' ');
-        tooltip.add(Component.translatable("tooltip.biotech.sheep_color", name));
+        tooltip.add(Component.translatable("tooltip.biotech.sheep_color", color.getName().replace('_', ' ')));
     }
 }

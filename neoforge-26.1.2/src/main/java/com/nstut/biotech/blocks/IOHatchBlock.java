@@ -17,14 +17,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class IOHatchBlock extends BaseEntityBlock {
     private final int type;
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
     public IOHatchBlock(int type) {
         super(BlockBehaviour.Properties.ofFullCopy(Blocks.GRAY_CONCRETE).strength(2f).sound(SoundType.METAL));
@@ -34,7 +34,6 @@ public class IOHatchBlock extends BaseEntityBlock {
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        // Hatch type is fixed by the owning registry entry, not decoded from data.
         return MapCodec.unit(this);
     }
 
@@ -69,24 +68,16 @@ public class IOHatchBlock extends BaseEntityBlock {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof ItemHatchBlockEntity itemHatch) {
-                itemHatch.dropItem();
-            } else if (blockEntity instanceof FluidHatchBlockEntity fluidHatch) {
-                fluidHatch.dropItem();
-            }
+            if (blockEntity instanceof ItemHatchBlockEntity itemHatch) itemHatch.dropItem();
+            else if (blockEntity instanceof FluidHatchBlockEntity fluidHatch) fluidHatch.dropItem();
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
-        }
-        if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.PASS;
-        }
-
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof CapabilityBlockEntity hatch) {
             serverPlayer.openMenu(hatch, buffer -> buffer.writeBlockPos(pos));
@@ -99,11 +90,8 @@ public class IOHatchBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
         if (!level.isClientSide()) {
-            if (type == 2 || type == 3) {
-                return FluidHatchBlockEntity::serverTick;
-            } else if (type == 4) {
-                return EnergyHatchBlockEntity::serverTick;
-            }
+            if (type == 2 || type == 3) return FluidHatchBlockEntity::serverTick;
+            if (type == 4) return EnergyHatchBlockEntity::serverTick;
         }
         return null;
     }
