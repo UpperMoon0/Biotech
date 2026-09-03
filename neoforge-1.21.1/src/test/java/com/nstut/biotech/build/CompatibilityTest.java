@@ -14,10 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CompatibilityTest {
     @Test
     void hardeningReleasePinsValidatedDependencyAndCompatibilityBounds() throws IOException {
-        Path projectDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        Path repositoryRoot = Files.exists(projectDir.resolve("gradle.properties"))
-                ? projectDir
-                : projectDir.getParent();
+        Path repositoryRoot = findRepositoryRoot(Path.of(System.getProperty("user.dir")).toAbsolutePath());
 
         Properties properties = new Properties();
         try (Reader reader = Files.newBufferedReader(repositoryRoot.resolve("gradle.properties"))) {
@@ -33,5 +30,16 @@ class CompatibilityTest {
         String metadataTemplate = Files.readString(repositoryRoot.resolve(
                 Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml")));
         assertTrue(metadataTemplate.contains("versionRange = \"[0.8,0.9)\""));
+    }
+
+    private static Path findRepositoryRoot(Path start) throws IOException {
+        for (Path current = start; current != null; current = current.getParent()) {
+            if (Files.isRegularFile(current.resolve("gradle.properties"))
+                    && Files.isRegularFile(current.resolve(
+                    Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml")))) {
+                return current;
+            }
+        }
+        throw new IOException("Unable to locate Biotech repository root from " + start);
     }
 }
