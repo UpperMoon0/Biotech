@@ -3,46 +3,72 @@ package com.nstut.biotech.gametest;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.IOHatchBlock;
-import com.nstut.biotech.blocks.entites.hatches.EnergyInputHatchBlockEntity;
-import com.nstut.biotech.blocks.entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
-import com.nstut.biotech.blocks.entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.TestData;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.gametest.GameTestHolder;
-import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
-@GameTestHolder(Biotech.MOD_ID)
-@PrefixGameTestTemplate(false)
 public final class BiotechGameTests {
-    private static final String FORGE_TEMPLATE_NAMESPACE = "forge";
-    private static final String EMPTY_TEMPLATE = "empty3x3x3";
+    public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS =
+            DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
+
+    private static final int MAX_TICKS = 100;
+
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION =
+            register("hatches_enforce_external_io_direction", BiotechGameTests::hatchesEnforceExternalIoDirection);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION =
+            register("invalid_structure_and_reload_preserve_active_machine_transaction",
+                    BiotechGameTests::invalidStructureAndReloadPreserveActiveMachineTransaction);
 
     private BiotechGameTests() {
     }
 
-    @GameTest(templateNamespace = FORGE_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
-    public static void hatchesEnforceExternalIoDirection(GameTestHelper helper) {
+    private static DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> register(
+            String name, Consumer<GameTestHelper> test) {
+        return TEST_FUNCTIONS.register(name, () -> test);
+    }
+
+    public static void register(RegisterGameTestsEvent event) {
+        var environment = event.registerEnvironment(Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "hardening"));
+        Identifier emptyStructure = Identifier.withDefaultNamespace("empty");
+        for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(
+                HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
+                INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION)) {
+            event.registerTest(test.getId(), new FunctionGameTestInstance(
+                    test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
+        }
+    }
+
+    private static void hatchesEnforceExternalIoDirection(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         BlockPos absolutePos = helper.absolutePos(pos);
         Direction externalSide = Direction.NORTH;
@@ -106,16 +132,16 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = FORGE_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
-    public static void invalidStructureAndReloadPreserveActiveMachineTransaction(GameTestHelper helper) {
+    private static void invalidStructureAndReloadPreserveActiveMachineTransaction(GameTestHelper helper) {
         BlockPos relativePos = new BlockPos(1, 1, 1);
         BlockState controllerState = MachineRegistries.FERMENTER.block().get().defaultBlockState();
         helper.setBlock(relativePos, controllerState);
         FermenterBlockEntity machine = (FermenterBlockEntity) helper.getBlockEntity(relativePos);
 
-        ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_active_recipe");
+        Identifier recipeId = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_active_recipe");
+        ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
         int[] outputRolls = {0, 2};
-        setMachineField(machine, "activeRecipeId", recipeId);
+        setMachineField(machine, "activeRecipeKey", recipeKey);
         setMachineField(machine, "activeItemOutputIndexes", outputRolls);
         setMachineField(machine, "energyConsumed", 77);
         setMachineField(machine, "recipeEnergyCost", 200);
@@ -134,7 +160,7 @@ public final class BiotechGameTests {
 
         FermenterBlockEntity reloaded = new FermenterBlockEntity(machine.getBlockPos(), controllerState);
         reloaded.loadWithComponents(saved, registries);
-        helper.assertTrue(recipeId.equals(getMachineField(reloaded, "activeRecipeId")),
+        helper.assertTrue(recipeKey.equals(getMachineField(reloaded, "activeRecipeKey")),
                 "Reload must restore active recipe identity");
         helper.assertTrue((int) getMachineField(reloaded, "energyConsumed") == 77,
                 "Reload must restore exact machine progress");
