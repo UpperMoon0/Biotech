@@ -15,17 +15,17 @@ class CompatibilityTest {
     @Test
     void hardeningReleasePinsValidatedDependencyAndCompatibilityBounds() throws IOException {
         Properties properties = new Properties();
-        try (Reader reader = Files.newBufferedReader(Path.of("gradle.properties"))) {
+        try (Reader reader = Files.newBufferedReader(Path.of("..", "gradle.properties"))) {
             properties.load(reader);
         }
 
-        assertEquals("1.20.1", properties.getProperty("minecraft_version"));
-        assertEquals("47.3.12", properties.getProperty("forge_version"));
-        assertEquals("[47.3.12,48)", properties.getProperty("forge_version_range"));
-        assertEquals("[47,48)", properties.getProperty("loader_version_range"));
-        assertEquals("f64b907bfdf804203304e2ac9cca488203a6b1fd", properties.getProperty("nstut_lib_version"));
+        assertEquals("1.21.1", properties.getProperty("minecraft_version_1_21_1"));
+        assertEquals("[1.21.1,1.22)", properties.getProperty("minecraft_version_range_1_21_1"));
+        assertEquals("21.1.240", properties.getProperty("neoforge_version_1_21_1"));
+        assertEquals("0.8", properties.getProperty("nstut_lib_version"));
+        assertEquals("c4eb4005abd2d8fb7d20efab625570896aee7099", properties.getProperty("nstut_lib_ref"));
 
-        String modsToml = Files.readString(Path.of("src/main/resources/META-INF/mods.toml"));
-        assertTrue(modsToml.contains("versionRange=\"[0.8,0.9)\""));
+        String metadataTemplate = Files.readString(Path.of("src/main/templates/META-INF/neoforge.mods.toml"));
+        assertTrue(metadataTemplate.contains("versionRange = \"[0.8,0.9)\""));
     }
 }
