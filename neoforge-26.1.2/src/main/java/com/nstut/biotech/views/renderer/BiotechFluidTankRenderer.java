@@ -1,7 +1,6 @@
 package com.nstut.biotech.views.renderer;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -18,20 +17,12 @@ public class BiotechFluidTankRenderer extends BaseFluidRenderer {
         this.height = height;
     }
 
-    public void renderFluid(PoseStack poseStack, int x, int y, FluidStack fluidStack) {
-        RenderSystem.enableBlend();
-        poseStack.pushPose();
-        {
-            poseStack.translate(x, y, 0);
-            drawFluid(poseStack, width, height, fluidStack);
-        }
-        poseStack.popPose();
-        RenderSystem.setShaderColor(1, 1, 1, 1);
-        RenderSystem.disableBlend();
+    public void renderFluid(GuiGraphicsExtractor graphics, int x, int y, FluidStack fluidStack) {
+        drawFluid(graphics, x, y, width, height, fluidStack);
     }
 
     @Override
-    protected void drawFluid(PoseStack poseStack, int width, int height, FluidStack fluidStack) {
+    protected void drawFluid(GuiGraphicsExtractor graphics, int x, int y, int width, int height, FluidStack fluidStack) {
         Fluid fluid = fluidStack.getFluid();
         if (fluid.isSame(Fluids.EMPTY)) {
             return;
@@ -39,9 +30,8 @@ public class BiotechFluidTankRenderer extends BaseFluidRenderer {
 
         TextureAtlasSprite fluidStillSprite = getStillFluidSprite(fluidStack);
         int fluidColor = getColorTint(fluidStack);
-
         long amount = fluidStack.getAmount();
-        long scaledAmount = (amount * height) / capacity;
+        long scaledAmount = capacity <= 0 ? 0 : (amount * height) / capacity;
 
         if (amount > 0 && scaledAmount < MIN_FLUID_HEIGHT) {
             scaledAmount = MIN_FLUID_HEIGHT;
@@ -50,6 +40,6 @@ public class BiotechFluidTankRenderer extends BaseFluidRenderer {
             scaledAmount = height;
         }
 
-        drawTiledSprite(poseStack, width, height, fluidColor, scaledAmount, fluidStillSprite);
+        drawTiledSprite(graphics, x, y, width, height, fluidColor, scaledAmount, fluidStillSprite);
     }
 }
