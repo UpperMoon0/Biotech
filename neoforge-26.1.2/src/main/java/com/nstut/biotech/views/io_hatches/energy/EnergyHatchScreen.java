@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class EnergyHatchScreen<T extends EnergyHatchMenu> extends AbstractContainerScreen<T> {
-    private static final ResourceLocation TEXTURE = new ResourceLocation(Biotech.MOD_ID, "textures/gui/energy_hatch.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "textures/gui/energy_hatch.png");
     public EnergyHatchScreen(T menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
     }
@@ -31,7 +31,7 @@ public class EnergyHatchScreen<T extends EnergyHatchMenu> extends AbstractContai
     }
     @Override
     protected void renderBg(@NotNull GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (menu.getEnergy() > 0) {
             graphics.blit(TEXTURE, leftPos + 80, topPos + 69 - menu.getEnergyHeight(), 176, 52 - menu.getEnergyHeight(), 16, menu.getEnergyHeight());

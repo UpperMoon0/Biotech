@@ -1,18 +1,23 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.entites.machines.BreedingChamberBlockEntity;
-import com.nstut.biotech.views.machines.menu.BreedingChamberMenu;
+import com.nstut.biotech.Biotech;
+import com.nstut.biotech.client.ClientPacketHandlers;
 import com.nstut.nstutlib.recipes.ModRecipeData;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
-
-public class BreedingChamberPacket extends MultiblockMachinePacket {
+public final class BreedingChamberPacket extends MultiblockMachinePacket implements CustomPacketPayload {
+    public static final Type<BreedingChamberPacket> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "breeding_chamber"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, BreedingChamberPacket> STREAM_CODEC =
+            StreamCodec.ofMember(BreedingChamberPacket::write, BreedingChamberPacket::new);
 
     private final int fluidCapacity;
     private final FluidStack fluidStored;
@@ -33,66 +38,36 @@ public class BreedingChamberPacket extends MultiblockMachinePacket {
         this.consumedEnergy = consumedEnergy;
         this.recipeEnergyCost = recipeEnergyCost;
         this.fluidCapacity = fluidCapacity;
-        this.fluidStored = fluidStored;
+        this.fluidStored = fluidStored.copy();
         this.isStructureValid = isStructureValid;
         this.pos = pos;
         this.recipe = recipe;
     }
 
-    public BreedingChamberPacket(FriendlyByteBuf buf) {
-        this.energyCapacity = buf.readInt();
-        this.energyStored = buf.readInt();
-        this.energyConsumeRate = buf.readInt();
-        this.consumedEnergy = buf.readInt();
-        this.recipeEnergyCost = buf.readInt();
+    private BreedingChamberPacket(RegistryFriendlyByteBuf buf) {
+        readEnergyPrefix(buf);
         this.fluidCapacity = buf.readInt();
-        this.fluidStored = buf.readFluidStack();
-        this.isStructureValid = buf.readBoolean();
-        this.pos = buf.readBlockPos();
-        boolean hasRecipe = buf.readBoolean();
-        if(hasRecipe) {
-            this.recipe = ModRecipeData.fromBuf(buf);
-        } else {
-            this.recipe = null;
-        }
+        this.fluidStored = FluidStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        readStateSuffix(buf);
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(energyCapacity);
-        buf.writeInt(energyStored);
-        buf.writeInt(energyConsumeRate);
-        buf.writeInt(consumedEnergy);
-        buf.writeInt(recipeEnergyCost);
+    private void write(RegistryFriendlyByteBuf buf) {
+        writeEnergyPrefix(buf);
         buf.writeInt(fluidCapacity);
-        buf.writeFluidStack(fluidStored);
-        buf.writeBoolean(isStructureValid);
-        buf.writeBlockPos(pos);
-        boolean hasRecipe = recipe != null;
-        buf.writeBoolean(hasRecipe);
-        if(hasRecipe) {
-            recipe.writeToBuf(buf);
+        FluidStack.OPTIONAL_STREAM_CODEC.encode(buf, fluidStored);
+        writeStateSuffix(buf);
+    }
+
+    public void handle(IPayloadContext context) {
+        if (FMLEnvironment.dist.isClient()) {
+            context.enqueueWork(() -> ClientPacketHandlers.handleBreedingChamber(
+                    energyCapacity, energyStored, energyConsumeRate, consumedEnergy, recipeEnergyCost,
+                    fluidCapacity, fluidStored, isStructureValid, pos, recipe));
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            if(Minecraft.getInstance().level != null && Minecraft.getInstance().level.getBlockEntity(pos) instanceof BreedingChamberBlockEntity) {
-                LocalPlayer player = Minecraft.getInstance().player;
-                if(player != null
-                        && player.containerMenu instanceof BreedingChamberMenu menu
-                        && menu.getBlockEntity().getBlockPos().equals(pos)) {
-                    menu.setEnergyCapacity(energyCapacity);
-                    menu.setEnergyStored(energyStored);
-                    menu.setEnergyConsumeRate(energyConsumeRate);
-                    menu.setEnergyConsumed(consumedEnergy);
-                    menu.setRecipeEnergyCost(recipeEnergyCost);
-                    menu.setFluidCapacity(fluidCapacity);
-                    menu.setFluidStored(fluidStored);
-                    menu.setStructureValid(isStructureValid);
-                    menu.setRecipe(recipe);
-                }
-            }
-        });
+    @Override
+    public @NotNull Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

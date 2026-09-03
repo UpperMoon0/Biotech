@@ -2,6 +2,7 @@ package com.nstut.biotech.items;
 
 import com.nstut.biotech.blocks.NetTrapBlock;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -13,6 +14,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
@@ -98,13 +100,13 @@ public class MobItem extends Item {
     }
 
     private void restoreCapturedState(Mob mob, ItemStack stack) {
-        CompoundTag root = stack.getTag();
-        if (root != null && root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
             mob.load(sanitizeCapturedEntityTag(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
             return;
         }
 
-        if (mob instanceof Sheep sheep && root != null && root.contains("SheepColor")) {
+        if (mob instanceof Sheep sheep && root.contains("SheepColor")) {
             sheep.setColor(DyeColor.byId(root.getInt("SheepColor")));
         }
     }
@@ -125,24 +127,22 @@ public class MobItem extends Item {
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack,
-                                @Nullable Level level,
+                                @NotNull Item.TooltipContext context,
                                 @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
-        super.appendHoverText(stack, level, tooltip, flag);
+        super.appendHoverText(stack, context, tooltip, flag);
         if (type != 7 && type != 8) {
             return;
         }
 
         DyeColor color = DyeColor.WHITE;
-        CompoundTag root = stack.getTag();
-        if (root != null) {
-            if (root.contains("SheepColor")) {
-                color = DyeColor.byId(root.getInt("SheepColor"));
-            } else if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-                CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG);
-                if (captured.contains("Color")) {
-                    color = DyeColor.byId(captured.getByte("Color"));
-                }
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (root.contains("SheepColor")) {
+            color = DyeColor.byId(root.getInt("SheepColor"));
+        } else if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+            CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG);
+            if (captured.contains("Color")) {
+                color = DyeColor.byId(captured.getByte("Color"));
             }
         }
 

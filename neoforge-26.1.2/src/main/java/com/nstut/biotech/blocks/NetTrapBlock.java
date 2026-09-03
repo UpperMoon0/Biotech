@@ -2,6 +2,7 @@ package com.nstut.biotech.blocks;
 
 import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Chicken;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,7 +28,7 @@ public class NetTrapBlock extends Block {
     public static final String CAPTURED_ENTITY_TAG = "CapturedEntity";
 
     public NetTrapBlock() {
-        super(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).noOcclusion());
+        super(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion());
     }
 
     @SuppressWarnings("deprecation")
@@ -51,13 +53,14 @@ public class NetTrapBlock extends Block {
         }
 
         CompoundTag entityData = entity.saveWithoutId(new CompoundTag());
-        captured.getOrCreateTag().put(CAPTURED_ENTITY_TAG, entityData);
-
-        // Keep the legacy sheep-color key so old UI/tooltips and old saves remain compatible.
-        if (entity instanceof Sheep sheep) {
-            DyeColor color = sheep.getColor();
-            captured.getOrCreateTag().putInt("SheepColor", color.getId());
-        }
+        CustomData.update(DataComponents.CUSTOM_DATA, captured, root -> {
+            root.put(CAPTURED_ENTITY_TAG, entityData);
+            // Keep the legacy sheep-color key so migrated old items/tooltips remain compatible.
+            if (entity instanceof Sheep sheep) {
+                DyeColor color = sheep.getColor();
+                root.putInt("SheepColor", color.getId());
+            }
+        });
 
         // The trap and animal are only consumed once the captured-item entity is accepted.
         if (!level.destroyBlock(pos, false)) {

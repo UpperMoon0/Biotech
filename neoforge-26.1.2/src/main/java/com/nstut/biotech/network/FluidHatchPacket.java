@@ -1,18 +1,23 @@
 package com.nstut.biotech.network;
 
-import com.nstut.biotech.blocks.entites.hatches.FluidHatchBlockEntity;
-import com.nstut.biotech.views.io_hatches.fluid.FluidHatchMenu;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
+import com.nstut.biotech.Biotech;
+import com.nstut.biotech.client.ClientPacketHandlers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
+public final class FluidHatchPacket implements CustomPacketPayload {
+    public static final Type<FluidHatchPacket> TYPE = new Type<>(
+            ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "fluid_hatch"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, FluidHatchPacket> STREAM_CODEC =
+            StreamCodec.ofMember(FluidHatchPacket::write, FluidHatchPacket::new);
 
-public class FluidHatchPacket {
     private final FluidStack fluidStack;
     private final BlockPos pos;
 
@@ -21,34 +26,24 @@ public class FluidHatchPacket {
         this.pos = pos;
     }
 
-    public FluidHatchPacket(FriendlyByteBuf buf) {
-        this.fluidStack = buf.readFluidStack();
+    private FluidHatchPacket(RegistryFriendlyByteBuf buf) {
+        this.fluidStack = FluidStack.OPTIONAL_STREAM_CODEC.decode(buf);
         this.pos = buf.readBlockPos();
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
-        buf.writeFluidStack(fluidStack);
+    private void write(RegistryFriendlyByteBuf buf) {
+        FluidStack.OPTIONAL_STREAM_CODEC.encode(buf, fluidStack);
         buf.writeBlockPos(pos);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> supplier) {
-        NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> {
-            Minecraft minecraft = Minecraft.getInstance();
-            ClientLevel level = minecraft.level;
-            LocalPlayer player = minecraft.player;
-            if (level == null || player == null) {
-                return;
-            }
-            if (level.getBlockEntity(pos) instanceof FluidHatchBlockEntity blockEntity) {
-                blockEntity.setFluid(fluidStack);
-                if (player.containerMenu instanceof FluidHatchMenu menu
-                        && menu.getFluidHatchBlockEntity().getBlockPos().equals(pos)) {
-                    menu.setFluidStack(fluidStack.copy());
-                }
-            }
-        });
-        context.setPacketHandled(true);
-        return true;
+    public void handle(IPayloadContext context) {
+        if (FMLEnvironment.dist.isClient()) {
+            context.enqueueWork(() -> ClientPacketHandlers.handleFluidHatch(fluidStack, pos));
+        }
+    }
+
+    @Override
+    public @NotNull Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }
