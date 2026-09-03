@@ -57,7 +57,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
 
     @Override
     protected void renderBg(@NotNull GuiGraphics g,float partialTick,int mouseX,int mouseY) {
-        renderBackground(g, mouseX, mouseY, partialTick); g.blit(TEXTURE,leftPos,topPos,0,0,imageWidth,imageHeight); if(!menu.getStructureValid()) return;
+        g.blit(TEXTURE,leftPos,topPos,0,0,imageWidth,imageHeight); if(!menu.getStructureValid()) return;
         if(menu.getEnergyStored()>0){int h=getEnergyHeight();g.blit(TEXTURE,leftPos+4,topPos+119-h,212,100-h,9,h);} if(!menu.getFluidStored().isEmpty()) new BiotechFluidTankRenderer(menu.getFluidCapacity(),12,75).renderFluid(g.pose(),leftPos+196,topPos+28,menu.getFluidStored()); if(!menu.getIsOperating()) return;
         g.blit(TEXTURE,leftPos+86,topPos+26,212,0,getProgressWidth()+1,PROGRESS_HEIGHT); new BiotechItemRenderer(48,48).render(g.pose(),leftPos+46,topPos+35,menu.getRecipe().getIngredientItems()[0].getItemStack()); OutputItem[] outputs=menu.getRecipe().getOutputItems(); for(int i=0;i<outputs.length;i++) new BiotechItemRenderer(16,16).render(g.pose(),leftPos+123,topPos+24+18*i,outputs[i].getItemStack()); new BiotechFluidRenderer().renderFluid(g.pose(),leftPos+31,topPos+98,20,20,menu.getRecipe().getFluidIngredients()[0]);
     }

@@ -63,7 +63,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
 
     @Override
     protected void renderBg(@NotNull GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        renderBackground(g, mouseX, mouseY, partialTick); g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        g.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (!menu.getStructureValid()) return;
         if (menu.getEnergyStored() > 0) { int h = getEnergyHeight(); g.blit(TEXTURE, leftPos + 4, topPos + 119 - h, 212, 95 - h, 9, h); }
         if (!menu.getFluidStored().isEmpty()) new BiotechFluidTankRenderer(menu.getFluidCapacity(), 12, 75).renderFluid(g.pose(), leftPos + 196, topPos + 28, menu.getFluidStored());

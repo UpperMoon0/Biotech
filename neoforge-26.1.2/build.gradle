@@ -19,6 +19,7 @@ neoForge {
     }
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
 }
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     mavenLocal()
     maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
