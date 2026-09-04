@@ -40,6 +40,7 @@ sourceSets.main.resources {
     srcDir generatedGameTestResources
 }
 tasks.named('processResources').configure { dependsOn generateGameTestStructure }
+tasks.named('sourcesJar').configure { dependsOn generateGameTestStructure }
 
 repositories {
     mavenLocal()
