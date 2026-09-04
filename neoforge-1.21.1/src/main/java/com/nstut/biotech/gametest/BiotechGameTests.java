@@ -3,22 +3,21 @@ package com.nstut.biotech.gametest;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.IOHatchBlock;
-import com.nstut.biotech.blocks.entites.hatches.EnergyInputHatchBlockEntity;
-import com.nstut.biotech.blocks.entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
-import com.nstut.biotech.blocks.entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -35,13 +34,13 @@ import java.util.Arrays;
 @GameTestHolder(Biotech.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class BiotechGameTests {
-    private static final String FORGE_TEMPLATE_NAMESPACE = "forge";
-    private static final String EMPTY_TEMPLATE = "empty3x3x3";
+    private static final String VANILLA_TEMPLATE_NAMESPACE = "minecraft";
+    private static final String EMPTY_TEMPLATE = "empty";
 
     private BiotechGameTests() {
     }
 
-    @GameTest(templateNamespace = FORGE_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = VANILLA_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void hatchesEnforceExternalIoDirection(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         BlockPos absolutePos = helper.absolutePos(pos);
@@ -106,7 +105,7 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = FORGE_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = VANILLA_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void invalidStructureAndReloadPreserveActiveMachineTransaction(GameTestHelper helper) {
         BlockPos relativePos = new BlockPos(1, 1, 1);
         BlockState controllerState = MachineRegistries.FERMENTER.block().get().defaultBlockState();
@@ -144,6 +143,23 @@ public final class BiotechGameTests {
                 "Reload must reuse the same probabilistic output decisions");
 
         helper.succeed();
+    }
+
+    @GameTest(templateNamespace = VANILLA_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    public static void recipeTypesAreRegistryBacked(GameTestHelper helper) {
+        assertRecipeTypeRegistered(helper, MachineRegistries.BREEDING_CHAMBER.recipeType().get(), "breeding_chamber");
+        assertRecipeTypeRegistered(helper, MachineRegistries.TERRESTRIAL_HABITAT.recipeType().get(), "terrestrial_habitat");
+        assertRecipeTypeRegistered(helper, MachineRegistries.SLAUGHTERHOUSE.recipeType().get(), "slaughterhouse");
+        assertRecipeTypeRegistered(helper, MachineRegistries.GREENHOUSE.recipeType().get(), "greenhouse");
+        assertRecipeTypeRegistered(helper, MachineRegistries.FERMENTER.recipeType().get(), "fermenter");
+        assertRecipeTypeRegistered(helper, MachineRegistries.MIXER.recipeType().get(), "mixer");
+        helper.succeed();
+    }
+
+    private static void assertRecipeTypeRegistered(GameTestHelper helper, RecipeType<?> type, String path) {
+        ResourceLocation actualId = BuiltInRegistries.RECIPE_TYPE.getKey(type);
+        ResourceLocation expectedId = ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, path);
+        helper.assertTrue(expectedId.equals(actualId), "Recipe type must be registered as " + expectedId + ", got " + actualId);
     }
 
     private static void setMachineField(MachineBlockEntity machine, String name, Object value) {
