@@ -35,6 +35,6 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "nstutlib"
 type = "required"
-versionRange = "[0.8,0.9)"
+versionRange = "[0.8.1,0.9)"
 ordering = "AFTER"
 side = "BOTH"
