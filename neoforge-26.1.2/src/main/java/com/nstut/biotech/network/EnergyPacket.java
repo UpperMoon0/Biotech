@@ -19,6 +19,6 @@ public final class EnergyPacket implements CustomPacketPayload {
     public EnergyPacket(int energy, BlockPos pos) { this.energy = energy; this.pos = pos; }
     private EnergyPacket(RegistryFriendlyByteBuf buf) { this.energy = buf.readInt(); this.pos = buf.readBlockPos(); }
     private void write(RegistryFriendlyByteBuf buf) { buf.writeInt(energy); buf.writeBlockPos(pos); }
-    public void handle(IPayloadContext context) { if (FMLEnvironment.dist.isClient()) context.enqueueWork(() -> ClientPacketHandlers.handleEnergy(energy, pos)); }
+    public void handle(IPayloadContext context) { if (FMLEnvironment.getDist().isClient()) context.enqueueWork(() -> ClientPacketHandlers.handleEnergy(energy, pos)); }
     @Override public @NotNull Type<? extends CustomPacketPayload> type() { return TYPE; }
 }

@@ -18,6 +18,6 @@ public final class MixerPacket extends MultiblockMachinePacket implements Custom
     public MixerPacket(int energyCapacity,int energyStored,int energyConsumeRate,int consumedEnergy,int recipeEnergyCost,boolean isStructureValid,BlockPos pos,ModRecipeData recipe){this.energyCapacity=energyCapacity;this.energyStored=energyStored;this.energyConsumeRate=energyConsumeRate;this.consumedEnergy=consumedEnergy;this.recipeEnergyCost=recipeEnergyCost;this.isStructureValid=isStructureValid;this.pos=pos;this.recipe=recipe;}
     private MixerPacket(RegistryFriendlyByteBuf buf){readEnergyPrefix(buf);readStateSuffix(buf);}
     private void write(RegistryFriendlyByteBuf buf){writeEnergyPrefix(buf);writeStateSuffix(buf);}
-    public void handle(IPayloadContext context){if(FMLEnvironment.dist.isClient())context.enqueueWork(() -> ClientPacketHandlers.handleMixer(energyCapacity,energyStored,energyConsumeRate,consumedEnergy,recipeEnergyCost,isStructureValid,pos,recipe));}
+    public void handle(IPayloadContext context){if(FMLEnvironment.getDist().isClient())context.enqueueWork(() -> ClientPacketHandlers.handleMixer(energyCapacity,energyStored,energyConsumeRate,consumedEnergy,recipeEnergyCost,isStructureValid,pos,recipe));}
     @Override public @NotNull Type<? extends CustomPacketPayload> type(){return TYPE;}
 }

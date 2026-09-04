@@ -74,24 +74,12 @@ public class MobItem extends Item {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
             CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
-            mob.load(TagValueInput.create(ProblemReporter.DISCARDING, mob.registryAccess(), sanitizeCapturedEntityTag(captured)));
+            mob.load(TagValueInput.create(ProblemReporter.DISCARDING, mob.registryAccess(), CapturedEntityState.sanitize(captured)));
             return;
         }
         if (mob instanceof Sheep sheep) {
             root.getInt("SheepColor").ifPresent(id -> sheep.setColor(DyeColor.byId(id)));
         }
-    }
-
-    static CompoundTag sanitizeCapturedEntityTag(CompoundTag source) {
-        CompoundTag captured = source.copy();
-        captured.remove("UUID");
-        captured.remove("Pos");
-        captured.remove("Motion");
-        captured.remove("Rotation");
-        captured.remove("FallDistance");
-        captured.remove("PortalCooldown");
-        captured.remove("Leash");
-        return captured;
     }
 
     @Override

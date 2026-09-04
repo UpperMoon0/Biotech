@@ -33,7 +33,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     protected void extractLabels(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
-            String raw = recipe.getIngredientItems()[0].getItemStack().getDisplayName().getString();
+            String raw = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.centeredText(font, raw.substring(1, raw.length() - 1), 106, 25, 0xFFFFFFFF);
             OutputItem[] outputs = recipe.getOutputItems();
             for (int i = 0; i < outputs.length; i++) {
@@ -52,7 +52,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         int rate = menu.getIsOperating() ? menu.getEnergyConsumeRate() : 0;
         if (menu.getIsOperating() && isHovering(55, 55, 12, 12, mouseX, mouseY)) {
             var fluid = menu.getRecipe().getFluidIngredients()[0];
-            g.setTooltipForNextFrame(font, List.of(Component.literal(fluid.getDisplayName().getString()), Component.literal(fluid.getAmount() + " mB")), Optional.empty(), mouseX, mouseY);
+            g.setTooltipForNextFrame(font, List.of(Component.literal(fluid.getHoverName().getString()), Component.literal(fluid.getAmount() + " mB")), Optional.empty(), mouseX, mouseY);
         }
         if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
@@ -62,7 +62,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
                 FluidStack stored = menu.getFluidStored();
-                String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString();
+                String name = stored.isEmpty() ? "Empty" : stored.getHoverName().getString();
                 g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX, mouseY);
             } else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
         }
@@ -79,7 +79,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     }
 
     @Override
-    protected void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(g, mouseX, mouseY, partialTick);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         if (!menu.getStructureValid()) return;

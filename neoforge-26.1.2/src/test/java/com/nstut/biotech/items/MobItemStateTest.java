@@ -1,10 +1,7 @@
 package com.nstut.biotech.items;
 
 import com.nstut.biotech.blocks.NetTrapBlock;
-import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.Bootstrap;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,12 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MobItemStateTest {
-    @BeforeAll
-    static void bootstrapMinecraftRegistries() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
-    }
-
     @Test
     void capturedEntityStateKeepsGameplayDataButDropsWorldIdentity() {
         CompoundTag captured = new CompoundTag();
@@ -31,10 +22,10 @@ class MobItemStateTest {
         captured.putInt("PortalCooldown", 1);
         captured.putInt("Leash", 1);
 
-        CompoundTag sanitized = MobItem.sanitizeCapturedEntityTag(captured);
+        CompoundTag sanitized = CapturedEntityState.sanitize(captured);
 
-        assertEquals("test-animal", sanitized.getString("CustomName"));
-        assertEquals(-1200, sanitized.getInt("Age"));
+        assertEquals("test-animal", sanitized.getString("CustomName").orElseThrow());
+        assertEquals(-1200, sanitized.getInt("Age").orElseThrow());
         assertFalse(sanitized.contains("UUID"));
         assertFalse(sanitized.contains("Pos"));
         assertFalse(sanitized.contains("Motion"));

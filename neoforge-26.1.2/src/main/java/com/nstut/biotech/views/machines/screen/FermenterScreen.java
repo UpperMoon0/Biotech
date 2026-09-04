@@ -34,7 +34,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
     protected void extractLabels(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
-            String raw = recipe.getIngredientItems()[0].getItemStack().getDisplayName().getString();
+            String raw = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.centeredText(font, raw.substring(1, raw.length() - 1), 106, 102, 0xFFFFFFFF);
         }
         String name = Component.translatable("menu.title.biotech." + MachineRegistries.FERMENTER.id()).getString();
@@ -48,7 +48,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
             if (isHovering(31, 131, 20, 20, mouseX, mouseY)) {
-                String fluidName = recipe.getFluidIngredients()[0].getDisplayName().getString();
+                String fluidName = recipe.getFluidIngredients()[0].getHoverName().getString();
                 g.setTooltipForNextFrame(font, List.of(Component.literal(fluidName), Component.literal(recipe.getFluidIngredients()[0].getAmount() + " mB")), Optional.empty(), mouseX, mouseY);
             }
         }
@@ -62,7 +62,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
                 FluidStack stored = menu.getFluidStored();
-                String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString();
+                String name = stored.isEmpty() ? "Empty" : stored.getHoverName().getString();
                 g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX, mouseY);
             } else {
                 g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
@@ -89,7 +89,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
     }
 
     @Override
-    protected void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(g, mouseX, mouseY, partialTick);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         if (!menu.getStructureValid()) return;

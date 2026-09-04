@@ -32,7 +32,7 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
     protected void extractLabels(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
-            String animal = recipe.getIngredientItems()[0].getItemStack().getDisplayName().getString();
+            String animal = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.centeredText(font, animal.substring(1, animal.length() - 1), 106, 76, 0xFFFFFFFF);
             g.centeredText(font, String.valueOf(recipe.getIngredientItems()[1].getItemStack().getCount()), 95, 104, 0xFFFFFFFF);
             g.centeredText(font, recipe.getFluidIngredients()[0].getAmount() + " mB", 95, 137, 0xFFFFFFFF);
@@ -48,10 +48,10 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
             if (isHovering(31, 98, 20, 20, mouseX, mouseY)) {
-                String food = recipe.getIngredientItems()[1].getItemStack().getDisplayName().getString();
+                String food = recipe.getIngredientItems()[1].getItemStack().getHoverName().getString();
                 g.setTooltipForNextFrame(Component.literal(food.substring(1, food.length() - 1)), mouseX, mouseY);
             }
-            if (isHovering(31, 131, 20, 20, mouseX, mouseY)) g.setTooltipForNextFrame(Component.literal(recipe.getFluidIngredients()[0].getDisplayName().getString()), mouseX, mouseY);
+            if (isHovering(31, 131, 20, 20, mouseX, mouseY)) g.setTooltipForNextFrame(Component.literal(recipe.getFluidIngredients()[0].getHoverName().getString()), mouseX, mouseY);
         }
         if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
             if (menu.getStructureValid()) g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(rate + " FE / t")), Optional.empty(), mouseX, mouseY);
@@ -60,7 +60,7 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
                 FluidStack stored = menu.getFluidStored();
-                String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString();
+                String name = stored.isEmpty() ? "Empty" : stored.getHoverName().getString();
                 g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX, mouseY);
             } else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
         }
@@ -77,7 +77,7 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
     }
 
     @Override
-    protected void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(g, mouseX, mouseY, partialTick);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         if (!menu.getStructureValid()) return;

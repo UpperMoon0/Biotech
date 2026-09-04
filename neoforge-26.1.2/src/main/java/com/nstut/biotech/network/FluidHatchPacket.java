@@ -20,6 +20,6 @@ public final class FluidHatchPacket implements CustomPacketPayload {
     public FluidHatchPacket(FluidStack fluidStack, BlockPos pos) { this.fluidStack = fluidStack.copy(); this.pos = pos; }
     private FluidHatchPacket(RegistryFriendlyByteBuf buf) { this.fluidStack = FluidStack.OPTIONAL_STREAM_CODEC.decode(buf); this.pos = buf.readBlockPos(); }
     private void write(RegistryFriendlyByteBuf buf) { FluidStack.OPTIONAL_STREAM_CODEC.encode(buf, fluidStack); buf.writeBlockPos(pos); }
-    public void handle(IPayloadContext context) { if (FMLEnvironment.dist.isClient()) context.enqueueWork(() -> ClientPacketHandlers.handleFluidHatch(fluidStack, pos)); }
+    public void handle(IPayloadContext context) { if (FMLEnvironment.getDist().isClient()) context.enqueueWork(() -> ClientPacketHandlers.handleFluidHatch(fluidStack, pos)); }
     @Override public @NotNull Type<? extends CustomPacketPayload> type() { return TYPE; }
 }

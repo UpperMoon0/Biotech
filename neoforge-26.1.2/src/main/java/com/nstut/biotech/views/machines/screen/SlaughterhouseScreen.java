@@ -33,7 +33,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
     protected void extractLabels(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
-            String raw = recipe.getIngredientItems()[0].getItemStack().getDisplayName().getString();
+            String raw = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.centeredText(font, raw.substring(1, raw.length() - 1), 70, 76, 0xFFFFFFFF);
             g.centeredText(font, recipe.getFluidIngredients()[0].getAmount() + " mB", 95, 104, 0xFFFFFFFF);
             OutputItem[] outputs = recipe.getOutputItems();
@@ -51,7 +51,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
         super.extractTooltip(g, mouseX, mouseY);
         int rate = menu.getIsOperating() ? menu.getEnergyConsumeRate() : 0;
         if (menu.getIsOperating() && isHovering(31, 100, 20, 20, mouseX, mouseY)) {
-            g.setTooltipForNextFrame(font, List.of(Component.literal(menu.getRecipe().getFluidIngredients()[0].getDisplayName().getString())), Optional.empty(), mouseX, mouseY);
+            g.setTooltipForNextFrame(font, List.of(Component.literal(menu.getRecipe().getFluidIngredients()[0].getHoverName().getString())), Optional.empty(), mouseX, mouseY);
         }
         if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
             if (menu.getStructureValid()) g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(rate + " FE / t")), Optional.empty(), mouseX, mouseY);
@@ -60,7 +60,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
                 FluidStack stored = menu.getFluidStored();
-                String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString();
+                String name = stored.isEmpty() ? "Empty" : stored.getHoverName().getString();
                 g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX, mouseY);
             } else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
         }
@@ -77,7 +77,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
     }
 
     @Override
-    protected void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(g, mouseX, mouseY, partialTick);
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         if (!menu.getStructureValid()) return;

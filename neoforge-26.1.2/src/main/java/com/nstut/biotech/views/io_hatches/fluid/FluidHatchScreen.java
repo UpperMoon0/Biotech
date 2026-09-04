@@ -26,7 +26,7 @@ public abstract class FluidHatchScreen<T extends FluidHatchMenu> extends Abstrac
         super.extractTooltip(graphics, mouseX, mouseY);
         if (isHovering(62, 17, 16, 52, mouseX, mouseY)) {
             FluidStack storedFluid = menu.getFluidStack();
-            String fluidName = storedFluid.isEmpty() ? "Empty" : storedFluid.getDisplayName().getString();
+            String fluidName = storedFluid.isEmpty() ? "Empty" : storedFluid.getHoverName().getString();
             int fluidCapacity = menu.getFluidHatchBlockEntity().TANK_CAPACITY;
             graphics.setTooltipForNextFrame(font,
                     List.of(Component.literal("Stored Fluid:"), Component.literal(fluidName),
@@ -36,7 +36,7 @@ public abstract class FluidHatchScreen<T extends FluidHatchMenu> extends Abstrac
     }
 
     @Override
-    protected void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
         graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         renderer.renderFluid(graphics, leftPos + 62, topPos + 17, menu.getFluidStack());
