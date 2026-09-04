@@ -17,11 +17,13 @@
 - Restrict network protocol compatibility and scope machine/hatch packets to tracking chunks.
 - Send hatch state only when changed and machine UI state at a reduced cadence.
 - Make fluid packet handling safe during client world transitions.
+- Keep all six machine recipe types and serializers registry-backed before datapack recipe synchronization, with regression coverage for their `biotech:*` registry IDs.
 - Remove client screen classes and reflection from common machine registration.
 - Preserve captured animal gameplay NBT and only consume captured-mob items after a valid successful spawn.
 - Make net-trap capture compile correctly on 1.20.1 and restore the trap if the captured-item entity cannot be spawned.
 - Validate spawn collision for released animals and retain compatibility with legacy captured-animal items.
 - Align Forge/build metadata on NsTut Lib 0.8.1 and require 0.8.1+ for NeoForge 26.1.2 so the stale unkeyed MachineBlock constructor cannot load.
 - Make CI build against the exact coordinated NsTut Lib source revision through local Maven instead of depending on JitPack availability.
-- Add Forge GameTests for sided hatch IO and active transaction persistence through structure invalidation/reload, alongside unit/build regression coverage.
+- Fix NeoForge 1.21.1 GameTests to use the available vanilla empty test structure instead of the removed `forge:empty3x3x3` template.
+- Add GameTests for sided hatch IO, active transaction persistence through structure invalidation/reload, and registry-backed machine recipe types alongside unit/build regression coverage.
 - Remove obsolete development dependencies, local Maven/runtime artifacts, and old ForgeGradle/Mixin configuration.
