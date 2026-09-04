@@ -22,6 +22,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -45,6 +46,7 @@ public final class BiotechGameTests {
 
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION = register("hatches_enforce_external_io_direction", BiotechGameTests::hatchesEnforceExternalIoDirection);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION = register("invalid_structure_and_reload_preserve_active_machine_transaction", BiotechGameTests::invalidStructureAndReloadPreserveActiveMachineTransaction);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RECIPE_TYPES_ARE_REGISTRY_BACKED = register("recipe_types_are_registry_backed", BiotechGameTests::recipeTypesAreRegistryBacked);
 
     private BiotechGameTests() {}
 
@@ -55,7 +57,10 @@ public final class BiotechGameTests {
     public static void register(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "hardening"));
         Identifier emptyStructure = Identifier.withDefaultNamespace("empty");
-        for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION, INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION)) {
+        for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(
+                HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
+                INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION,
+                RECIPE_TYPES_ARE_REGISTRY_BACKED)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
         }
     }
@@ -141,6 +146,22 @@ public final class BiotechGameTests {
         helper.assertTrue((boolean) getMachineField(reloaded, "ingredientsConsumed"), "Reload must preserve one-time input consumption state");
         helper.assertTrue(Arrays.equals((int[]) getMachineField(reloaded, "activeItemOutputIndexes"), outputRolls), "Reload must reuse the same probabilistic output decisions");
         helper.succeed();
+    }
+
+    private static void recipeTypesAreRegistryBacked(GameTestHelper helper) {
+        assertRecipeTypeRegistered(helper, MachineRegistries.BREEDING_CHAMBER.recipeType().get(), "breeding_chamber");
+        assertRecipeTypeRegistered(helper, MachineRegistries.TERRESTRIAL_HABITAT.recipeType().get(), "terrestrial_habitat");
+        assertRecipeTypeRegistered(helper, MachineRegistries.SLAUGHTERHOUSE.recipeType().get(), "slaughterhouse");
+        assertRecipeTypeRegistered(helper, MachineRegistries.GREENHOUSE.recipeType().get(), "greenhouse");
+        assertRecipeTypeRegistered(helper, MachineRegistries.FERMENTER.recipeType().get(), "fermenter");
+        assertRecipeTypeRegistered(helper, MachineRegistries.MIXER.recipeType().get(), "mixer");
+        helper.succeed();
+    }
+
+    private static void assertRecipeTypeRegistered(GameTestHelper helper, RecipeType<?> type, String path) {
+        Identifier actualId = BuiltInRegistries.RECIPE_TYPE.getKey(type);
+        Identifier expectedId = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, path);
+        helper.assertTrue(expectedId.equals(actualId), "Recipe type must be registered as " + expectedId + ", got " + actualId);
     }
 
     private static void setMachineField(MachineBlockEntity machine, String name, Object value) {
