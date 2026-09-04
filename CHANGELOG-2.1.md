@@ -24,6 +24,6 @@
 - Validate spawn collision for released animals and retain compatibility with legacy captured-animal items.
 - Align Forge/build metadata on NsTut Lib 0.8.1 and require 0.8.1+ for NeoForge 26.1.2 so the stale unkeyed MachineBlock constructor cannot load.
 - Make CI build against the exact coordinated NsTut Lib source revision through local Maven instead of depending on JitPack availability.
-- Fix NeoForge 1.21.1 GameTests to use the available vanilla empty test structure instead of the removed `forge:empty3x3x3` template.
+- Fix NeoForge 1.21.1 GameTests by generating a deterministic `biotech:empty` structure at build time instead of relying on loader-owned test templates that are not shipped by that target.
 - Add GameTests for sided hatch IO, active transaction persistence through structure invalidation/reload, and registry-backed machine recipe types alongside unit/build regression coverage.
 - Remove obsolete development dependencies, local Maven/runtime artifacts, and old ForgeGradle/Mixin configuration.
