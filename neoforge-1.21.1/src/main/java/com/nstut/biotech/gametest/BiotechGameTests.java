@@ -34,13 +34,13 @@ import java.util.Arrays;
 @GameTestHolder(Biotech.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class BiotechGameTests {
-    private static final String VANILLA_TEMPLATE_NAMESPACE = "minecraft";
+    private static final String TEST_TEMPLATE_NAMESPACE = Biotech.MOD_ID;
     private static final String EMPTY_TEMPLATE = "empty";
 
     private BiotechGameTests() {
     }
 
-    @GameTest(templateNamespace = VANILLA_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void hatchesEnforceExternalIoDirection(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         BlockPos absolutePos = helper.absolutePos(pos);
@@ -105,7 +105,7 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = VANILLA_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void invalidStructureAndReloadPreserveActiveMachineTransaction(GameTestHelper helper) {
         BlockPos relativePos = new BlockPos(1, 1, 1);
         BlockState controllerState = MachineRegistries.FERMENTER.block().get().defaultBlockState();
@@ -145,7 +145,7 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = VANILLA_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void recipeTypesAreRegistryBacked(GameTestHelper helper) {
         assertRecipeTypeRegistered(helper, MachineRegistries.BREEDING_CHAMBER.recipeType().get(), "breeding_chamber");
         assertRecipeTypeRegistered(helper, MachineRegistries.TERRESTRIAL_HABITAT.recipeType().get(), "terrestrial_habitat");
