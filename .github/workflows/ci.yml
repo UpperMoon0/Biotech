@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: 87b129d3d7ea13ae8572917cb9dba74157e442aa
+          ref: 87a241ba9979f45dba755d4ebfa8632eccf9f551
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
