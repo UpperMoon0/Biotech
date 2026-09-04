@@ -2,7 +2,7 @@
 
 ## Fixed
 - Migrate all machine processing to NsTut Lib's persisted transactional recipe engine.
-- Prevent duplicate/chance-overrolled/overstacked outputs and NBT-insensitive recipe matching through NsTut Lib 0.8.
+- Prevent duplicate/chance-overrolled/overstacked outputs and NBT-insensitive recipe matching through NsTut Lib 0.8.1.
 - Persist probabilistic item-output decisions with the active recipe so reloads and safe rollback retries cannot reroll results.
 - Roll back partial machine item/fluid input and output commits when a capability diverges during execution.
 - Preserve safely rolled-back active recipes and retry capability divergence with bounded backoff instead of failing the server tick.
@@ -21,7 +21,7 @@
 - Preserve captured animal gameplay NBT and only consume captured-mob items after a valid successful spawn.
 - Make net-trap capture compile correctly on 1.20.1 and restore the trap if the captured-item entity cannot be spawned.
 - Validate spawn collision for released animals and retain compatibility with legacy captured-animal items.
-- Align Forge/build metadata and require NsTut Lib 0.8.x.
+- Align Forge/build metadata on NsTut Lib 0.8.1 and require 0.8.1+ for NeoForge 26.1.2 so the stale unkeyed MachineBlock constructor cannot load.
 - Make CI build against the exact coordinated NsTut Lib source revision through local Maven instead of depending on JitPack availability.
 - Add Forge GameTests for sided hatch IO and active transaction persistence through structure invalidation/reload, alongside unit/build regression coverage.
 - Remove obsolete development dependencies, local Maven/runtime artifacts, and old ForgeGradle/Mixin configuration.
