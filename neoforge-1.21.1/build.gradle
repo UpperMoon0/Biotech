@@ -28,11 +28,21 @@ repositories {
     maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
     maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
 }
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
 def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
         .orElse("com.nstut.nstutlib:nstutlib-neoforge-1.21.1:${rootProject.nstut_lib_version}").get()
 dependencies {
     implementation nstutLibDependency
     runtimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_1_21_1}"
+
+    // Dev-only test utilities: generators/energy plus energy, item, and fluid transport.
+    localRuntime "curse.maven:cloth-config-348521:${rootProject.dev_cloth_config_file_1_21_1}"
+    localRuntime "curse.maven:guideme-1173950:${rootProject.dev_guideme_file_1_21_1}"
+    localRuntime "curse.maven:powah-rearchitected-633483:${rootProject.dev_powah_file_1_21_1}"
+    localRuntime "curse.maven:pipez-443900:${rootProject.dev_pipez_file_1_21_1}"
+
     compileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-common-api:${rootProject.jei_version_1_21_1}"
     compileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-neoforge-api:${rootProject.jei_version_1_21_1}"
     runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-neoforge:${rootProject.jei_version_1_21_1}"
