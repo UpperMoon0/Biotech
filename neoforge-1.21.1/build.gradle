@@ -28,7 +28,7 @@ def generateGameTestStructure = tasks.register('generateGameTestStructure') {
     outputs.dir(generatedGameTestResources)
     doLast {
         def structureFile = generatedGameTestResources.get()
-                .file("data/${rootProject.mod_id}/structures/empty.nbt").asFile
+                .file("data/${rootProject.mod_id}/structure/empty.nbt").asFile
         structureFile.parentFile.mkdirs()
         structureFile.bytes = java.util.Base64.getDecoder().decode(
                 'H4sIAAAAAAAC/03KsQ5AMBSF4SMVlIj3MZuN9qu5khu00t7J09NYDGf4cv4WMOgmUlo4JgkeGJJFmeRmg3z+ZlFfdLAqty+LBuVMJ6M/xbOLtOlIEmFRrUdwe8rRq4a9igp/xgNEun/FcgAAAA==')
