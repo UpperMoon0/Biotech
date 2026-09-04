@@ -20,11 +20,8 @@ import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-@OnlyIn(Dist.CLIENT)
 public final class ClientPacketHandlers {
     private ClientPacketHandlers() {
     }
