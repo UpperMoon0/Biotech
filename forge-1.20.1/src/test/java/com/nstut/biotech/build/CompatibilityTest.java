@@ -27,6 +27,6 @@ class CompatibilityTest {
         assertEquals("e8386ae2528289888ced1b46cd8728f102552d43", properties.getProperty("nstut_lib_ref"));
 
         String modsToml = Files.readString(Path.of("src", "main", "resources", "META-INF", "mods.toml"));
-        assertTrue(modsToml.contains("versionRange=\"[0.8,0.9)\""));
+        assertTrue(modsToml.contains("versionRange=\"[0.8.1,0.9)\""));
     }
 }
