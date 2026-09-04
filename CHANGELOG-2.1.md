@@ -22,7 +22,7 @@
 - Preserve captured animal gameplay NBT and only consume captured-mob items after a valid successful spawn.
 - Make net-trap capture compile correctly on 1.20.1 and restore the trap if the captured-item entity cannot be spawned.
 - Validate spawn collision for released animals and retain compatibility with legacy captured-animal items.
-- Align Forge/build metadata on NsTut Lib 0.8.1 and require 0.8.1+ for NeoForge 26.1.2 so the stale unkeyed MachineBlock constructor cannot load.
+- Align build/runtime metadata on NsTut Lib 0.8.1 and require 0.8.1+ within the 0.8.x line on every supported target; NeoForge 26.1.2 specifically needs the corrected keyed `MachineBlock` constructor.
 - Make CI build against the exact coordinated NsTut Lib source revision through local Maven instead of depending on JitPack availability.
 - Fix NeoForge 1.21.1 GameTests by generating a deterministic `biotech:empty` structure at build time instead of relying on loader-owned test templates that are not shipped by that target.
 - Add GameTests for sided hatch IO, active transaction persistence through structure invalidation/reload, and registry-backed machine recipe types alongside unit/build regression coverage.
