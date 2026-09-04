@@ -19,7 +19,6 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -30,8 +29,8 @@ import org.jetbrains.annotations.NotNull;
 public class NetTrapBlock extends Block {
     public static final String CAPTURED_ENTITY_TAG = "CapturedEntity";
 
-    public NetTrapBlock() {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion());
+    public NetTrapBlock(BlockBehaviour.Properties properties) {
+        super(properties);
     }
 
     @SuppressWarnings("deprecation")

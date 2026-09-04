@@ -27,8 +27,8 @@ public class IOHatchBlock extends BaseEntityBlock {
     private final int type;
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
-    public IOHatchBlock(int type) {
-        super(BlockBehaviour.Properties.ofFullCopy(Blocks.GRAY_CONCRETE).strength(2f).sound(SoundType.METAL));
+    public IOHatchBlock(BlockBehaviour.Properties properties, int type) {
+        super(properties);
         this.type = type;
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }

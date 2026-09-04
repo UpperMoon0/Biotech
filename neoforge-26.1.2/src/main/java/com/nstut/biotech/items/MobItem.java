@@ -29,8 +29,8 @@ import java.util.function.Consumer;
 public class MobItem extends Item {
     private final int type;
 
-    public MobItem(int type) {
-        super(new Item.Properties());
+    public MobItem(Item.Properties properties, int type) {
+        super(properties);
         this.type = type;
     }
 

@@ -28,15 +28,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.network.IContainerFactory;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.Set;
@@ -44,10 +48,10 @@ import java.util.function.BiFunction;
 
 public final class MachineRegistries {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPE_REGISTER = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Biotech.MOD_ID);
-    private static final DeferredRegister<Item> ITEM_REGISTER = DeferredRegister.create(Registries.ITEM, Biotech.MOD_ID);
+    private static final DeferredRegister.Items ITEM_REGISTER = DeferredRegister.createItems(Biotech.MOD_ID);
     private static final DeferredRegister<MenuType<?>> MENU_REGISTER = DeferredRegister.create(Registries.MENU, Biotech.MOD_ID);
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZER_REGISTER = DeferredRegister.create(Registries.RECIPE_SERIALIZER, Biotech.MOD_ID);
-    private static final DeferredRegister<Block> BLOCK_REGISTER = DeferredRegister.create(Registries.BLOCK, Biotech.MOD_ID);
+    private static final DeferredRegister.Blocks BLOCK_REGISTER = DeferredRegister.createBlocks(Biotech.MOD_ID);
 
     public static final MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register("breeding_chamber", BreedingChamberBlockEntity::new, BreedingChamberMenu::new, BreedingChamberRecipe.SERIALIZER);
     public static final MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register("terrestrial_habitat", TerrestrialHabitatBlockEntity::new, TerrestrialHabitatMenu::new, TerrestrialHabitatRecipe.SERIALIZER);
@@ -61,10 +65,13 @@ public final class MachineRegistries {
     private static <T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>> MachineRegistry<T, U, Y> register(
             String id, BiFunction<BlockPos, BlockState, T> blockEntityFactory,
             IContainerFactory<U> containerFactory, RecipeSerializer<Y> recipeSerializer) {
-        DeferredHolder<Block, Block> block = BLOCK_REGISTER.register(id, () -> new MachineBlock(blockEntityFactory));
+        DeferredBlock<Block> block = BLOCK_REGISTER.<Block>registerBlock(
+                id,
+                properties -> new MachineBlock(properties, blockEntityFactory),
+                () -> BlockBehaviour.Properties.ofFullCopy(Blocks.GRAY_CONCRETE).strength(2f).sound(SoundType.METAL));
         DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> blockEntity = BLOCK_ENTITY_TYPE_REGISTER.register(
                 id, () -> new BlockEntityType<>(blockEntityFactory::apply, Set.of(block.get())));
-        DeferredHolder<Item, Item> blockItem = ITEM_REGISTER.register(id, () -> new BlockItem(block.get(), new Item.Properties()));
+        DeferredItem<BlockItem> blockItem = ITEM_REGISTER.registerSimpleBlockItem(id, block);
         ItemRegistries.ITEM_SET.add(blockItem);
         DeferredHolder<MenuType<?>, MenuType<U>> menu = MENU_REGISTER.register(id, () -> IMenuTypeExtension.create(containerFactory));
         DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializerRegistry = RECIPE_SERIALIZER_REGISTER.register(id, () -> recipeSerializer);
@@ -82,6 +89,6 @@ public final class MachineRegistries {
     public record MachineRegistry<T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>>(
             String id, DeferredHolder<Block, Block> block,
             DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> blockEntity,
-            DeferredHolder<Item, Item> blockItem, DeferredHolder<MenuType<?>, MenuType<U>> menu,
+            DeferredItem<BlockItem> blockItem, DeferredHolder<MenuType<?>, MenuType<U>> menu,
             DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializer) {}
 }
