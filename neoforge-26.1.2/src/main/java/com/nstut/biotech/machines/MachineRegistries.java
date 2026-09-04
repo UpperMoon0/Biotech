@@ -29,6 +29,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
@@ -51,20 +52,22 @@ public final class MachineRegistries {
     private static final DeferredRegister.Items ITEM_REGISTER = DeferredRegister.createItems(Biotech.MOD_ID);
     private static final DeferredRegister<MenuType<?>> MENU_REGISTER = DeferredRegister.create(Registries.MENU, Biotech.MOD_ID);
     private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZER_REGISTER = DeferredRegister.create(Registries.RECIPE_SERIALIZER, Biotech.MOD_ID);
+    private static final DeferredRegister<RecipeType<?>> RECIPE_TYPE_REGISTER = DeferredRegister.create(Registries.RECIPE_TYPE, Biotech.MOD_ID);
     private static final DeferredRegister.Blocks BLOCK_REGISTER = DeferredRegister.createBlocks(Biotech.MOD_ID);
 
-    public static final MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register("breeding_chamber", BreedingChamberBlockEntity::new, BreedingChamberMenu::new, BreedingChamberRecipe.SERIALIZER);
-    public static final MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register("terrestrial_habitat", TerrestrialHabitatBlockEntity::new, TerrestrialHabitatMenu::new, TerrestrialHabitatRecipe.SERIALIZER);
-    public static final MachineRegistry<SlaughterhouseBlockEntity, SlaughterhouseMenu, SlaughterhouseRecipe> SLAUGHTERHOUSE = register("slaughterhouse", SlaughterhouseBlockEntity::new, SlaughterhouseMenu::new, SlaughterhouseRecipe.SERIALIZER);
-    public static final MachineRegistry<GreenhouseBlockEntity, GreenhouseMenu, GreenhouseRecipe> GREENHOUSE = register("greenhouse", GreenhouseBlockEntity::new, GreenhouseMenu::new, GreenhouseRecipe.SERIALIZER);
-    public static final MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register("fermenter", FermenterBlockEntity::new, FermenterMenu::new, FermenterRecipe.SERIALIZER);
-    public static final MachineRegistry<MixerBlockEntity, MixerMenu, MixerRecipe> MIXER = register("mixer", MixerBlockEntity::new, MixerMenu::new, MixerRecipe.SERIALIZER);
+    public static final MachineRegistry<BreedingChamberBlockEntity, BreedingChamberMenu, BreedingChamberRecipe> BREEDING_CHAMBER = register("breeding_chamber", BreedingChamberBlockEntity::new, BreedingChamberMenu::new, BreedingChamberRecipe.SERIALIZER, BreedingChamberRecipe.TYPE);
+    public static final MachineRegistry<TerrestrialHabitatBlockEntity, TerrestrialHabitatMenu, TerrestrialHabitatRecipe> TERRESTRIAL_HABITAT = register("terrestrial_habitat", TerrestrialHabitatBlockEntity::new, TerrestrialHabitatMenu::new, TerrestrialHabitatRecipe.SERIALIZER, TerrestrialHabitatRecipe.TYPE);
+    public static final MachineRegistry<SlaughterhouseBlockEntity, SlaughterhouseMenu, SlaughterhouseRecipe> SLAUGHTERHOUSE = register("slaughterhouse", SlaughterhouseBlockEntity::new, SlaughterhouseMenu::new, SlaughterhouseRecipe.SERIALIZER, SlaughterhouseRecipe.TYPE);
+    public static final MachineRegistry<GreenhouseBlockEntity, GreenhouseMenu, GreenhouseRecipe> GREENHOUSE = register("greenhouse", GreenhouseBlockEntity::new, GreenhouseMenu::new, GreenhouseRecipe.SERIALIZER, GreenhouseRecipe.TYPE);
+    public static final MachineRegistry<FermenterBlockEntity, FermenterMenu, FermenterRecipe> FERMENTER = register("fermenter", FermenterBlockEntity::new, FermenterMenu::new, FermenterRecipe.SERIALIZER, FermenterRecipe.TYPE);
+    public static final MachineRegistry<MixerBlockEntity, MixerMenu, MixerRecipe> MIXER = register("mixer", MixerBlockEntity::new, MixerMenu::new, MixerRecipe.SERIALIZER, MixerRecipe.TYPE);
 
     private MachineRegistries() {}
 
     private static <T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>> MachineRegistry<T, U, Y> register(
             String id, BiFunction<BlockPos, BlockState, T> blockEntityFactory,
-            IContainerFactory<U> containerFactory, RecipeSerializer<Y> recipeSerializer) {
+            IContainerFactory<U> containerFactory, RecipeSerializer<Y> recipeSerializer,
+            RecipeType<Y> recipeType) {
         DeferredBlock<Block> block = BLOCK_REGISTER.<Block>registerBlock(
                 id,
                 properties -> new MachineBlock(properties, blockEntityFactory),
@@ -75,7 +78,8 @@ public final class MachineRegistries {
         ItemRegistries.ITEM_SET.add(blockItem);
         DeferredHolder<MenuType<?>, MenuType<U>> menu = MENU_REGISTER.register(id, () -> IMenuTypeExtension.create(containerFactory));
         DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializerRegistry = RECIPE_SERIALIZER_REGISTER.register(id, () -> recipeSerializer);
-        return new MachineRegistry<>(id, block, blockEntity, blockItem, menu, recipeSerializerRegistry);
+        DeferredHolder<RecipeType<?>, RecipeType<Y>> recipeTypeRegistry = RECIPE_TYPE_REGISTER.register(id, () -> recipeType);
+        return new MachineRegistry<>(id, block, blockEntity, blockItem, menu, recipeSerializerRegistry, recipeTypeRegistry);
     }
 
     public static void register(IEventBus modEventBus) {
@@ -84,11 +88,13 @@ public final class MachineRegistries {
         ITEM_REGISTER.register(modEventBus);
         MENU_REGISTER.register(modEventBus);
         RECIPE_SERIALIZER_REGISTER.register(modEventBus);
+        RECIPE_TYPE_REGISTER.register(modEventBus);
     }
 
     public record MachineRegistry<T extends MachineBlockEntity, U extends MachineMenu, Y extends ModRecipe<Y>>(
             String id, DeferredHolder<Block, Block> block,
             DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> blockEntity,
             DeferredItem<BlockItem> blockItem, DeferredHolder<MenuType<?>, MenuType<U>> menu,
-            DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializer) {}
+            DeferredHolder<RecipeSerializer<?>, RecipeSerializer<Y>> recipeSerializer,
+            DeferredHolder<RecipeType<?>, RecipeType<Y>> recipeType) {}
 }
