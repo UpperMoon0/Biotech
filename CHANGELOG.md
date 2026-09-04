@@ -2,7 +2,7 @@
 
 ## 2.1
 
-Biotech 2.1 is a coordinated hardening release with NsTut Lib 0.8.1.
+Biotech 2.1 is a coordinated hardening release with NsTut Lib 0.8.1 and requires NsTut Lib 0.8.1 or newer within the 0.8.x compatibility line on every supported target.
 
 - Migrates all six machines to persisted transactional recipe processing, including stable chance rolls, rollback safety, reload persistence, and exact final-tick energy handling.
 - Fixes Mixer fluid output, sided item/fluid hatch automation, receive-only energy input, and hatch energy persistence.
