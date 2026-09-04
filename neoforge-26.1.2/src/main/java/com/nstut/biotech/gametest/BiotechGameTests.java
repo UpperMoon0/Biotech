@@ -25,7 +25,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -33,6 +32,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -99,11 +99,15 @@ public final class BiotechGameTests {
         helper.assertTrue(fluidOutputExternal.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE).getAmount() == FluidType.BUCKET_VOLUME, "Fluid output hatch must permit external drain");
 
         helper.setBlock(pos, BlockRegistries.ENERGY_INPUT_HATCH.get().defaultBlockState().setValue(IOHatchBlock.FACING, externalSide));
-        var energyNative = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, absolutePos, externalSide);
-        helper.assertTrue(energyNative != null, "Energy input hatch must expose its external energy capability");
-        IEnergyStorage externalEnergy = IEnergyStorage.of(energyNative);
-        helper.assertTrue(externalEnergy.receiveEnergy(128, false) == 128, "Energy input hatch must accept external FE");
-        helper.assertTrue(externalEnergy.extractEnergy(128, false) == 0 && !externalEnergy.canExtract(), "Energy input hatch must be externally receive-only");
+        var externalEnergy = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, absolutePos, externalSide);
+        helper.assertTrue(externalEnergy != null, "Energy input hatch must expose its external energy capability");
+        try (var transaction = Transaction.openRoot()) {
+            helper.assertTrue(externalEnergy.insert(128, transaction) == 128, "Energy input hatch must accept external FE");
+            transaction.commit();
+        }
+        try (var transaction = Transaction.openRoot()) {
+            helper.assertTrue(externalEnergy.extract(128, transaction) == 0, "Energy input hatch must reject external FE extraction");
+        }
         helper.succeed();
     }
 
