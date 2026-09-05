@@ -27,6 +27,47 @@ legacyForge {
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    group = 'build'
+    description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
+    dependsOn tasks.named('compileJava')
+    classpath = files(sourceSets.main.output.classesDirs, configurations.compileClasspath)
+    mainClass = 'com.nstut.biotech.data.DataGenerator'
+    workingDir project.projectDir
+}
+
+tasks.register('generateRecipes') {
+    group = 'build'
+    description = 'Regenerates Biotech recipe data (and the coupled deterministic generated resources).'
+    dependsOn generateBiotechResources
+}
+
+def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
+    group = 'verification'
+    description = 'Verifies Forge 1.20.1 generated machine recipes remain complete and use its legacy recipe contract.'
+    dependsOn generateBiotechResources
+    doLast {
+        def recipeDir = file('src/generated/resources/data/biotech/recipes')
+        def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
+        if (recipeFiles.size() != 59) {
+            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        }
+        if (file('src/generated/resources/data/biotech/recipe').exists()) {
+            throw new GradleException('Forge 1.20.1 must keep the plural generated recipes/ directory')
+        }
+        recipeFiles.each { recipe ->
+            def text = recipe.getText('UTF-8')
+            if (!text.contains('"Count"')) {
+                throw new GradleException("${recipe} no longer uses the Forge 1.20.1 ItemStack Count field")
+            }
+            if (text.contains('"fluidInputs": [') && !text.contains('"FluidName"') && !text.contains('"fluidInputs": []')) {
+                throw new GradleException("${recipe} no longer uses the Forge 1.20.1 FluidName field")
+            }
+        }
+    }
+}
+
 repositories {
     mavenLocal()
     maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
@@ -58,8 +99,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
 }
-test { useJUnitPlatform() }
+test { useJUnitPlatform(); dependsOn generateBiotechResources }
 tasks.named('processResources', ProcessResources).configure {
+    dependsOn generateBiotechResources
     def p = [minecraft_version_range: rootProject.minecraft_version_range_1_20_1,
              forge_version_range: rootProject.forge_version_range_1_20_1,
              loader_version_range: rootProject.forge_loader_range_1_20_1,
@@ -68,6 +110,8 @@ tasks.named('processResources', ProcessResources).configure {
     inputs.properties p
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand p }
 }
+tasks.named('sourcesJar').configure { dependsOn generateBiotechResources }
+tasks.named('check').configure { dependsOn verifyGeneratedRecipes }
 tasks.named('jar', Jar).configure {
     manifest {
         attributes('Specification-Title': rootProject.mod_id,
