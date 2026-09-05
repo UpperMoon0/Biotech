@@ -20,17 +20,9 @@ public abstract class FluidHatchMenu extends MachineMenu {
     private final Level LEVEL;
     private FluidStack fluidStack;
 
-    public FluidStack getFluidStack() {
-        return fluidStack;
-    }
-
-    public FluidHatchBlockEntity getFluidHatchBlockEntity() {
-        return BLOCK_ENTITY;
-    }
-
-    public void setFluidStack(FluidStack fluidStack) {
-        this.fluidStack = fluidStack;
-    }
+    public FluidStack getFluidStack() { return fluidStack; }
+    public FluidHatchBlockEntity getFluidHatchBlockEntity() { return BLOCK_ENTITY; }
+    public void setFluidStack(FluidStack fluidStack) { this.fluidStack = fluidStack; }
 
     public FluidHatchMenu(MenuType<?> menu, int pContainerId, Inventory inventory, BlockEntity blockEntity) {
         super(menu, pContainerId);
@@ -40,22 +32,18 @@ public abstract class FluidHatchMenu extends MachineMenu {
 
         IItemHandler handler = BLOCK_ENTITY.getItemCapability(null);
         if (handler != null) {
-            addSlot(new SlotItemHandler(handler, 0, 98, 17));
+            addSlot(new SlotItemHandler(handler, 0, 98, 17) {
+                @Override public boolean mayPlace(@NotNull ItemStack stack) { return FluidHatchBlockEntity.isFluidContainer(stack); }
+            });
             addSlot(new SlotItemHandler(handler, 1, 98, 53) {
-                @Override
-                public boolean mayPlace(@NotNull ItemStack stack) {
-                    return false;
-                }
+                @Override public boolean mayPlace(@NotNull ItemStack stack) { return false; }
             });
         }
 
         addInventorySlots(inventory);
     }
 
-    @Override
-    public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
-        return adaptiveQuickMoveStack(pIndex, 2, 1);
-    }
+    @Override public ItemStack quickMoveStack(Player pPlayer, int pIndex) { return adaptiveQuickMoveStack(pIndex, 2, 1); }
 
     @Override
     public boolean stillValid(Player pPlayer) {

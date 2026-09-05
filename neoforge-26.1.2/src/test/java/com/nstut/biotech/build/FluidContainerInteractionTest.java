@@ -22,6 +22,8 @@ class FluidContainerInteractionTest {
 
         assertTrue(block.contains("FluidUtil.interactWithFluidHandler"), "right-click interaction must use NeoForge's generic fluid-container helper");
         assertTrue(block.contains("getManualFluidStorage"), "manual transfer must use the hatch's directional fluid view");
+        assertTrue(block.contains("protected InteractionResult useItemOn"), "26.1.2 uses InteractionResult for item-on-block interaction");
+        assertFalse(block.contains("ItemInteractionResult"), "26.1.2 must not reference the removed ItemInteractionResult API");
         assertTrue(hatch.contains("Capabilities.Fluid.ITEM"), "container detection must use the generic item fluid capability");
         assertTrue(hatch.contains("ItemAccess.forHandlerIndexStrict"), "slot processing must isolate one container so item replacement is safe");
         assertTrue(hatch.contains("ResourceHandlerUtil.moveFirst"), "slot processing must use capability-driven fluid transfer");
