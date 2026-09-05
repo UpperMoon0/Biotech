@@ -49,5 +49,9 @@
   "menu.title.biotech.item_output_hatch": "Item Output Hatch",
   "menu.title.biotech.fluid_input_hatch": "Fluid Input Hatch",
   "menu.title.biotech.fluid_output_hatch": "Fluid Output Hatch",
-  "menu.title.biotech.energy_input_hatch": "Energy Input Hatch"
+  "menu.title.biotech.energy_input_hatch": "Energy Input Hatch",
+
+  "jade.biotech.machine.status": "Status: %s",
+  "jade.biotech.machine.operating": "Operating",
+  "jade.biotech.machine.idle": "Idle"
 }
