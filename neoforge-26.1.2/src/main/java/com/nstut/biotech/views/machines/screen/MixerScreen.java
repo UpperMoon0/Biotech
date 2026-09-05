@@ -36,13 +36,20 @@ public class MixerScreen extends AbstractContainerScreen<MixerMenu> {
     protected void extractTooltip(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY) {
         super.extractTooltip(g, mouseX, mouseY);
         int rate = menu.getIsOperating() ? menu.getEnergyConsumeRate() : 0;
-        if (isHovering(7, 35, 8, 28, mouseX, mouseY)) {
+        if (isHovering(3, 31, 16, 37, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
-                g.setTooltipForNextFrame(font, List.of(
-                        Component.literal("Stored Energy:"),
-                        Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
-                        Component.literal("Consuming: "),
-                        Component.literal(rate + " FE / t")), Optional.empty(), mouseX, mouseY);
+                List<Component> energyTooltip = menu.getIsOperating()
+                        ? List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Recipe Energy:"),
+                                Component.literal(menu.getEnergyConsumed() + " / " + menu.getRecipeEnergyCost() + " FE"),
+                                Component.literal("Rate: " + rate + " FE / t"))
+                        : List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Rate: 0 FE / t"));
+                g.setTooltipForNextFrame(font, energyTooltip, Optional.empty(), mouseX, mouseY);
             } else {
                 g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
             }
