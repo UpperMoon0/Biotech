@@ -28,7 +28,7 @@ public abstract class FluidHatchMenu extends MachineMenu {
         super(menu, pContainerId);
         this.BLOCK_ENTITY = (FluidHatchBlockEntity) blockEntity;
         LEVEL = inventory.player.level();
-        fluidStack = FluidStack.EMPTY;
+        fluidStack = BLOCK_ENTITY.getInternalTank().getFluid().copy();
 
         IItemHandler handler = BLOCK_ENTITY.getItemCapability(null);
         if (handler != null) {
