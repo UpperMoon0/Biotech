@@ -3,11 +3,19 @@ package com.nstut.biotech.gametest;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.IOHatchBlock;
+import com.nstut.biotech.blocks.entites.hatches.EnergyInputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.recipes.GreenhouseRecipe;
+import com.nstut.nstutlib.blocks.MachineBlock;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
+import com.nstut.nstutlib.models.MultiblockBlock;
+import com.nstut.nstutlib.models.MultiblockPattern;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,11 +27,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -38,15 +50,18 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public final class BiotechGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
     private static final int MAX_TICKS = 100;
+    private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 80;
 
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION = register("hatches_enforce_external_io_direction", BiotechGameTests::hatchesEnforceExternalIoDirection);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION = register("invalid_structure_and_reload_preserve_active_machine_transaction", BiotechGameTests::invalidStructureAndReloadPreserveActiveMachineTransaction);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RECIPE_TYPES_ARE_REGISTRY_BACKED = register("recipe_types_are_registry_backed", BiotechGameTests::recipeTypesAreRegistryBacked);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES = register("greenhouse_beetroot_recipe_loads_and_processes", BiotechGameTests::greenhouseBeetrootRecipeLoadsAndProcesses);
 
     private BiotechGameTests() {}
 
@@ -60,7 +75,8 @@ public final class BiotechGameTests {
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(
                 HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
                 INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION,
-                RECIPE_TYPES_ARE_REGISTRY_BACKED)) {
+                RECIPE_TYPES_ARE_REGISTRY_BACKED,
+                GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
         }
     }
@@ -90,7 +106,7 @@ public final class BiotechGameTests {
         var fluidInputNative = helper.getLevel().getCapability(Capabilities.Fluid.BLOCK, absolutePos, externalSide);
         helper.assertTrue(fluidInputNative != null, "Fluid input hatch must expose its external fluid capability");
         IFluidHandler fluidInputExternal = IFluidHandler.of(fluidInputNative);
-        FluidStack waterBucket = new FluidStack(net.minecraft.world.level.material.Fluids.WATER, FluidType.BUCKET_VOLUME);
+        FluidStack waterBucket = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
         helper.assertTrue(fluidInputExternal.fill(waterBucket, IFluidHandler.FluidAction.EXECUTE) == FluidType.BUCKET_VOLUME, "Fluid input hatch must accept external fill");
         helper.assertTrue(fluidInputExternal.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE).isEmpty(), "Fluid input hatch must reject external drain");
 
@@ -156,6 +172,124 @@ public final class BiotechGameTests {
         assertRecipeTypeRegistered(helper, MachineRegistries.FERMENTER.recipeType().get(), "fermenter");
         assertRecipeTypeRegistered(helper, MachineRegistries.MIXER.recipeType().get(), "mixer");
         helper.succeed();
+    }
+
+    private static void greenhouseBeetrootRecipeLoadsAndProcesses(GameTestHelper helper) {
+        Identifier recipeId = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "greenhouse_beetroot");
+        ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, recipeId);
+        var loaded = helper.getLevel().recipeAccess().byKey(recipeKey);
+        helper.assertTrue(loaded.isPresent(), "greenhouse_beetroot must be present in the live recipe manager");
+        helper.assertTrue(loaded.get().value() instanceof GreenhouseRecipe, "greenhouse_beetroot must decode as a GreenhouseRecipe");
+        GreenhouseRecipe recipe = (GreenhouseRecipe) loaded.get().value();
+
+        long biotechRecipeCount = helper.getLevel().recipeAccess().getRecipes().stream()
+                .filter(holder -> Biotech.MOD_ID.equals(holder.id().identifier().getNamespace()))
+                .count();
+        helper.assertTrue(biotechRecipeCount == EXPECTED_BIOTECH_RECIPE_COUNT,
+                "Expected " + EXPECTED_BIOTECH_RECIPE_COUNT + " loaded Biotech recipes, got " + biotechRecipeCount);
+        helper.assertTrue(recipe.getTotalEnergy() == 128000, "greenhouse_beetroot must retain its configured 128000 FE cost");
+
+        BlockPos controllerRelative = new BlockPos(8, 1, 8);
+        GreenhouseBlockEntity machine = placeGreenhouseStructure(helper, controllerRelative);
+        BlockPos controllerPos = machine.getBlockPos();
+
+        ItemInputHatchBlockEntity itemInput = requireBlockEntity(helper, controllerPos.offset(-3, 0, -3), ItemInputHatchBlockEntity.class);
+        ItemOutputHatchBlockEntity itemOutput = requireBlockEntity(helper, controllerPos.offset(3, 0, -3), ItemOutputHatchBlockEntity.class);
+        EnergyInputHatchBlockEntity energyInput = requireBlockEntity(helper, controllerPos.offset(0, 0, -6), EnergyInputHatchBlockEntity.class);
+        FluidInputHatchBlockEntity fluidInput = requireBlockEntity(helper, controllerPos.offset(-2, 0, -6), FluidInputHatchBlockEntity.class);
+
+        itemInput.getInternalItemStorage().setStackInSlot(0, new ItemStack(Items.BEETROOT_SEEDS, 2));
+        fluidInput.setFluid(new FluidStack(Fluids.WATER, 400));
+        energyInput.setEnergy(recipe.getTotalEnergy());
+
+        helper.assertTrue(recipe.recipeMatch(
+                        itemInput.getInternalItemStorage(),
+                        List.of(fluidInput.getInternalTank()),
+                        itemOutput.getInternalItemStorage(),
+                        List.of()),
+                "Loaded greenhouse_beetroot recipe must match two beetroot seeds plus 400 mB water");
+
+        for (int tick = 0; tick < 260 && countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 0; tick++) {
+            BlockState state = helper.getLevel().getBlockState(controllerPos);
+            MachineBlockEntity.serverTick(helper.getLevel(), controllerPos, state, machine);
+        }
+
+        helper.assertTrue(itemInput.getInternalItemStorage().getStackInSlot(0).isEmpty(), "Greenhouse must consume the two beetroot seeds exactly once");
+        helper.assertTrue(fluidInput.getInternalTank().getFluidInTank(0).isEmpty(), "Greenhouse must consume the configured 400 mB water");
+        helper.assertTrue(energyInput.getInternalEnergyStorage().getEnergyStored() == 0, "Greenhouse must consume the configured 128000 FE");
+        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 4, "Greenhouse must produce four beetroot");
+        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) == 6, "Greenhouse must produce six beetroot seeds");
+        helper.succeed();
+    }
+
+    private static GreenhouseBlockEntity placeGreenhouseStructure(GameTestHelper helper, BlockPos controllerRelative) {
+        BlockPos controllerPos = helper.absolutePos(controllerRelative);
+        BlockState controllerState = MachineRegistries.GREENHOUSE.block().get().defaultBlockState()
+                .setValue(MachineBlock.FACING, Direction.SOUTH);
+        GreenhouseBlockEntity blueprint = new GreenhouseBlockEntity(controllerPos, controllerState);
+        MultiblockPattern pattern = blueprint.getMultiblockPattern();
+        MultiblockBlock[][][] blocks = pattern.getPattern();
+
+        for (int y = 0; y < blocks.length; y++) {
+            int patternY = blocks.length - 1 - y;
+            MultiblockBlock[][] layer = blocks[patternY];
+            for (int z = 0; z < layer.length; z++) {
+                for (int x = 0; x < layer[z].length; x++) {
+                    MultiblockBlock expected = layer[z][x];
+                    if (expected == null) continue;
+                    BlockPos target = MultiblockPattern.rotateBlockPos(
+                            controllerPos,
+                            blueprint.getSouthOffsetX(),
+                            blueprint.getSouthOffsetY(),
+                            blueprint.getSouthOffsetZ(),
+                            blocks.length,
+                            layer.length,
+                            x,
+                            patternY,
+                            z,
+                            controllerState);
+                    BlockState state = applyProperties(expected.getBlock().defaultBlockState(), expected.getStates());
+                    helper.getLevel().setBlock(target, state, 3);
+                }
+            }
+        }
+
+        GreenhouseBlockEntity machine = requireBlockEntity(helper, controllerPos, GreenhouseBlockEntity.class);
+        helper.assertTrue(machine.checkMultiblock(helper.getLevel(), controllerPos, helper.getLevel().getBlockState(controllerPos)),
+                "GameTest greenhouse structure must be valid before recipe processing");
+        return machine;
+    }
+
+    private static BlockState applyProperties(BlockState state, Map<String, String> values) {
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            Property<?> property = state.getBlock().getStateDefinition().getProperty(entry.getKey());
+            if (property == null) throw new AssertionError("Missing block-state property " + entry.getKey() + " on " + state.getBlock());
+            state = applyProperty(state, property, entry.getValue());
+        }
+        return state;
+    }
+
+    private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value) {
+        T parsed = property.getValue(value)
+                .orElseThrow(() -> new AssertionError("Invalid value " + value + " for property " + property.getName()));
+        return state.setValue(property, parsed);
+    }
+
+    private static <T extends BlockEntity> T requireBlockEntity(GameTestHelper helper, BlockPos absolutePos, Class<T> type) {
+        BlockEntity blockEntity = helper.getLevel().getBlockEntity(absolutePos);
+        if (!type.isInstance(blockEntity)) {
+            throw new AssertionError("Expected " + type.getSimpleName() + " at " + absolutePos + ", got " + blockEntity);
+        }
+        return type.cast(blockEntity);
+    }
+
+    private static int countItem(IItemHandler handler, Item item) {
+        int count = 0;
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            ItemStack stack = handler.getStackInSlot(slot);
+            if (stack.is(item)) count += stack.getCount();
+        }
+        return count;
     }
 
     private static void assertRecipeTypeRegistered(GameTestHelper helper, RecipeType<?> type, String path) {
