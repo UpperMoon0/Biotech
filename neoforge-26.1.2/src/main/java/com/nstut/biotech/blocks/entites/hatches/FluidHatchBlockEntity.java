@@ -69,9 +69,12 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
     protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     protected abstract boolean isInputHatch();
 
-    /** Legacy views used by existing menu and machine transaction code. */
+    /** Legacy views used by existing bucket handling and machine transaction code. */
     public final IItemHandler getInternalItemStorage() { return internalSlots; }
     public final IFluidHandler getInternalTank() { return internalTank; }
+
+    /** Native NeoForge 26 item storage used by menus and transfer-native code. */
+    public final ItemStacksResourceHandler getInternalItemResourceStorage() { return slots; }
 
     /** Native NeoForge 26 item capability for the hatch's bucket slots. */
     public final @Nullable ResourceHandler<ItemResource> getItemCapability(@Nullable Direction facing) {

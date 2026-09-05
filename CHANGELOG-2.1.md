@@ -6,6 +6,7 @@
 - Persist probabilistic item-output decisions with the active recipe so reloads and safe rollback retries cannot reroll results.
 - Roll back partial machine item/fluid input and output commits when a capability diverges during execution.
 - Bridge NeoForge 26.1.2 native `ResourceHandler`-backed fluid hatches through NsTut Lib's restorable transaction adapter so Greenhouse and every other fluid-processing machine can roll back safely without requiring the hatch itself to be a `FluidTank`.
+- Replace NeoForge 26.1.2 hatch GUI `SlotItemHandler` usage with native `ResourceHandlerSlot` storage so container synchronization never casts `ItemResourceHandlerAdapter` to `IItemHandlerModifiable`.
 - Preserve safely rolled-back active recipes and retry capability divergence with bounded backoff instead of failing the server tick.
 - Treat failed transaction rollback as non-retriable corruption and cancel the active recipe rather than risking duplicate output or repeated consumption.
 - Preserve active recipes across chunk/world reloads and pause safely through invalid multiblocks.

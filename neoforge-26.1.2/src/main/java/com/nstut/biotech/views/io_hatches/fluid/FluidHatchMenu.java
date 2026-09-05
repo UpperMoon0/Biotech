@@ -11,8 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class FluidHatchMenu extends MachineMenu {
@@ -30,9 +29,9 @@ public abstract class FluidHatchMenu extends MachineMenu {
         LEVEL = inventory.player.level();
         fluidStack = FluidStack.EMPTY;
 
-        IItemHandler handler = BLOCK_ENTITY.getInternalItemStorage();
-        addSlot(new SlotItemHandler(handler, 0, 98, 17));
-        addSlot(new SlotItemHandler(handler, 1, 98, 53) {
+        var handler = BLOCK_ENTITY.getInternalItemResourceStorage();
+        addSlot(new ResourceHandlerSlot(handler, handler::set, 0, 98, 17));
+        addSlot(new ResourceHandlerSlot(handler, handler::set, 1, 98, 53) {
             @Override public boolean mayPlace(@NotNull ItemStack stack) { return false; }
         });
         addInventorySlots(inventory);

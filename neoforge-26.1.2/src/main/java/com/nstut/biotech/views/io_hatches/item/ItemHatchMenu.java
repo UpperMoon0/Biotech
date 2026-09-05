@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 public class ItemHatchMenu extends MachineMenu {
     private final ItemHatchBlockEntity blockEntity;
@@ -21,10 +21,10 @@ public class ItemHatchMenu extends MachineMenu {
         this.blockEntity = (ItemHatchBlockEntity) blockEntity;
         this.level = inventory.player.level();
 
-        var handler = this.blockEntity.getInternalItemStorage();
+        var handler = this.blockEntity.getInternalItemResourceStorage();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                addSlot(new SlotItemHandler(handler, j + i * 3, 62 + j * 18, 17 + i * 18));
+                addSlot(new ResourceHandlerSlot(handler, handler::set, j + i * 3, 62 + j * 18, 17 + i * 18));
             }
         }
 

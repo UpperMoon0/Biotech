@@ -83,9 +83,14 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
 
     protected abstract boolean isInputHatch();
 
-    /** Legacy view used by the existing machine transaction and menu code. */
+    /** Legacy view used by the existing machine transaction code. */
     public final IItemHandlerModifiable getInternalItemStorage() {
         return internalSlots;
+    }
+
+    /** Native NeoForge 26 storage used by menus and transfer-native code. */
+    public final ItemStacksResourceHandler getInternalItemResourceStorage() {
+        return slots;
     }
 
     /** Native NeoForge 26 transfer capability. */
