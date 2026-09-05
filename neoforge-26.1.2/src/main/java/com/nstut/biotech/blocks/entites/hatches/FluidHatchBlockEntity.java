@@ -4,6 +4,7 @@ import com.nstut.biotech.blocks.IOHatchBlock;
 import com.nstut.biotech.blocks.entites.CapabilityBlockEntity;
 import com.nstut.biotech.network.FluidHatchPacket;
 import com.nstut.biotech.network.PacketRegistries;
+import com.nstut.nstutlib.recipes.TransactionalFluidTankAdapter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -44,7 +45,11 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
     };
 
     private final IItemHandler internalSlots = IItemHandler.of(slots);
-    private final IFluidHandler internalTank = IFluidHandler.of(tank);
+    private final IFluidHandler internalTankDelegate = IFluidHandler.of(tank);
+    private final IFluidHandler internalTank = new TransactionalFluidTankAdapter(
+            internalTankDelegate,
+            TANK_CAPACITY,
+            this::restoreFluid);
     private final ResourceHandler<FluidResource> externalTank = new ResourceHandler<>() {
         @Override public int size() { return tank.size(); }
         @Override public FluidResource getResource(int index) { return tank.getResource(index); }
@@ -138,9 +143,13 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         }
     }
 
-    public void setFluid(FluidStack fluidStack) {
+    private void restoreFluid(FluidStack fluidStack) {
         if (fluidStack.isEmpty()) tank.set(0, FluidResource.EMPTY, 0);
         else tank.set(0, FluidResource.of(fluidStack), fluidStack.getAmount());
+    }
+
+    public void setFluid(FluidStack fluidStack) {
+        restoreFluid(fluidStack);
     }
 
     private static boolean sameFluidAndAmount(FluidStack first, FluidStack second) {
