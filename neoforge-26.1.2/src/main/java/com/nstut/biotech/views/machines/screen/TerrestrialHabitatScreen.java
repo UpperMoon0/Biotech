@@ -33,7 +33,7 @@ public class TerrestrialHabitatScreen extends AbstractContainerScreen<Terrestria
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
             String animal = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
-            g.centeredText(font, animal.substring(1, animal.length() - 1), 106, 76, 0xFFFFFFFF);
+            g.centeredText(font, animal, 106, 76, 0xFFFFFFFF);
             g.centeredText(font, String.valueOf(recipe.getIngredientItems()[1].getItemStack().getCount()), 95, 104, 0xFFFFFFFF);
             g.centeredText(font, recipe.getFluidIngredients()[0].getAmount() + " mB", 95, 137, 0xFFFFFFFF);
         }
@@ -49,13 +49,25 @@ public class TerrestrialHabitatScreen extends AbstractContainerScreen<Terrestria
             ModRecipeData recipe = menu.getRecipe();
             if (isHovering(31, 98, 20, 20, mouseX, mouseY)) {
                 String food = recipe.getIngredientItems()[1].getItemStack().getHoverName().getString();
-                g.setTooltipForNextFrame(Component.literal(food.substring(1, food.length() - 1)), mouseX, mouseY);
+                g.setTooltipForNextFrame(Component.literal(food), mouseX, mouseY);
             }
             if (isHovering(31, 131, 20, 20, mouseX, mouseY)) g.setTooltipForNextFrame(Component.literal(recipe.getFluidIngredients()[0].getHoverName().getString()), mouseX, mouseY);
         }
-        if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
-            if (menu.getStructureValid()) g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(rate + " FE / t")), Optional.empty(), mouseX, mouseY);
-            else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
+        if (isHovering(0, 39, 17, 84, mouseX, mouseY)) {
+            if (menu.getStructureValid()) {
+                List<Component> energyTooltip = menu.getIsOperating()
+                        ? List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Recipe Energy:"),
+                                Component.literal(menu.getEnergyConsumed() + " / " + menu.getRecipeEnergyCost() + " FE"),
+                                Component.literal("Rate: " + rate + " FE / t"))
+                        : List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Rate: 0 FE / t"));
+                g.setTooltipForNextFrame(font, energyTooltip, Optional.empty(), mouseX, mouseY);
+            } else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
         }
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
