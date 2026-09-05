@@ -2,8 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {"item": "biotech:biotech_machine_casing"},
-    "W": {"item": "minecraft:chest"}
+    "C": "biotech:biotech_machine_casing",
+    "W": "minecraft:chest"
   },
   "pattern": ["C", "W"],
   "result": {"id": "biotech:item_output_hatch", "count": 1}
