@@ -5,6 +5,7 @@
 - Prevent duplicate/chance-overrolled/overstacked outputs and NBT-insensitive recipe matching through NsTut Lib 0.8.1.
 - Persist probabilistic item-output decisions with the active recipe so reloads and safe rollback retries cannot reroll results.
 - Roll back partial machine item/fluid input and output commits when a capability diverges during execution.
+- Bridge NeoForge 26.1.2 native `ResourceHandler`-backed fluid hatches through NsTut Lib's restorable transaction adapter so Greenhouse and every other fluid-processing machine can roll back safely without requiring the hatch itself to be a `FluidTank`.
 - Preserve safely rolled-back active recipes and retry capability divergence with bounded backoff instead of failing the server tick.
 - Treat failed transaction rollback as non-retriable corruption and cancel the active recipe rather than risking duplicate output or repeated consumption.
 - Preserve active recipes across chunk/world reloads and pause safely through invalid multiblocks.
@@ -18,6 +19,8 @@
 - Send hatch state only when changed and machine UI state at a reduced cadence.
 - Make fluid packet handling safe during client world transitions.
 - Keep all six machine recipe types and serializers registry-backed before datapack recipe synchronization, with regression coverage for their `biotech:*` registry IDs.
+- Restore all 13 NeoForge 26.1.2 crafting recipe resources referenced by the Patchouli guide using the modern singular `data/biotech/recipe/` path and current recipe JSON schema.
+- Add NeoForge 26.1.2 client-item definitions for every Biotech item/block-item so existing models and textures render through the modern client-item layer.
 - Remove client screen classes and reflection from common machine registration.
 - Preserve captured animal gameplay NBT and only consume captured-mob items after a valid successful spawn.
 - Make net-trap capture compile correctly on 1.20.1 and restore the trap if the captured-item entity cannot be spawned.
