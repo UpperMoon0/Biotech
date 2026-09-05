@@ -37,22 +37,69 @@ def generateGameTestStructure = tasks.register('generateGameTestStructure') {
 
 sourceSets.main.resources {
     srcDir generatedGameTestResources
-    // 1.21+ registry-backed datapack directories are singular. The checked-in
-    // generated data is kept in its historical layout, then remapped below.
+    srcDir 'src/generated/resources'
+    // Never package stale 1.20-era plural datapack directories on 1.21+.
     exclude 'data/biotech/recipes/**'
     exclude 'data/biotech/loot_tables/**'
 }
-tasks.named('processResources', ProcessResources).configure {
-    dependsOn generateGameTestStructure
-    from('src/generated/resources') {
-        exclude 'data/biotech/recipes/**'
-        exclude 'data/biotech/loot_tables/**'
+
+def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    group = 'build'
+    description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
+    dependsOn tasks.named('compileJava')
+    classpath = files(sourceSets.main.output.classesDirs, configurations.compileClasspath)
+    mainClass = 'com.nstut.biotech.data.DataGenerator'
+    workingDir project.projectDir
+    doFirst {
+        // Remove obsolete pre-1.21 generated datapack trees before generating the authoritative layout.
+        project.delete('src/generated/resources/data/biotech/recipes')
+        project.delete('src/generated/resources/data/biotech/loot_tables')
     }
-    from('src/generated/resources/data/biotech/recipes') { into 'data/biotech/recipe' }
-    from('src/generated/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
+}
+
+tasks.register('generateRecipes') {
+    group = 'build'
+    description = 'Regenerates Biotech recipe data (and the coupled deterministic generated resources).'
+    dependsOn generateBiotechResources
+}
+
+def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
+    group = 'verification'
+    description = 'Verifies generated machine recipes are complete and use the 1.21+ datapack/schema contract.'
+    dependsOn generateBiotechResources
+    doLast {
+        def recipeDir = file('src/generated/resources/data/biotech/recipe')
+        def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
+        if (recipeFiles.size() != 59) {
+            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        }
+        recipeFiles.each { recipe ->
+            def text = recipe.getText('UTF-8')
+            ['"Count"', '"FluidName"', '"Amount"'].each { legacyKey ->
+                if (text.contains(legacyKey)) {
+                    throw new GradleException("${recipe} still contains legacy recipe key ${legacyKey}")
+                }
+            }
+        }
+        if (file('src/generated/resources/data/biotech/recipes').exists()) {
+            throw new GradleException('Legacy generated recipes/ directory still exists')
+        }
+        if (file('src/generated/resources/data/biotech/loot_tables').exists()) {
+            throw new GradleException('Legacy generated loot_tables/ directory still exists')
+        }
+        if (!file('src/generated/resources/data/biotech/loot_table').isDirectory()) {
+            throw new GradleException('Generated loot_table/ directory is missing')
+        }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    dependsOn generateGameTestStructure, generateBiotechResources
+    // Hand-authored legacy loot-table sources are still remapped until they are migrated separately.
     from('src/main/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
 }
-tasks.named('sourcesJar').configure { dependsOn generateGameTestStructure }
+tasks.named('sourcesJar').configure { dependsOn generateGameTestStructure, generateBiotechResources }
+tasks.named('check').configure { dependsOn verifyGeneratedRecipes }
 
 repositories {
     mavenLocal()
@@ -68,7 +115,6 @@ dependencies {
     implementation nstutLibDependency
     runtimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_1_21_1}"
 
-    // Dev-only test utilities: generators/energy plus energy, item, and fluid transport.
     localRuntime "curse.maven:cloth-config-348521:${rootProject.dev_cloth_config_file_1_21_1}"
     localRuntime "curse.maven:guideme-1173950:${rootProject.dev_guideme_file_1_21_1}"
     localRuntime "curse.maven:powah-rearchitected-633483:${rootProject.dev_powah_file_1_21_1}"
