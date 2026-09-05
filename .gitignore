@@ -17,11 +17,12 @@ out
 build
 .gradle
 
-# other
-eclipse
+# runtime/generated
 run
+run-data
+logs
+mcmodsrepo
+nstut_script_output
 
 # Files from Forge MDK
 forge*changelog.txt
-/run-data
-/script-cropId

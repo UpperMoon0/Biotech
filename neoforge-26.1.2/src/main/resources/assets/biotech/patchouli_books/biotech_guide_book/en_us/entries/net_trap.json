@@ -1,0 +1,15 @@
+{
+  "name": "Net Trap",
+  "icon": "biotech:net_trap",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "To work with Biotech machines, you first need to obtain mobs as items. The Net Trap is a simple way to do this.$(br)$(br)Place the Net Trap on the ground and let a mob step on it. The trap will break and turn the mob into item form. However, not all mobs are capturable."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:net_trap"
+    }
+  ]
+}

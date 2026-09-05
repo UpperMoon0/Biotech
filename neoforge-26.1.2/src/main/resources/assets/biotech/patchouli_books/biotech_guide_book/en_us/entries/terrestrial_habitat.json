@@ -1,0 +1,89 @@
+{
+  "name": "Terrestrial Habitat",
+  "icon": "biotech:terrestrial_habitat",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Terrestrial Habitat rapidly grows baby animals into adults.$(br)$(br)Provide the machine with the baby animal, along with their respective food, water, and energy to operate."
+    },
+    {
+      "multiblock": {
+        "mapping": {
+          "b": "minecraft:yellow_concrete",
+          "c": "minecraft:yellow_stained_glass",
+          "d": "minecraft:glowstone",
+          "e": "biotech:biotech_machine_casing",
+          "f": "biotech:terrestrial_habitat[facing=east, operating=false]",
+          "g": "biotech:energy_input_hatch[facing=west]",
+          "h": "biotech:fluid_input_hatch[facing=west]",
+          "i": "minecraft:grass_block[snowy=false]",
+          "j": "biotech:item_input_hatch[facing=south]",
+          "k": "biotech:item_output_hatch[facing=north]"
+        },
+        "symmetrical": true,
+        "pattern": [
+          [
+            "   bccb",
+            "   cddc",
+            "   cddc",
+            "   bccb",
+            "       ",
+            "       ",
+            "       "
+          ],
+          [
+            "   eeee",
+            "   edde",
+            "   edde",
+            "   eeee",
+            "       ",
+            "       ",
+            "       "
+          ],
+          [
+            "   eeee",
+            "   e  e",
+            "   e  e",
+            "   eeee",
+            "       ",
+            "       ",
+            "       "
+          ],
+          [
+            "bcceeee",
+            "c  e  e",
+            "c  e  e",
+            "c  e  e",
+            "c     c",
+            "c     c",
+            "bcccccb"
+          ],
+          [
+            "eeeeeee",
+            "e  e  e",
+            "e  e  e",
+            "e  e  e",
+            "e  0  e",
+            "e     e",
+            "eeefeee"
+          ],
+          [
+            "eeegehe",
+            "eiieeej",
+            "eiieeee",
+            "kiieeej",
+            "eiiiiie",
+            "eiiiiij",
+            "eeeeeee"
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:terrestrial_habitat"
+    }
+  ]
+}

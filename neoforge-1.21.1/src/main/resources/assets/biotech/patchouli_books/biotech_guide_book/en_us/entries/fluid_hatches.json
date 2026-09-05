@@ -1,0 +1,26 @@
+{
+  "name": "Fluid Hatches",
+  "icon": "biotech:fluid_input_hatch",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Your animals also need to drink, so there needs to be a way to insert water into the machine.$(br)$(br)The Fluid Input Hatch and Fluid Output Hatch can each hold 32,000 mB."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:fluid_input_hatch",
+      "text": "The Fluid Input Hatch is used to insert fluid into the machine."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:fluid_output_hatch",
+      "text": "The Fluid Output Hatch is used to extract fluid from the machine."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:fluid_input_hatch",
+      "recipe2": "biotech:fluid_output_hatch"
+    }
+  ]
+}

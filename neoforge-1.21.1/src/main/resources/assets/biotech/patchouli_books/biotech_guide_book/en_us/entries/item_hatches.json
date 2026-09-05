@@ -1,0 +1,26 @@
+{
+  "name": "Item Hatches",
+  "icon": "biotech:item_input_hatch",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "You will need a place to insert items into machines and a place to hold the output products."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:item_input_hatch",
+      "text": "The Item Input Hatch can hold 9 stacks of items each, and some machines require multiple hatches to provide ample space for ingredients."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:item_output_hatch",
+      "text": "Similarly, the Item Output Hatch can hold 9 stacks of output items."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:item_input_hatch",
+      "recipe2": "biotech:item_output_hatch"
+    }
+  ]
+}

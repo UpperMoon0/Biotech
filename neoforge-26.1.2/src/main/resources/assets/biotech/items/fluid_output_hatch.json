@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "biotech:item/fluid_output_hatch"
+  }
+}

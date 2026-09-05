@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: forge-1.20.1
+            nstut_target: forge-1.20.1
+            java: '17'
+          - target: neoforge-1.21.1
+            nstut_target: neoforge-1.21.1
+            java: '21'
+          - target: neoforge-26.1.2
+            nstut_target: neoforge-26.1.2
+            java: '25'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/NsTut-Lib
+          ref: 167608d4f74b819f081e548d98168aec66a7b182
+          path: .ci/nstut-lib
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: gradle
+      - name: Publish NsTut Lib target to Maven Local
+        working-directory: .ci/nstut-lib
+        run: ./gradlew :${{ matrix.nstut_target }}:publishToMavenLocal --no-daemon --stacktrace
+      - name: Unit tests and build
+        if: matrix.target != 'forge-1.20.1'
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :${{ matrix.target }}:test :${{ matrix.target }}:build --no-daemon --stacktrace 2>&1 | tee "${{ matrix.target }}-build.log"
+      - name: Upload failing 26.1.2 Gradle log
+        if: failure() && matrix.target == 'neoforge-26.1.2'
+        uses: actions/upload-artifact@v4
+        with:
+          name: neoforge-26.1.2-build-log
+          path: neoforge-26.1.2-build.log
+          if-no-files-found: warn
+      - name: Forge compatibility test and build
+        if: matrix.target == 'forge-1.20.1'
+        run: |
+          ./gradlew :forge-1.20.1:test --tests com.nstut.biotech.build.CompatibilityTest --no-daemon --stacktrace
+          ./gradlew :forge-1.20.1:build -x :forge-1.20.1:test --no-daemon --stacktrace
+      - name: Forge/NeoForge GameTests
+        run: ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace

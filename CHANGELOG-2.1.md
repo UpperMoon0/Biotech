@@ -1,0 +1,36 @@
+# Biotech 2.1
+
+## Fixed
+- Migrate all machine processing to NsTut Lib's persisted transactional recipe engine.
+- Prevent duplicate/chance-overrolled/overstacked outputs and NBT-insensitive recipe matching through NsTut Lib 0.8.1.
+- Persist probabilistic item-output decisions with the active recipe so reloads and safe rollback retries cannot reroll results.
+- Roll back partial machine item/fluid input and output commits when a capability diverges during execution.
+- Bridge NeoForge 26.1.2 native `ResourceHandler`-backed fluid hatches through NsTut Lib's restorable transaction adapter so Greenhouse and every other fluid-processing machine can roll back safely without requiring the hatch itself to be a `FluidTank`.
+- Replace NeoForge 26.1.2 hatch GUI `SlotItemHandler` usage with native `ResourceHandlerSlot` storage so container synchronization never casts `ItemResourceHandlerAdapter` to `IItemHandlerModifiable`.
+- Make fluid hatches on Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2 support arbitrary fluid-capable containers in their GUI and through direct right-click interaction while preserving input/output directionality.
+- Preserve safely rolled-back active recipes and retry capability divergence with bounded backoff instead of failing the server tick.
+- Treat failed transaction rollback as non-retriable corruption and cancel the active recipe rather than risking duplicate output or repeated consumption.
+- Preserve active recipes across chunk/world reloads and pause safely through invalid multiblocks.
+- Recover cleanly when a validated hatch capability becomes unavailable during a machine tick.
+- Consume only the exact remaining FE on the final processing tick.
+- Correct Mixer fluid-output commits.
+- Make input/output item and fluid hatches directional for external automation.
+- Make energy input hatches externally receive-only and synchronize absolute energy correctly.
+- Mark successful FE receive/extract mutations dirty so hatch energy persists across chunk unloads.
+- Restrict network protocol compatibility and scope machine/hatch packets to tracking chunks.
+- Send hatch state only when changed and machine UI state at a reduced cadence.
+- Make fluid packet handling safe during client world transitions.
+- Keep all six machine recipe types and serializers registry-backed before datapack recipe synchronization, with regression coverage for their `biotech:*` registry IDs.
+- Restore all 13 NeoForge 26.1.2 crafting recipe resources referenced by the Patchouli guide using the modern singular `data/biotech/recipe/` path and current recipe JSON schema.
+- Physically migrate NeoForge 26.1.2 hand-authored loot tables to the modern singular `data/biotech/loot_table/` path and remove the packaging-time plural-directory remap.
+- Make generated machine recipes reproducible across all supported targets: Forge 1.20.1 retains its legacy recipe schema, while NeoForge 1.21.1 and 26.1.2 generate singular `recipe/` data with lowercase item counts and modern fluid `id`/`amount` fields. Builds regenerate and verify exactly 59 generated machine recipes before packaging.
+- Add NeoForge 26.1.2 client-item definitions for every Biotech item/block-item so existing models and textures render through the modern client-item layer.
+- Remove client screen classes and reflection from common machine registration.
+- Preserve captured animal gameplay NBT and only consume captured-mob items after a valid successful spawn.
+- Make net-trap capture compile correctly on 1.20.1 and restore the trap if the captured-item entity cannot be spawned.
+- Validate spawn collision for released animals and retain compatibility with legacy captured-animal items.
+- Align build/runtime metadata on NsTut Lib 0.8.1 and require 0.8.1+ within the 0.8.x line on every supported target; NeoForge 26.1.2 specifically needs the corrected keyed `MachineBlock` constructor.
+- Make CI build against the exact coordinated NsTut Lib source revision through local Maven instead of depending on JitPack availability.
+- Fix NeoForge 1.21.1 GameTests by generating a deterministic `biotech:empty` structure at build time instead of relying on loader-owned test templates that are not shipped by that target.
+- Add GameTests for sided hatch IO, active transaction persistence through structure invalidation/reload, and registry-backed machine recipe types alongside unit/build regression coverage.
+- Remove obsolete development dependencies, local Maven/runtime artifacts, and old ForgeGradle/Mixin configuration.

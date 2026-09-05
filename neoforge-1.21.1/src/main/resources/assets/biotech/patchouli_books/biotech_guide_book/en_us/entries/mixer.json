@@ -1,0 +1,124 @@
+{
+  "name": "Mixer",
+  "icon": "biotech:mixer",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Mixer is a machine that allows you to mix different ingredients to create new items or fluids.$(br)$(br)To use the machine, simply place the ingredients in the input buses and hatches, and the machine will automatically mix them together. The machine requires energy to operate, so make sure to provide it with enough power."
+    },
+    {
+      "multiblock": {
+        "mapping": {
+          "b": "biotech:biotech_machine_casing",
+          "c": "biotech:fluid_input_hatch[facing=south]",
+          "d": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_left, facing=south]",
+          "e": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=east]",
+          "f": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_right, facing=north]",
+          "g": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=south]",
+          "h": "minecraft:warped_planks",
+          "i": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=north]",
+          "j": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_right, facing=south]",
+          "k": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=west]",
+          "l": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_left, facing=north]",
+          "m": "minecraft:iron_block",
+          "n": "minecraft:mud_bricks",
+          "o": "biotech:energy_input_hatch[facing=west]",
+          "p": "minecraft:glowstone",
+          "q": "biotech:item_input_hatch[facing=south]",
+          "r": "minecraft:purple_concrete",
+          "s": "minecraft:purple_stained_glass",
+          "t": "biotech:mixer[facing=east, operating=false]",
+          "u": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_left, facing=south]",
+          "v": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=east]",
+          "w": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_left, facing=east]",
+          "x": "biotech:fluid_output_hatch[facing=north]",
+          "y": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=south]",
+          "z": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=north]",
+          "{": "biotech:item_output_hatch[facing=north]",
+          "|": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_right, facing=south]",
+          "}": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=west]",
+          "~": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_left, facing=north]"
+        },
+        "symmetrical": true,
+        "pattern": [
+          [
+            "            ",
+            "bbbbbbbbbbbc",
+            "bbbbbbbbbbbc",
+            "bbbbbbbbbbbc",
+            "            "
+          ],
+          [
+            "deeeeeeeeeef",
+            "ghhhhhhhhhhi",
+            "gh        hi",
+            "ghhhhhhhhhhi",
+            "jkkkkkkkkkkl"
+          ],
+          [
+            "            ",
+            " bbbbbbbbbb ",
+            " bbbbbbbbbb ",
+            " bbbbbbbbbb ",
+            "            "
+          ],
+          [
+            "            ",
+            "        b b ",
+            "   m        ",
+            "        b b ",
+            "            "
+          ],
+          [
+            "            ",
+            "        b b ",
+            "   m        ",
+            "        b b ",
+            "            "
+          ],
+          [
+            " nnnnn      ",
+            " nm mn  b b ",
+            " n m n      ",
+            " nm mn  b b ",
+            " nnnnn      "
+          ],
+          [
+            " nnnnn      ",
+            " nm mn  bob ",
+            " n m n  bpq ",
+            " nm mn  bbb ",
+            " nnnnn      "
+          ],
+          [
+            " rrrrr      ",
+            " rm mr  bsb ",
+            " r   r  s s ",
+            " rm mr  bsb ",
+            " rrrrr      "
+          ],
+          [
+            " nnnnn      ",
+            " n   n  bsb ",
+            " n   n  s0s ",
+            " n   n  btb ",
+            " nnnnn      "
+          ],
+          [
+            " nnnnn uvvvw",
+            " xnnnn ybbbz",
+            " nnpnn ybpbz",
+            " {nnnn ybbbz",
+            " nnnnn |}}}~"
+          ]
+        ]
+      },
+      "type": "patchouli:multiblock"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:mixer"
+    }
+  ]
+}
