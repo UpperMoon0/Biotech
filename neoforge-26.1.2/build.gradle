@@ -19,7 +19,21 @@ neoForge {
     }
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
 }
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources {
+    // 1.21+ registry-backed datapack directories are singular. The checked-in
+    // generated data is kept in its historical layout, then remapped below.
+    exclude 'data/biotech/recipes/**'
+    exclude 'data/biotech/loot_tables/**'
+}
+tasks.named('processResources', ProcessResources).configure {
+    from('src/generated/resources') {
+        exclude 'data/biotech/recipes/**'
+        exclude 'data/biotech/loot_tables/**'
+    }
+    from('src/generated/resources/data/biotech/recipes') { into 'data/biotech/recipe' }
+    from('src/generated/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
+    from('src/main/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
+}
 repositories {
     mavenLocal()
     maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
