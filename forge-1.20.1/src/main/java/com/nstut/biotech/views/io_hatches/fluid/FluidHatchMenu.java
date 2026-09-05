@@ -28,7 +28,7 @@ public abstract class FluidHatchMenu extends MachineMenu {
         super(menu, pContainerId);
         this.BLOCK_ENTITY = (FluidHatchBlockEntity) blockEntity;
         LEVEL = inventory.player.level();
-        fluidStack = FluidStack.EMPTY;
+        fluidStack = BLOCK_ENTITY.getInternalTank().getFluid().copy();
 
         blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(h -> {
             addSlot(new SlotItemHandler(h, 0, 98, 17) {
