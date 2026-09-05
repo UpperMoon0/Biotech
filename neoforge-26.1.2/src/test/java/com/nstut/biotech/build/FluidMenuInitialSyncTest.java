@@ -14,7 +14,7 @@ class FluidMenuInitialSyncTest {
     void menuSeedsItsDisplayFromTheSyncedBlockEntityTank() throws IOException {
         Path root = findRepositoryRoot();
         String menu = Files.readString(root.resolve("neoforge-26.1.2/src/main/java/com/nstut/biotech/views/io_hatches/fluid/FluidHatchMenu.java"));
-        assertTrue(menu.contains("BLOCK_ENTITY.getInternalTank().getFluid().copy()"));
+        assertTrue(menu.contains("BLOCK_ENTITY.getInternalTank().getFluidInTank(0).copy()"));
         assertFalse(menu.contains("fluidStack = FluidStack.EMPTY"));
     }
 
