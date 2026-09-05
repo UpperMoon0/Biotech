@@ -27,9 +27,21 @@ public class MixerScreen extends AbstractContainerScreen<MixerMenu> {
     @Override
     protected void renderLabels(@NotNull GuiGraphics g, int mouseX, int mouseY) {
         int rate = menu.getIsOperating() ? menu.getEnergyConsumeRate() : 0;
-        if (isHovering(7, 35, 8, 28, mouseX, mouseY)) {
-            if (menu.getStructureValid()) g.renderTooltip(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(rate + " FE / t")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
-            else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
+        if (isHovering(3, 31, 16, 37, mouseX, mouseY)) {
+            if (menu.getStructureValid()) {
+                List<Component> energyTooltip = menu.getIsOperating()
+                        ? List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Recipe Energy:"),
+                                Component.literal(menu.getEnergyConsumed() + " / " + menu.getRecipeEnergyCost() + " FE"),
+                                Component.literal("Rate: " + rate + " FE / t"))
+                        : List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Rate: 0 FE / t"));
+                g.renderTooltip(font, energyTooltip, Optional.empty(), mouseX - leftPos, mouseY - topPos);
+            } else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
         }
         if (isHovering(84, 59, MAX_PROGRESS_WIDTH, PROGRESS_HEIGHT, mouseX, mouseY)) {
             if (!menu.getStructureValid()) g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
