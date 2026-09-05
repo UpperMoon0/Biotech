@@ -13,7 +13,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,15 +33,27 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         if (menu.getIsOperating()) {
             rate = menu.getEnergyConsumeRate();
             ModRecipeData recipe = menu.getRecipe();
-            String raw = recipe.getIngredientItems()[0].getItemStack().getDisplayName().getString();
-            g.drawCenteredString(font, raw.substring(1, raw.length() - 1), 106, 25, 0xFFFFFF);
+            String seedName = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
+            g.drawCenteredString(font, seedName, 106, 25, 0xFFFFFF);
             if (isHovering(55, 55, 12, 12, mouseX, mouseY)) g.renderTooltip(font, List.of(Component.literal(recipe.getFluidIngredients()[0].getDisplayName().getString()), Component.literal(recipe.getFluidIngredients()[0].getAmount() + " mB")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
             OutputItem[] outputs = menu.getRecipe().getOutputItems();
             for (int i = 0; i < outputs.length; i++) { String chance = outputs[i].getChance() < 1 ? " (" + (int)(outputs[i].getChance() * 100) + "%)" : ""; g.drawCenteredString(font, outputs[i].getItemStack().getCount() + chance, 55 + i * 28, 136, 0xFFFFFF); }
         }
-        if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
-            if (menu.getStructureValid()) g.renderTooltip(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(rate + " FE / t")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
-            else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
+        if (isHovering(0, 39, 17, 84, mouseX, mouseY)) {
+            if (menu.getStructureValid()) {
+                List<Component> energyTooltip = menu.getIsOperating()
+                        ? List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Recipe Energy:"),
+                                Component.literal(menu.getEnergyConsumed() + " / " + menu.getRecipeEnergyCost() + " FE"),
+                                Component.literal("Rate: " + rate + " FE / t"))
+                        : List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Rate: 0 FE / t"));
+                g.renderTooltip(font, energyTooltip, Optional.empty(), mouseX - leftPos, mouseY - topPos);
+            } else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
         }
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) { FluidStack stored = menu.getFluidStored(); String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString(); g.renderTooltip(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX - leftPos, mouseY - topPos); }
@@ -73,7 +84,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         OutputItem[] outputs = menu.getRecipe().getOutputItems();
         for (int i = 0; i < outputs.length; i++) new BiotechItemRenderer(16,16).render(g.pose(), leftPos + 47 + 28 * i, topPos + 118, outputs[i].getItemStack());
         new BiotechFluidRenderer().renderFluid(g.pose(), leftPos + 55, topPos + 55, 12, 12, menu.getRecipe().getFluidIngredients()[0]);
-        if (menu.getRecipe().getIngredientItems().length > 1) new BiotechItemRenderer(12,12).render(g.pose(), leftPos + 53, topPos + 75, menu.getRecipe().getIngredientItems()[1].getItemStack());
+        if (menu.getRecipe().getIngredientItems().length > 1) new BiotechItemRenderer(12,12).render(g.pose(), leftPos + 55, topPos + 75, menu.getRecipe().getIngredientItems()[1].getItemStack());
     }
 
     public int getEnergyHeight() { int h = menu.getEnergyStored() * 76 / menu.getEnergyCapacity(); return h == 0 && menu.getEnergyStored() > 0 ? 1 : h; }
