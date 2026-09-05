@@ -36,10 +36,22 @@ def generateGameTestStructure = tasks.register('generateGameTestStructure') {
 }
 
 sourceSets.main.resources {
-    srcDir 'src/generated/resources'
     srcDir generatedGameTestResources
+    // 1.21+ registry-backed datapack directories are singular. The checked-in
+    // generated data is kept in its historical layout, then remapped below.
+    exclude 'data/biotech/recipes/**'
+    exclude 'data/biotech/loot_tables/**'
 }
-tasks.named('processResources').configure { dependsOn generateGameTestStructure }
+tasks.named('processResources', ProcessResources).configure {
+    dependsOn generateGameTestStructure
+    from('src/generated/resources') {
+        exclude 'data/biotech/recipes/**'
+        exclude 'data/biotech/loot_tables/**'
+    }
+    from('src/generated/resources/data/biotech/recipes') { into 'data/biotech/recipe' }
+    from('src/generated/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
+    from('src/main/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
+}
 tasks.named('sourcesJar').configure { dependsOn generateGameTestStructure }
 
 repositories {
