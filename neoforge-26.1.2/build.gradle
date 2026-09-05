@@ -21,9 +21,6 @@ neoForge {
 }
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
-    // 1.21+ registry-backed datapack directories are singular.
-    exclude 'data/biotech/recipes/**'
-    exclude 'data/biotech/loot_tables/**'
 }
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
@@ -77,8 +74,6 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
 
 tasks.named('processResources', ProcessResources).configure {
     dependsOn generateBiotechResources
-    // Hand-authored legacy loot-table sources are still remapped until they are migrated separately.
-    from('src/main/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
 }
 tasks.named('sourcesJar').configure { dependsOn generateBiotechResources }
 tasks.named('check').configure { dependsOn verifyGeneratedRecipes }

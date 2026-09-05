@@ -10,13 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModernResourceDirectoryTest {
     @Test
-    void generatedRecipesAndLootTablesUseSingularDirectories() {
+    void recipesAndLootTablesUseSingularDirectories() {
         Path root = findRepositoryRoot();
         Path generated = root.resolve("neoforge-26.1.2/src/generated/resources/data/biotech");
         assertTrue(Files.isDirectory(generated.resolve("recipe")));
         assertTrue(Files.isDirectory(generated.resolve("loot_table")));
         assertFalse(Files.exists(generated.resolve("recipes")));
         assertFalse(Files.exists(generated.resolve("loot_tables")));
+
+        Path main = root.resolve("neoforge-26.1.2/src/main/resources/data/biotech");
+        assertTrue(Files.isDirectory(main.resolve("recipe")));
+        assertTrue(Files.isDirectory(main.resolve("loot_table")));
+        assertFalse(Files.exists(main.resolve("recipes")));
+        assertFalse(Files.exists(main.resolve("loot_tables")));
     }
 
     private static Path findRepositoryRoot() {

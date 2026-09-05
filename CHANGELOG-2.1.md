@@ -22,6 +22,7 @@
 - Make fluid packet handling safe during client world transitions.
 - Keep all six machine recipe types and serializers registry-backed before datapack recipe synchronization, with regression coverage for their `biotech:*` registry IDs.
 - Restore all 13 NeoForge 26.1.2 crafting recipe resources referenced by the Patchouli guide using the modern singular `data/biotech/recipe/` path and current recipe JSON schema.
+- Physically migrate NeoForge 26.1.2 hand-authored loot tables to the modern singular `data/biotech/loot_table/` path and remove the packaging-time plural-directory remap.
 - Make generated machine recipes reproducible across all supported targets: Forge 1.20.1 retains its legacy recipe schema, while NeoForge 1.21.1 and 26.1.2 generate singular `recipe/` data with lowercase item counts and modern fluid `id`/`amount` fields. Builds regenerate and verify exactly 59 generated machine recipes before packaging.
 - Add NeoForge 26.1.2 client-item definitions for every Biotech item/block-item so existing models and textures render through the modern client-item layer.
 - Remove client screen classes and reflection from common machine registration.
