@@ -30,7 +30,11 @@ public abstract class FluidHatchMenu extends MachineMenu {
         fluidStack = FluidStack.EMPTY;
 
         var handler = BLOCK_ENTITY.getInternalItemResourceStorage();
-        addSlot(new ResourceHandlerSlot(handler, handler::set, 0, 98, 17));
+        addSlot(new ResourceHandlerSlot(handler, handler::set, 0, 98, 17) {
+            @Override public boolean mayPlace(@NotNull ItemStack stack) {
+                return FluidHatchBlockEntity.isFluidContainer(stack);
+            }
+        });
         addSlot(new ResourceHandlerSlot(handler, handler::set, 1, 98, 53) {
             @Override public boolean mayPlace(@NotNull ItemStack stack) { return false; }
         });

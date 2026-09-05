@@ -11,25 +11,27 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,14 +71,17 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
     protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     protected abstract boolean isInputHatch();
 
-    /** Legacy views used by existing bucket handling and machine transaction code. */
+    /** Legacy views used by existing machine transaction code. */
     public final IItemHandler getInternalItemStorage() { return internalSlots; }
     public final IFluidHandler getInternalTank() { return internalTank; }
 
     /** Native NeoForge 26 item storage used by menus and transfer-native code. */
     public final ItemStacksResourceHandler getInternalItemResourceStorage() { return slots; }
 
-    /** Native NeoForge 26 item capability for the hatch's bucket slots. */
+    /** Directional manual interaction view: input hatches accept fluid, output hatches provide fluid. */
+    public final ResourceHandler<FluidResource> getManualFluidStorage() { return externalTank; }
+
+    /** Native NeoForge 26 item capability for the hatch's container slots. */
     public final @Nullable ResourceHandler<ItemResource> getItemCapability(@Nullable Direction facing) {
         return facing == null ? slots : null;
     }
@@ -85,6 +90,11 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
     public final @Nullable ResourceHandler<FluidResource> getFluidCapability(@Nullable Direction facing) {
         if (facing == null) return tank;
         return facing == getBlockState().getValue(IOHatchBlock.FACING) ? externalTank : null;
+    }
+
+    public static boolean isFluidContainer(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return ItemAccess.forStack(stack).oneByOne().getCapability(Capabilities.Fluid.ITEM) != null;
     }
 
     @Override protected void loadAdditional(ValueInput input) {
@@ -109,7 +119,7 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos pos, BlockState state, T value) {
         if (!(value instanceof FluidHatchBlockEntity blockEntity) || level.isClientSide()) return;
-        blockEntity.bucketHandling();
+        blockEntity.containerHandling();
         FluidStack current = FluidUtil.getStack(blockEntity.tank, 0).copy();
         if (!sameFluidAndAmount(current, blockEntity.lastSyncedFluid)) {
             blockEntity.lastSyncedFluid = current.copy();
@@ -117,32 +127,34 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         }
     }
 
-    private void bucketHandling() {
-        ItemStack input = internalSlots.getStackInSlot(0);
-        ItemStack output = internalSlots.getStackInSlot(1);
-        FluidStack current = internalTank.getFluidInTank(0);
-        if (isInputHatch()) {
-            if (input.is(Items.WATER_BUCKET)
-                    && current.getAmount() <= TANK_CAPACITY - FluidType.BUCKET_VOLUME
-                    && (output.isEmpty() || (output.is(Items.BUCKET) && output.getCount() < output.getMaxStackSize()))) {
-                FluidStack water = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
-                if (internalTank.fill(water, IFluidHandler.FluidAction.SIMULATE) == FluidType.BUCKET_VOLUME) {
-                    internalTank.fill(water, IFluidHandler.FluidAction.EXECUTE);
-                    internalSlots.extractItem(0, 1, false);
-                    ItemStack remainder = internalSlots.insertItem(1, new ItemStack(Items.BUCKET), false);
-                    if (!remainder.isEmpty()) throw new IllegalStateException("Fluid input hatch bucket output changed during commit");
-                }
+    private void containerHandling() {
+        ItemStack input = ItemUtil.getStack(slots, 0);
+        if (!isFluidContainer(input)) return;
+
+        ItemStacksResourceHandler workingContainer = new ItemStacksResourceHandler(1);
+        workingContainer.set(0, ItemResource.of(input), 1);
+        var itemAccess = ItemAccess.forHandlerIndexStrict(workingContainer, 0).oneByOne();
+        ResourceHandler<FluidResource> containerFluid = itemAccess.getCapability(Capabilities.Fluid.ITEM);
+        if (containerFluid == null) return;
+
+        try (Transaction transaction = Transaction.openRoot()) {
+            var moved = isInputHatch()
+                    ? ResourceHandlerUtil.moveFirst(containerFluid, tank, resource -> true, Integer.MAX_VALUE, transaction)
+                    : ResourceHandlerUtil.moveFirst(tank, containerFluid, resource -> true, Integer.MAX_VALUE, transaction);
+            if (moved == null || moved.isEmpty()) return;
+
+            ItemResource original = slots.getResource(0);
+            if (original.isEmpty() || slots.extract(0, original, 1, transaction) != 1) return;
+
+            ItemResource result = workingContainer.getResource(0);
+            int resultAmount = workingContainer.getAmountAsInt(0);
+            if (result.isEmpty()) {
+                if (resultAmount != 0) return;
+            } else if (resultAmount != 1 || slots.insert(1, result, 1, transaction) != 1) {
+                return;
             }
-        } else if (input.is(Items.BUCKET) && current.getAmount() >= FluidType.BUCKET_VOLUME
-                && current.getFluid() == Fluids.WATER && output.isEmpty()) {
-            FluidStack request = new FluidStack(Fluids.WATER, FluidType.BUCKET_VOLUME);
-            FluidStack simulated = internalTank.drain(request, IFluidHandler.FluidAction.SIMULATE);
-            if (simulated.getAmount() == FluidType.BUCKET_VOLUME) {
-                internalTank.drain(request, IFluidHandler.FluidAction.EXECUTE);
-                internalSlots.extractItem(0, 1, false);
-                ItemStack remainder = internalSlots.insertItem(1, new ItemStack(Items.WATER_BUCKET), false);
-                if (!remainder.isEmpty()) throw new IllegalStateException("Fluid output hatch bucket output changed during commit");
-            }
+
+            transaction.commit();
         }
     }
 
