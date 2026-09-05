@@ -33,8 +33,8 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
     protected void extractLabels(@NotNull GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (menu.getIsOperating()) {
             ModRecipeData recipe = menu.getRecipe();
-            String raw = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
-            g.centeredText(font, raw.substring(1, raw.length() - 1), 70, 76, 0xFFFFFFFF);
+            String animalName = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
+            g.centeredText(font, animalName, 70, 76, 0xFFFFFFFF);
             g.centeredText(font, recipe.getFluidIngredients()[0].getAmount() + " mB", 95, 104, 0xFFFFFFFF);
             OutputItem[] outputs = recipe.getOutputItems();
             for (int i = 0; i < outputs.length; i++) {
@@ -53,9 +53,21 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
         if (menu.getIsOperating() && isHovering(31, 100, 20, 20, mouseX, mouseY)) {
             g.setTooltipForNextFrame(font, List.of(Component.literal(menu.getRecipe().getFluidIngredients()[0].getHoverName().getString())), Optional.empty(), mouseX, mouseY);
         }
-        if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
-            if (menu.getStructureValid()) g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(rate + " FE / t")), Optional.empty(), mouseX, mouseY);
-            else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
+        if (isHovering(0, 39, 17, 84, mouseX, mouseY)) {
+            if (menu.getStructureValid()) {
+                List<Component> energyTooltip = menu.getIsOperating()
+                        ? List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Recipe Energy:"),
+                                Component.literal(menu.getEnergyConsumed() + " / " + menu.getRecipeEnergyCost() + " FE"),
+                                Component.literal("Rate: " + rate + " FE / t"))
+                        : List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Rate: 0 FE / t"));
+                g.setTooltipForNextFrame(font, energyTooltip, Optional.empty(), mouseX, mouseY);
+            } else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
         }
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
