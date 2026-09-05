@@ -11,9 +11,9 @@ public abstract class DataGenerator {
     private static final Logger LOGGER = Logger.getLogger(DataGenerator.class.getName());
 
     protected static final String GEN_DATA_PATH = "src/generated/resources/data/biotech";
-    private static final String GEN_LOOT_TABLES_PATH = GEN_DATA_PATH + "/loot_tables";
+    private static final String GEN_LOOT_TABLES_PATH = GEN_DATA_PATH + "/loot_table";
     protected static final String GEN_BLOCK_LOOT_TABLES_PATH = GEN_LOOT_TABLES_PATH + "/blocks";
-    protected static final String GEN_RECIPES_PATH = GEN_DATA_PATH + "/recipes";
+    protected static final String GEN_RECIPES_PATH = GEN_DATA_PATH + "/recipe";
 
     protected static final String GEN_ASSETS_PATH = "src/generated/resources/assets/biotech";
     protected static final String GEN_BLOCKSTATES_PATH = GEN_ASSETS_PATH + "/blockstates";
@@ -27,7 +27,7 @@ public abstract class DataGenerator {
     private static void clearDirectory(String path) {
         try (var paths = Files.walk(Paths.get(path))) {
             paths.sorted(Comparator.reverseOrder())
-                    .filter(p -> !p.equals(Paths.get(path))) // Skip the root directory
+                    .filter(p -> !p.equals(Paths.get(path)))
                     .forEach(p -> {
                         try {
                             Files.delete(p);
