@@ -72,6 +72,10 @@ repositories {
     mavenLocal()
     maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
     maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    exclusiveContent {
+        forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
 }
 configurations {
     runtimeClasspath.extendsFrom localRuntime
@@ -85,7 +89,7 @@ dependencies {
     modImplementation nstutLibDependency
     modRuntimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_1_20_1}"
 
-    // Dev-only test utilities: generators/energy plus energy, item, and fluid transport.
+    // Dev-only test utilities: generators/energy plus energy, item, fluid transport, and Jade inspection.
     modLocalRuntime "curse.maven:cloth-config-348521:${rootProject.dev_cloth_config_file_1_20_1}"
     modLocalRuntime "curse.maven:guideme-1173950:${rootProject.dev_guideme_file_1_20_1}"
     modLocalRuntime "curse.maven:powah-rearchitected-633483:${rootProject.dev_powah_file_1_20_1}"
@@ -94,6 +98,8 @@ dependencies {
     modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-common-api:${rootProject.jei_version_1_20_1}"
     modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-forge-api:${rootProject.jei_version_1_20_1}"
     modRuntimeOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-forge:${rootProject.jei_version_1_20_1}"
+    modCompileOnly "maven.modrinth:jade:${rootProject.jade_version_1_20_1}"
+    modLocalRuntime "maven.modrinth:jade:${rootProject.jade_version_1_20_1}"
     compileOnly "org.projectlombok:lombok:${rootProject.lombok_version}"
     annotationProcessor "org.projectlombok:lombok:${rootProject.lombok_version}"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
