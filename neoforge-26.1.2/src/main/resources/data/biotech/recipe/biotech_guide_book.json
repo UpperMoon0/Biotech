@@ -1,0 +1,6 @@
+{
+  "type": "patchouli:shaped_book_recipe",
+  "pattern": ["$#"],
+  "key": {"$": {"item": "minecraft:book"}, "#": {"item": "biotech:biotech_machine_casing"}},
+  "book": "biotech:biotech_guide_book"
+}
