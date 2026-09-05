@@ -12,7 +12,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,19 +33,30 @@ public class BreedingChamberScreen extends AbstractContainerScreen<BreedingChamb
         if (menu.getIsOperating()) {
             energyConsumeRate = menu.getEnergyConsumeRate();
             ModRecipeData recipe = menu.getRecipe();
-            String animalRawName = recipe.getIngredientItems()[0].getItemStack().getDisplayName().getString();
-            g.drawCenteredString(font, animalRawName.substring(1, animalRawName.length() - 1), 106, 76, 0xFFFFFF);
-            String foodRawName = recipe.getIngredientItems()[1].getItemStack().getDisplayName().getString();
-            String foodName = foodRawName.substring(1, foodRawName.length() - 1);
+            String animalName = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
+            g.drawCenteredString(font, animalName, 106, 76, 0xFFFFFF);
+            String foodName = recipe.getIngredientItems()[1].getItemStack().getHoverName().getString();
             if (isHovering(31, 98, 20, 20, mouseX, mouseY)) g.renderTooltip(font, List.of(Component.literal(foodName)), Optional.empty(), mouseX - leftPos, mouseY - topPos);
             g.drawCenteredString(font, String.valueOf(recipe.getIngredientItems()[1].getItemStack().getCount()), 95, 104, 0xFFFFFF);
             String fluidName = recipe.getFluidIngredients()[0].getDisplayName().getString();
             if (isHovering(31, 131, 20, 20, mouseX, mouseY)) g.renderTooltip(font, List.of(Component.literal(fluidName)), Optional.empty(), mouseX - leftPos, mouseY - topPos);
             g.drawCenteredString(font, recipe.getFluidIngredients()[0].getAmount() + " mB", 95, 137, 0xFFFFFF);
         }
-        if (isHovering(4, 43, 9, 76, mouseX, mouseY)) {
-            if (menu.getStructureValid()) g.renderTooltip(font, List.of(Component.literal("Stored Energy:"), Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"), Component.literal("Consuming: "), Component.literal(energyConsumeRate + " FE / t")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
-            else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
+        if (isHovering(0, 39, 17, 84, mouseX, mouseY)) {
+            if (menu.getStructureValid()) {
+                List<Component> energyTooltip = menu.getIsOperating()
+                        ? List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Recipe Energy:"),
+                                Component.literal(menu.getEnergyConsumed() + " / " + menu.getRecipeEnergyCost() + " FE"),
+                                Component.literal("Rate: " + energyConsumeRate + " FE / t"))
+                        : List.of(
+                                Component.literal("Stored Energy:"),
+                                Component.literal(menu.getEnergyStored() + " / " + menu.getEnergyCapacity() + " FE"),
+                                Component.literal("Rate: 0 FE / t"));
+                g.renderTooltip(font, energyTooltip, Optional.empty(), mouseX - leftPos, mouseY - topPos);
+            } else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
         }
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
