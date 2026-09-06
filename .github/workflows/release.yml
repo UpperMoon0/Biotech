@@ -1,0 +1,236 @@
+name: Build and Release Biotech
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Publish the current version from main
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-gate:
+    name: Check release trigger
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check whether this version is unpublished
+        id: check
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          MANUAL_RELEASE: ${{ inputs.release || false }}
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^mod_version[[:space:]]*=[[:space:]]*//p' gradle.properties | head -n1 | tr -d '\r' | xargs)"
+          if [[ ! "$version" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
+            printf 'Invalid mod_version: %q\n' "$version" >&2
+            exit 1
+          fi
+          expected="v${version}"
+          should_release=false
+
+          if [[ "$REF" == refs/tags/* ]]; then
+            if [[ "${REF#refs/tags/}" != "$expected" ]]; then
+              echo "Tag ${REF#refs/tags/} does not match mod_version $version" >&2
+              exit 1
+            fi
+            should_release=true
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" && "$REF" == "refs/heads/main" && "$MANUAL_RELEASE" == "true" ]]; then
+            should_release=true
+          elif [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/main" ]]; then
+            if git ls-remote --exit-code --tags origin "refs/tags/${expected}" >/dev/null 2>&1; then
+              echo "${expected} already exists; nothing to publish."
+            else
+              should_release=true
+            fi
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "should_release=$should_release" >> "$GITHUB_OUTPUT"
+          echo "Release trigger: $should_release"
+
+  build:
+    name: Build ${{ matrix.loader }} ${{ matrix.minecraft }}
+    needs: release-gate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: forge-1.20.1
+            nstut_project: forge-1.20.1
+            minecraft: '1.20.1'
+            loader: forge
+            loader_name: Forge
+            java: '17'
+            java_version_name: Java 17
+          - project: neoforge-1.21.1
+            nstut_project: neoforge-1.21.1
+            minecraft: '1.21.1'
+            loader: neoforge
+            loader_name: NeoForge
+            java: '21'
+            java_version_name: Java 21
+          - project: neoforge-26.1.2
+            nstut_project: neoforge-26.1.2
+            minecraft: '26.1.2'
+            loader: neoforge
+            loader_name: NeoForge
+            java: '25'
+            java_version_name: Java 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve validated NsTut Lib revision
+        id: nstut-ref
+        shell: bash
+        run: |
+          ref="$(sed -n 's/^nstut_lib_ref=//p' gradle.properties)"
+          if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid nstut_lib_ref in gradle.properties: $ref" >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/NsTut-Lib
+          ref: ${{ steps.nstut-ref.outputs.ref }}
+          path: .ci/nstut-lib
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: gradle
+      - name: Publish NsTut Lib dependency to Maven Local
+        working-directory: .ci/nstut-lib
+        run: ./gradlew :${{ matrix.nstut_project }}:publishToMavenLocal --no-daemon --stacktrace
+      - name: Build and test Forge 1.20.1
+        if: matrix.project == 'forge-1.20.1'
+        run: |
+          ./gradlew :forge-1.20.1:testClasses :forge-1.20.1:assemble --no-daemon --stacktrace
+          ./gradlew :forge-1.20.1:runGameTestServer --no-daemon --stacktrace
+      - name: Build and test NeoForge
+        if: matrix.project != 'forge-1.20.1'
+        run: |
+          ./gradlew :${{ matrix.project }}:test :${{ matrix.project }}:build --no-daemon --stacktrace
+          ./gradlew :${{ matrix.project }}:runGameTestServer --no-daemon --stacktrace
+      - name: Upload release JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: biotech-${{ matrix.loader }}-${{ matrix.minecraft }}
+          path: |
+            ${{ matrix.project }}/build/libs/*.jar
+            !${{ matrix.project }}/build/libs/*-sources.jar
+            !${{ matrix.project }}/build/libs/*-javadoc.jar
+            !${{ matrix.project }}/build/libs/*-dev-shadow.jar
+            !${{ matrix.project }}/build/libs/*-plain.jar
+          if-no-files-found: error
+
+  publish-curseforge:
+    name: Publish ${{ matrix.loader_name }} ${{ matrix.minecraft }} to CurseForge
+    if: needs.release-gate.outputs.should_release == 'true'
+    needs: [release-gate, build]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - minecraft: '1.20.1'
+            loader: forge
+            loader_name: Forge
+            java_version_name: Java 17
+          - minecraft: '1.21.1'
+            loader: neoforge
+            loader_name: NeoForge
+            java_version_name: Java 21
+          - minecraft: '26.1.2'
+            loader: neoforge
+            loader_name: NeoForge
+            java_version_name: Java 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: biotech-${{ matrix.loader }}-${{ matrix.minecraft }}
+          path: curseforge-artifact
+      - name: Select release JAR
+        id: release_file
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t jars < <(find curseforge-artifact -maxdepth 1 -type f -name '*.jar' | sort)
+          if [[ ${#jars[@]} -ne 1 ]]; then
+            echo "Expected exactly one runnable JAR, found ${#jars[@]}" >&2
+            printf '  %s\n' "${jars[@]}" >&2
+            exit 1
+          fi
+          echo "jar_path=${jars[0]}" >> "$GITHUB_OUTPUT"
+      - name: Publish to CurseForge
+        shell: bash
+        env:
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+          CURSEFORGE_PROJECT_ID: '1119684'
+          MOD_VERSION: ${{ needs.release-gate.outputs.version }}
+          CHANGELOG_PATH: CHANGELOG-2.1.md
+          JAR_PATH: ${{ steps.release_file.outputs.jar_path }}
+          MINECRAFT_VERSION: ${{ matrix.minecraft }}
+          LOADER_NAME: ${{ matrix.loader_name }}
+          JAVA_VERSION_NAME: ${{ matrix.java_version_name }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${CURSEFORGE_API_TOKEN:-}" ]]; then
+            echo "Missing required GitHub secret: CURSEFORGE_API_TOKEN" >&2
+            exit 1
+          fi
+          test -f "$CHANGELOG_PATH"
+          game_version_names="$(jq -cn --arg mc "$MINECRAFT_VERSION" --arg loader "$LOADER_NAME" --arg java "$JAVA_VERSION_NAME" '[$mc, $loader, $java, "Client"]')"
+          changelog="$(<"$CHANGELOG_PATH")"
+          metadata="$(jq -cn --arg changelog "$changelog" --arg displayName "Biotech ${MOD_VERSION} - ${LOADER_NAME} ${MINECRAFT_VERSION}" --argjson gameVersionNames "$game_version_names" '{changelog:$changelog,changelogType:"markdown",displayName:$displayName,gameVersionNames:$gameVersionNames,releaseType:"release",relations:{projects:[{slug:"nstut-lib",type:"requiredDependency"},{slug:"patchouli",type:"requiredDependency"}]}}')"
+          response_file="$(mktemp)"
+          trap 'rm -f "$response_file"' EXIT
+          http_status="$(curl --silent --show-error --retry 4 --retry-max-time 90 --connect-timeout 15 --max-time 60 --output "$response_file" --write-out '%{http_code}' --request POST --header "X-Api-Token: ${CURSEFORGE_API_TOKEN}" --form-string "metadata=${metadata}" --form "file=@${JAR_PATH}" "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
+          response="$(<"$response_file")"
+          if [[ "$http_status" =~ ^2 ]]; then
+            echo "Published ${JAR_PATH} to CurseForge as file ID $(jq -er '.id' <<< "$response")."
+          elif grep -Eqi 'already|duplicate' <<< "$response"; then
+            echo "CurseForge already has this JAR; treating retry as successful."
+          else
+            echo "CurseForge upload failed with HTTP ${http_status}: ${response}" >&2
+            exit 1
+          fi
+
+  publish-github-release:
+    name: Publish GitHub Release
+    if: needs.release-gate.outputs.should_release == 'true'
+    needs: [release-gate, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.release-gate.outputs.version }}
+          name: Biotech v${{ needs.release-gate.outputs.version }}
+          body_path: CHANGELOG-2.1.md
+          fail_on_unmatched_files: true
+          files: artifacts/**/*.jar
