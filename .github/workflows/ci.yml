@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: dc42d754a3673934542671b2b045b0cead5c7553
+          ref: 23e6b758684051a77f3b4f6eaa3e28fbeb35e36a
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: dc42d754a3673934542671b2b045b0cead5c7553
+          ref: 23e6b758684051a77f3b4f6eaa3e28fbeb35e36a
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
