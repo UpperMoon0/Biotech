@@ -22,10 +22,20 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Resolve validated NsTut Lib revision
+        id: nstut-ref
+        shell: bash
+        run: |
+          ref="$(sed -n 's/^nstut_lib_ref=//p' gradle.properties)"
+          if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid nstut_lib_ref in gradle.properties: $ref" >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: 142986476c40c942d673bcce3ee6afaff7a2bd8f
+          ref: ${{ steps.nstut-ref.outputs.ref }}
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
@@ -68,10 +78,20 @@ jobs:
             java: '25'
     steps:
       - uses: actions/checkout@v4
+      - name: Resolve validated NsTut Lib revision
+        id: nstut-ref
+        shell: bash
+        run: |
+          ref="$(sed -n 's/^nstut_lib_ref=//p' gradle.properties)"
+          if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid nstut_lib_ref in gradle.properties: $ref" >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           repository: UpperMoon0/NsTut-Lib
-          ref: 142986476c40c942d673bcce3ee6afaff7a2bd8f
+          ref: ${{ steps.nstut-ref.outputs.ref }}
           path: .ci/nstut-lib
       - uses: actions/setup-java@v5
         with:
