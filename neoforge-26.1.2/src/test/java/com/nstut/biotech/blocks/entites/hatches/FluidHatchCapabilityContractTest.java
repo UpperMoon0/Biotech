@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FluidHatchCapabilityContractTest {
     @Test
-    void outputHatchAdvertisesNoInsertionCapacity() {
-        assertEquals(32_000L, FluidHatchBlockEntity.externalInsertionCapacity(true, 32_000L));
-        assertEquals(0L, FluidHatchBlockEntity.externalInsertionCapacity(false, 32_000L));
+    void generalCapacitySurvivesWhileOutputInsertionCapacityIsZero() {
+        assertEquals(32_000L, FluidHatchCapabilityPolicy.externalCapacity(true, false, 32_000L));
+        assertEquals(32_000L, FluidHatchCapabilityPolicy.externalCapacity(true, true, 32_000L));
+        assertEquals(0L, FluidHatchCapabilityPolicy.externalCapacity(false, false, 32_000L));
+        assertEquals(32_000L, FluidHatchCapabilityPolicy.externalCapacity(false, true, 32_000L));
     }
 }
