@@ -52,10 +52,19 @@ public class MixerCategory implements IRecipeCategory<MixerRecipe> {
         for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
             FluidStack fluidStack = recipe.getFluidIngredients().get(i);
             int x = 23 + 18 * i;
-            builder.addSlot(RecipeIngredientRole.INPUT, x, 38).addFluidStack(fluidStack.getFluid(), fluidStack.getAmount()).setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+            builder.addSlot(RecipeIngredientRole.INPUT, x, 38)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
         }
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 9).addIngredients(itemOutputs.get(0));
-        if (!recipe.getFluidOutputs().isEmpty()) builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 27).addFluidStack(recipe.getFluidOutputs().get(0).getFluid(), recipe.getFluidOutputs().get(0).getAmount()).setFluidRenderer(recipe.getFluidOutputs().get(0).getAmount(), false, 16, 16);
+        for (int i = 0; i < itemOutputs.size(); i++) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 9 + i * 18).addIngredients(itemOutputs.get(i));
+        }
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluidStack = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 94, 9 + i * 18)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+        }
     }
 
     @Override

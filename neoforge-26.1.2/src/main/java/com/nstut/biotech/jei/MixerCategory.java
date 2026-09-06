@@ -44,24 +44,26 @@ public class MixerCategory implements IRecipeCategory<MixerRecipe> {
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull MixerRecipe recipe, @NotNull IFocusGroup focuses) {
         List<ItemStack> ingredients = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
-        List<ItemStack> outputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
+        List<ItemStack> itemOutputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
 
         for (int i = 0; i < ingredients.size(); i++) {
             builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 3) * 18, 1 + (i / 3) * 18)
                     .addItemStack(ingredients.get(i));
         }
         for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
-            FluidStack fluid = recipe.getFluidIngredients().get(i);
+            FluidStack fluidStack = recipe.getFluidIngredients().get(i);
             builder.addSlot(RecipeIngredientRole.INPUT, 23 + 18 * i, 38)
-                    .addFluidStack(fluid.getFluid(), fluid.getAmount())
-                    .setFluidRenderer(fluid.getAmount(), false, 16, 16);
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
         }
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 9).addItemStack(outputs.get(0));
-        if (!recipe.getFluidOutputs().isEmpty()) {
-            FluidStack fluid = recipe.getFluidOutputs().get(0);
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 27)
-                    .addFluidStack(fluid.getFluid(), fluid.getAmount())
-                    .setFluidRenderer(fluid.getAmount(), false, 16, 16);
+        for (int i = 0; i < itemOutputs.size(); i++) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 9 + i * 18).addItemStack(itemOutputs.get(i));
+        }
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluidStack = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 94, 9 + i * 18)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
         }
     }
 

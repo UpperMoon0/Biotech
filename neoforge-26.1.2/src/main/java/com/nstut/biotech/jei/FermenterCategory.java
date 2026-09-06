@@ -44,17 +44,27 @@ public class FermenterCategory implements IRecipeCategory<FermenterRecipe> {
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull FermenterRecipe recipe, @NotNull IFocusGroup focuses) {
         List<ItemStack> ingredients = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
-        FluidStack fluid = recipe.getFluidIngredients().get(0);
-        List<ItemStack> outputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
+        List<ItemStack> itemOutputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
 
         for (int i = 0; i < ingredients.size(); i++) {
             builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 3) * 18, 2 + (i / 3) * 18)
                     .addItemStack(ingredients.get(i));
         }
-        builder.addSlot(RecipeIngredientRole.INPUT, 79, 11)
-                .addFluidStack(fluid.getFluid(), fluid.getAmount())
-                .setFluidRenderer(fluid.getAmount(), false, 16, 16);
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 131, 11).addItemStack(outputs.get(0));
+        for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
+            FluidStack fluidStack = recipe.getFluidIngredients().get(i);
+            builder.addSlot(RecipeIngredientRole.INPUT, 79, 2 + i * 18)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+        }
+        for (int i = 0; i < itemOutputs.size(); i++) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 113, 2 + i * 18).addItemStack(itemOutputs.get(i));
+        }
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluidStack = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 131, 2 + i * 18)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+        }
     }
 
     @Override

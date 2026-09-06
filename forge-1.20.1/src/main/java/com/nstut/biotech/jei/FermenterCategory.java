@@ -60,11 +60,9 @@ public class FermenterCategory implements IRecipeCategory<FermenterRecipe> {
 
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull FermenterRecipe recipe, @NotNull IFocusGroup focuses) {
-
         List<Ingredient> ingredients = recipe.getItemIngredients().stream()
                 .map(ingredientItem -> Ingredient.of(ingredientItem.getItemStack()))
                 .toList();
-        FluidStack fluidIngredient = recipe.getFluidIngredients().get(0);
         List<Ingredient> itemOutputs = recipe.getItemOutputs().stream()
                 .map(outputItem -> Ingredient.of(outputItem.getItemStack()))
                 .toList();
@@ -74,9 +72,22 @@ public class FermenterCategory implements IRecipeCategory<FermenterRecipe> {
             int y = 2 + (i / 3) * 18;
             builder.addSlot(RecipeIngredientRole.INPUT, x, y).addIngredients(ingredients.get(i));
         }
-        builder.addSlot(RecipeIngredientRole.INPUT, 79, 11).addFluidStack(fluidIngredient.getFluid(), fluidIngredient.getAmount()).setFluidRenderer(fluidIngredient.getAmount(), false, 16, 16);
-
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 131, 11).addIngredients(itemOutputs.get(0));
+        for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
+            FluidStack fluidStack = recipe.getFluidIngredients().get(i);
+            builder.addSlot(RecipeIngredientRole.INPUT, 79, 2 + i * 18)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+        }
+        for (int i = 0; i < itemOutputs.size(); i++) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 113, 2 + i * 18)
+                    .addIngredients(itemOutputs.get(i));
+        }
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluidStack = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 131, 2 + i * 18)
+                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
+                    .setFluidRenderer(fluidStack.getAmount(), false, 16, 16);
+        }
     }
 
     @Override
