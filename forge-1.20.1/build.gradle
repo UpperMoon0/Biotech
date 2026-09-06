@@ -13,7 +13,6 @@ java { toolchain.languageVersion = JavaLanguageVersion.of(17); withSourcesJar() 
 legacyForge {
     version = "${rootProject.minecraft_version_1_20_1}-${rootProject.forge_version_1_20_1}"
     validateAccessTransformers = true
-    addModdingDependenciesTo(sourceSets.test)
     runs {
         client { client() }
         server { server(); programArgument '--nogui' }
@@ -25,6 +24,10 @@ legacyForge {
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
+    unitTest {
+        enable()
+        testedMod = mods."${rootProject.mod_id}"
+    }
 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
