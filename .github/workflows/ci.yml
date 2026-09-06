@@ -2,14 +2,54 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  draft-fast:
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft
+    name: draft-fast-neoforge-26.1.2
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/NsTut-Lib
+          ref: dc42d754a3673934542671b2b045b0cead5c7553
+          path: .ci/nstut-lib
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+      - name: Publish NsTut Lib fast target to Maven Local
+        working-directory: .ci/nstut-lib
+        run: ./gradlew :neoforge-26.1.2:publishToMavenLocal --no-daemon --stacktrace
+      - name: Fast unit tests and build
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :neoforge-26.1.2:test :neoforge-26.1.2:build --no-daemon --stacktrace 2>&1 | tee neoforge-26.1.2-build.log
+      - name: Upload failing Gradle log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-neoforge-26.1.2-build-log
+          path: neoforge-26.1.2-build.log
+          if-no-files-found: warn
+
   build:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     name: ${{ matrix.target }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
