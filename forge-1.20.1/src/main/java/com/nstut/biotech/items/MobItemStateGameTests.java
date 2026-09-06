@@ -16,7 +16,7 @@ public final class MobItemStateGameTests {
     private MobItemStateGameTests() {
     }
 
-    @GameTest(templateNamespace = "forge", template = "empty3x3x3", timeoutTicks = 40)
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
     public static void sanitizerPreservesGameplayStateWithoutWorldIdentity(GameTestHelper helper) {
         CompoundTag source = new CompoundTag();
         source.putString("CustomName", "Bessie");
@@ -29,7 +29,7 @@ public final class MobItemStateGameTests {
         source.putInt("PortalCooldown", 40);
         source.putString("Leash", "old-leash");
 
-        CompoundTag sanitized = MobItem.sanitizeCapturedEntityTag(source);
+        CompoundTag sanitized = CapturedEntityState.sanitize(source);
 
         helper.assertTrue("Bessie".equals(sanitized.getString("CustomName")) && sanitized.getInt("Age") == -24000,
                 "Gameplay state must survive capture sanitization");

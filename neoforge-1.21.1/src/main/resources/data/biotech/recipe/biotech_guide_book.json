@@ -1,15 +1,14 @@
 {
-  "type": "patchouli:shaped_book_recipe",
-  "pattern": [
-    "$#"
-  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "key": {
-    "$": {
-      "item": "minecraft:book"
-    },
-    "#": {
-      "item": "biotech:biotech_machine_casing"
-    }
+    "B": {"item": "minecraft:book"},
+    "C": {"item": "biotech:biotech_machine_casing"}
   },
-  "book": "biotech:biotech_guide_book"
+  "pattern": ["BC"],
+  "result": {
+    "id": "patchouli:guide_book",
+    "count": 1,
+    "components": {"patchouli:book": "biotech:biotech_guide_book"}
+  }
 }

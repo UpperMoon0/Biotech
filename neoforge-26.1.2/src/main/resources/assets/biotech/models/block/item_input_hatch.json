@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "biotech:block/item_input_hatch",
-    "side": "biotech:block/biotech_machine_casing",
-    "top": "biotech:block/biotech_machine_casing"
-  }
-}

@@ -61,8 +61,8 @@ public class MixerScreen extends AbstractContainerScreen<MixerMenu> {
                 g.setTooltipForNextFrame(Component.literal("Not Operating"), mouseX, mouseY);
             } else {
                 int cost = menu.getRecipe().getTotalEnergy();
-                float total = ((float) cost / rate) / 20;
-                float current = ((float) menu.getEnergyConsumed() / rate) / 20;
+                float total = MachineScreenMath.secondsForEnergy(cost, rate);
+                float current = MachineScreenMath.secondsForEnergy(menu.getEnergyConsumed(), rate);
                 g.setTooltipForNextFrame(font, List.of(
                         Component.literal("Progress:"),
                         Component.literal(menu.getEnergyConsumed() + " / " + cost + " FE"),
@@ -97,6 +97,6 @@ public class MixerScreen extends AbstractContainerScreen<MixerMenu> {
     }
 
     public int getProgressWidth() {
-        return menu.getRecipeEnergyCost() == 0 ? 0 : menu.getEnergyConsumed() * MAX_PROGRESS_WIDTH / menu.getRecipeEnergyCost();
+        return MachineScreenMath.progressWidth(menu.getEnergyConsumed(), menu.getRecipeEnergyCost(), MAX_PROGRESS_WIDTH);
     }
 }

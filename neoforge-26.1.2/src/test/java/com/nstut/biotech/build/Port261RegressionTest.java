@@ -13,7 +13,7 @@ class Port261RegressionTest {
     @Test
     void greenhouseDoesNotRequireRuntimeDerivedBlockStates() throws IOException {
         Path root = findRepositoryRoot();
-        String greenhouse = Files.readString(root.resolve("neoforge-26.1.2/src/main/java/com/nstut/biotech/blocks/entites/machines/GreenhouseBlockEntity.java"));
+        String greenhouse = Files.readString(root.resolve("common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/GreenhouseBlockEntity.java"));
 
         assertFalse(greenhouse.contains("Map.of(\"moisture\", \"0\")"));
         assertFalse(greenhouse.contains("\"shape\", \"straight\""));

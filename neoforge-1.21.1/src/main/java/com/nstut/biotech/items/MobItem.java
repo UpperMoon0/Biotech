@@ -102,7 +102,7 @@ public class MobItem extends Item {
     private void restoreCapturedState(Mob mob, ItemStack stack) {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            mob.load(sanitizeCapturedEntityTag(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
+            mob.load(CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
             return;
         }
 
@@ -111,19 +111,6 @@ public class MobItem extends Item {
         }
     }
 
-    static CompoundTag sanitizeCapturedEntityTag(CompoundTag source) {
-        CompoundTag captured = source.copy();
-        // A released animal is a new world entity. Preserve gameplay state, not the old
-        // world identity/coordinates/velocity that could conflict with another entity.
-        captured.remove("UUID");
-        captured.remove("Pos");
-        captured.remove("Motion");
-        captured.remove("Rotation");
-        captured.remove("FallDistance");
-        captured.remove("PortalCooldown");
-        captured.remove("Leash");
-        return captured;
-    }
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack,

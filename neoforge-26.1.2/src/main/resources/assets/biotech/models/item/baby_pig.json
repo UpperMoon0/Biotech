@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "biotech:item/baby_base",
-    "layer1": "biotech:item/pig"
-  }
-}

@@ -35,7 +35,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
             ModRecipeData recipe = menu.getRecipe();
             String animalName = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.drawCenteredString(font, animalName, 70, 76, 0xFFFFFF);
-            if (isHovering(31, 100, 20, 20, mouseX, mouseY)) g.renderTooltip(font, List.of(Component.literal(recipe.getFluidIngredients()[0].getDisplayName().getString())), Optional.empty(), mouseX - leftPos, mouseY - topPos);
+            if (isHovering(31, 100, 20, 20, mouseX, mouseY)) g.renderTooltip(font, List.of(Component.literal(recipe.getFluidIngredients()[0].getHoverName().getString())), Optional.empty(), mouseX - leftPos, mouseY - topPos);
             g.drawCenteredString(font, recipe.getFluidIngredients()[0].getAmount() + " mB", 95, 104, 0xFFFFFF);
             OutputItem[] outputs = menu.getRecipe().getOutputItems();
             for (int i = 0; i < outputs.length; i++) {
@@ -62,7 +62,7 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
             if (menu.getStructureValid()) {
                 FluidStack stored = menu.getFluidStored();
-                String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString();
+                String name = stored.isEmpty() ? "Empty" : stored.getHoverName().getString();
                 g.renderTooltip(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
             } else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
         }
@@ -71,8 +71,8 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
             else if (!menu.getIsOperating()) g.renderTooltip(font, Component.literal("Not Operating"), mouseX - leftPos, mouseY - topPos);
             else {
                 int cost = menu.getRecipe().getTotalEnergy();
-                float total = ((float) cost / rate) / 20;
-                float current = ((float) menu.getEnergyConsumed() / rate) / 20;
+                float total = MachineScreenMath.secondsForEnergy(cost, rate);
+                float current = MachineScreenMath.secondsForEnergy(menu.getEnergyConsumed(), rate);
                 g.renderTooltip(font, List.of(Component.literal("Progress:"), Component.literal(menu.getEnergyConsumed() + " / " + cost + " FE"), Component.literal(String.format("%.1f", current) + " / " + String.format("%.1f", total) + " s")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
             }
         }
@@ -95,5 +95,5 @@ public class SlaughterhouseScreen extends AbstractContainerScreen<Slaughterhouse
     }
 
     public int getEnergyHeight() { int h = menu.getEnergyStored() * 76 / menu.getEnergyCapacity(); return h == 0 && menu.getEnergyStored() > 0 ? 1 : h; }
-    public int getProgressWidth() { return menu.getRecipeEnergyCost() == 0 ? 0 : menu.getEnergyConsumed() * MAX_PROGRESS_WIDTH / menu.getRecipeEnergyCost(); }
+    public int getProgressWidth() { return MachineScreenMath.progressWidth(menu.getEnergyConsumed(), menu.getRecipeEnergyCost(), MAX_PROGRESS_WIDTH); }
 }

@@ -29,7 +29,7 @@ public abstract class FluidHatchScreen<T extends FluidHatchMenu> extends Abstrac
         super.renderLabels(pGuiGraphics, pMouseX, pMouseY);
         if (isHovering(62, 17, 16, 52, pMouseX, pMouseY)) {
             FluidStack storedFluid = menu.getFluidStack();
-            String fluidName = storedFluid.isEmpty()? "Empty" : storedFluid.getDisplayName().getString();
+            String fluidName = storedFluid.isEmpty()? "Empty" : storedFluid.getHoverName().getString();
             int fluidCapacity = menu.getFluidHatchBlockEntity().TANK_CAPACITY;
             pGuiGraphics.renderTooltip(font, List.of(Component.literal("Stored Fluid:"), Component.literal(fluidName), Component.literal( storedFluid.getAmount() + " / " + fluidCapacity + " mB")), Optional.empty(), pMouseX - leftPos, pMouseY - topPos);
         }

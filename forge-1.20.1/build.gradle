@@ -93,6 +93,7 @@ dependencies {
     modLocalRuntime "curse.maven:cloth-config-348521:${rootProject.dev_cloth_config_file_1_20_1}"
     modLocalRuntime "curse.maven:guideme-1173950:${rootProject.dev_guideme_file_1_20_1}"
     modLocalRuntime "curse.maven:powah-rearchitected-633483:${rootProject.dev_powah_file_1_20_1}"
+    modLocalRuntime "curse.maven:architectury-api-419699:${rootProject.dev_architectury_file_1_20_1}"
     modLocalRuntime "curse.maven:pipez-443900:${rootProject.dev_pipez_file_1_20_1}"
 
     modCompileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_20_1}-common-api:${rootProject.jei_version_1_20_1}"
@@ -128,3 +129,18 @@ tasks.named('jar', Jar).configure {
 }
 publishing { publications { mavenJava(MavenPublication) { from components.java; artifactId = base.archivesName.get() } } }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+
+tasks.named('runGameTestServer').configure {
+    doLast {
+        def logFile = file('run/logs/latest.log')
+        if (!logFile.isFile()) {
+            throw new GradleException('Forge GameTest latest.log is missing')
+        }
+        def text = logFile.getText('UTF-8')
+        def matcher = text =~ /=========\s+(\d+) GAME TESTS COMPLETE/
+        if (!matcher.find() || matcher.group(1).toInteger() < 5) {
+            throw new GradleException('Forge GameTest run completed without the expected Biotech tests')
+        }
+    }
+}

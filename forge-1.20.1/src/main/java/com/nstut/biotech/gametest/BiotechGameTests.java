@@ -35,13 +35,13 @@ import java.util.Arrays;
 @GameTestHolder(Biotech.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class BiotechGameTests {
-    private static final String FORGE_TEMPLATE_NAMESPACE = "forge";
-    private static final String EMPTY_TEMPLATE = "empty3x3x3";
+    private static final String TEMPLATE_NAMESPACE = Biotech.MOD_ID;
+    private static final String EMPTY_TEMPLATE = "empty";
 
     private BiotechGameTests() {
     }
 
-    @GameTest(templateNamespace = FORGE_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void hatchesEnforceExternalIoDirection(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         Direction externalSide = Direction.NORTH;
@@ -108,7 +108,7 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
-    @GameTest(templateNamespace = FORGE_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
     public static void invalidStructureAndReloadPreserveActiveMachineTransaction(GameTestHelper helper) {
         BlockPos relativePos = new BlockPos(1, 1, 1);
         BlockState controllerState = MachineRegistries.FERMENTER.block().get().defaultBlockState();
@@ -144,6 +144,17 @@ public final class BiotechGameTests {
         helper.assertTrue(Arrays.equals((int[]) getMachineField(reloaded, "activeItemOutputIndexes"), outputRolls),
                 "Reload must reuse the same probabilistic output decisions");
 
+        helper.succeed();
+    }
+
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    public static void machineRecipeDataIsLoaded(GameTestHelper helper) {
+        var recipes = helper.getLevel().getRecipeManager();
+        helper.assertTrue(recipes.byKey(new ResourceLocation(Biotech.MOD_ID, "greenhouse_wheat")).isPresent(),
+                "Generated Greenhouse recipe data must be loaded in the Forge runtime");
+        helper.assertTrue(recipes.byKey(new ResourceLocation(Biotech.MOD_ID, "fertilizer")).isPresent(),
+                "Hand-authored Fermenter recipe data must be loaded in the Forge runtime");
         helper.succeed();
     }
 

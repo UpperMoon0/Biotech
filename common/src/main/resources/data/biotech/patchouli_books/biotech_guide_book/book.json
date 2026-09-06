@@ -1,0 +1,7 @@
+{
+  "name": "Biotech Guide Book",
+  "landing_text": "Welcome to Biotech, where multiblock machines automate crop and animal processing without entity-heavy farms.",
+  "version": 1,
+  "creative_tab": "biotech:biotech",
+  "use_resource_pack": true
+}

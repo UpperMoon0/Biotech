@@ -1,0 +1,43 @@
+{
+  "type": "biotech:greenhouse",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "wheat_seeds",
+        "count": 2
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "biotech:fertilizer",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "wheat",
+        "count": 6
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "wheat_seeds",
+        "count": 9
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 500
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 160000
+}

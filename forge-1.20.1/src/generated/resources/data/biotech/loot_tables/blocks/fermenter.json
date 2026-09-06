@@ -1,21 +1,21 @@
 {
-  "random_sequence": "biotech:blocks/fermenter",
-  "type": "minecraft:block",
   "pools": [
     {
-      "entries": [
-        {
-          "name": "biotech:fermenter",
-          "type": "minecraft:item"
-        }
-      ],
+      "bonus_rolls": 0.0,
+      "rolls": 1.0,
       "conditions": [
         {
           "condition": "minecraft:survives_explosion"
         }
       ],
-      "rolls": 1.0,
-      "bonus_rolls": 0.0
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "biotech:fermenter"
+        }
+      ]
     }
-  ]
+  ],
+  "type": "minecraft:block",
+  "random_sequence": "biotech:blocks/fermenter"
 }

@@ -25,6 +25,9 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "textures/gui/" + MachineRegistries.GREENHOUSE.id() + ".png");
     private static final int MAX_PROGRESS_WIDTH = 24;
     private static final int PROGRESS_HEIGHT = 24;
+    private static final int OUTPUT_CENTER_X = 106;
+    private static final int OUTPUT_SPACING = 28;
+    private static final int OUTPUT_ITEM_SIZE = 16;
 
     public GreenhouseScreen(GreenhouseMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component, 212, 166);
@@ -37,12 +40,13 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             String seedName = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.centeredText(font, seedName, 106, 25, 0xFFFFFFFF);
             OutputItem[] outputs = recipe.getOutputItems();
+            int firstOutputCenter = getFirstOutputCenter(outputs.length);
             for (int i = 0; i < outputs.length; i++) {
                 String chance = outputs[i].getChance() < 1 ? " (" + (int) (outputs[i].getChance() * 100) + "%)" : "";
-                g.centeredText(font, outputs[i].getItemStack().getCount() + chance, 55 + i * 28, 136, 0xFFFFFFFF);
+                g.centeredText(font, outputs[i].getItemStack().getCount() + chance, firstOutputCenter + i * OUTPUT_SPACING, 136, 0xFFFFFFFF);
             }
         }
-        g.centeredText(font, "Using", 56, 40, 0xFFFFFFFF);
+        g.centeredText(font, "Using", 61, 40, 0xFFFFFFFF);
         String name = Component.translatable("menu.title.biotech." + MachineRegistries.GREENHOUSE.id()).getString();
         g.text(font, name, 106 - font.width(name) / 2, 3, 0xFF3F3F3F, false);
     }
@@ -75,15 +79,15 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
                 g.setTooltipForNextFrame(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX, mouseY);
             } else g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY);
         }
-        if (isHovering(97, 85, 20, 19, mouseX, mouseY)) extractProgressTooltip(g, mouseX, mouseY, rate);
+        if (isHovering(94, 87, MAX_PROGRESS_WIDTH + 1, PROGRESS_HEIGHT, mouseX, mouseY)) extractProgressTooltip(g, mouseX, mouseY, rate);
     }
 
     private void extractProgressTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY, int rate) {
         if (!menu.getStructureValid()) { g.setTooltipForNextFrame(Component.literal("Invalid Structure"), mouseX, mouseY); return; }
         if (!menu.getIsOperating()) { g.setTooltipForNextFrame(Component.literal("Not Operating"), mouseX, mouseY); return; }
         int cost = menu.getRecipe().getTotalEnergy();
-        float total = ((float) cost / rate) / 20;
-        float current = ((float) menu.getEnergyConsumed() / rate) / 20;
+        float total = MachineScreenMath.secondsForEnergy(cost, rate);
+        float current = MachineScreenMath.secondsForEnergy(menu.getEnergyConsumed(), rate);
         g.setTooltipForNextFrame(font, List.of(Component.literal("Progress:"), Component.literal(menu.getEnergyConsumed() + " / " + cost + " FE"), Component.literal(String.format("%.1f", current) + " / " + String.format("%.1f", total) + " s")), Optional.empty(), mouseX, mouseY);
     }
 
@@ -101,11 +105,16 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
         g.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 94, topPos + 87, 212, 0, getProgressWidth() + 1, PROGRESS_HEIGHT, 256, 256);
         new BiotechItemRenderer(22, 22).render(g, leftPos + 96, topPos + 49, menu.getRecipe().getIngredientItems()[0].getItemStack());
         OutputItem[] outputs = menu.getRecipe().getOutputItems();
-        for (int i = 0; i < outputs.length; i++) new BiotechItemRenderer(16, 16).render(g, leftPos + 47 + 28 * i, topPos + 118, outputs[i].getItemStack());
+        int firstOutputCenter = getFirstOutputCenter(outputs.length);
+        for (int i = 0; i < outputs.length; i++) new BiotechItemRenderer(OUTPUT_ITEM_SIZE, OUTPUT_ITEM_SIZE).render(g, leftPos + firstOutputCenter - OUTPUT_ITEM_SIZE / 2 + OUTPUT_SPACING * i, topPos + 118, outputs[i].getItemStack());
         new BiotechFluidRenderer().renderFluid(g, leftPos + 55, topPos + 55, 12, 12, menu.getRecipe().getFluidIngredients()[0]);
         if (menu.getRecipe().getIngredientItems().length > 1) new BiotechItemRenderer(12, 12).render(g, leftPos + 55, topPos + 75, menu.getRecipe().getIngredientItems()[1].getItemStack());
     }
+    private int getFirstOutputCenter(int outputCount) {
+        return OUTPUT_CENTER_X - ((Math.max(outputCount, 1) - 1) * OUTPUT_SPACING) / 2;
+    }
+
 
     public int getEnergyHeight() { int h = menu.getEnergyStored() * 76 / menu.getEnergyCapacity(); return h == 0 && menu.getEnergyStored() > 0 ? 1 : h; }
-    public int getProgressWidth() { return menu.getRecipeEnergyCost() == 0 ? 0 : menu.getEnergyConsumed() * MAX_PROGRESS_WIDTH / menu.getRecipeEnergyCost(); }
+    public int getProgressWidth() { return MachineScreenMath.progressWidth(menu.getEnergyConsumed(), menu.getRecipeEnergyCost(), MAX_PROGRESS_WIDTH); }
 }

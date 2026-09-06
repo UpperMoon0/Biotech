@@ -36,7 +36,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
             ModRecipeData recipe = menu.getRecipe();
             String inputName = recipe.getIngredientItems()[0].getItemStack().getHoverName().getString();
             g.drawCenteredString(font, inputName, 106, 102, 0xFFFFFF);
-            String fluidName = recipe.getFluidIngredients()[0].getDisplayName().getString();
+            String fluidName = recipe.getFluidIngredients()[0].getHoverName().getString();
             if (isHovering(31, 131, 20, 20, mouseX, mouseY)) g.renderTooltip(font, List.of(Component.literal(fluidName), Component.literal(recipe.getFluidIngredients()[0].getAmount() + " mB")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
         }
         if (isHovering(0, 39, 17, 84, mouseX, mouseY)) {
@@ -56,7 +56,7 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
             } else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
         }
         if (isHovering(196, 28, 12, 75, mouseX, mouseY)) {
-            if (menu.getStructureValid()) { FluidStack stored = menu.getFluidStored(); String name = stored.isEmpty() ? "Empty" : stored.getDisplayName().getString(); g.renderTooltip(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX - leftPos, mouseY - topPos); }
+            if (menu.getStructureValid()) { FluidStack stored = menu.getFluidStored(); String name = stored.isEmpty() ? "Empty" : stored.getHoverName().getString(); g.renderTooltip(font, List.of(Component.literal("Stored Fluid:"), Component.literal(name), Component.literal(stored.getAmount() + " / " + menu.getFluidCapacity() + " mB")), Optional.empty(), mouseX - leftPos, mouseY - topPos); }
             else g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos);
         }
         if (isHovering(108, 50, 20, 16, mouseX, mouseY)) renderProgressTooltip(g, mouseX, mouseY, rate);
@@ -68,8 +68,8 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
         if (!menu.getStructureValid()) { g.renderTooltip(font, Component.literal("Invalid Structure"), mouseX - leftPos, mouseY - topPos); return; }
         if (!menu.getIsOperating()) { g.renderTooltip(font, Component.literal("Not Operating"), mouseX - leftPos, mouseY - topPos); return; }
         int cost = menu.getRecipe().getTotalEnergy();
-        float total = ((float) cost / rate) / 20;
-        float current = ((float) menu.getEnergyConsumed() / rate) / 20;
+        float total = MachineScreenMath.secondsForEnergy(cost, rate);
+        float current = MachineScreenMath.secondsForEnergy(menu.getEnergyConsumed(), rate);
         g.renderTooltip(font, List.of(Component.literal("Progress:"), Component.literal(menu.getEnergyConsumed() + " / " + cost + " FE"), Component.literal(String.format("%.1f", current) + " / " + String.format("%.1f", total) + " s")), Optional.empty(), mouseX - leftPos, mouseY - topPos);
     }
 
@@ -89,5 +89,5 @@ public class FermenterScreen extends AbstractContainerScreen<FermenterMenu> {
     }
 
     public int getEnergyHeight() { int h = menu.getEnergyStored() * 76 / menu.getEnergyCapacity(); return h == 0 && menu.getEnergyStored() > 0 ? 1 : h; }
-    public int getProgressWidth() { return menu.getRecipeEnergyCost() == 0 ? 0 : menu.getEnergyConsumed() * MAX_PROGRESS_WIDTH / menu.getRecipeEnergyCost(); }
+    public int getProgressWidth() { return MachineScreenMath.progressWidth(menu.getEnergyConsumed(), menu.getRecipeEnergyCost(), MAX_PROGRESS_WIDTH); }
 }

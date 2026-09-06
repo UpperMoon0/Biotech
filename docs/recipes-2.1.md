@@ -6,7 +6,7 @@ Biotech's internal hatches expose restorable `IItemHandlerModifiable`/`FluidTank
 
 ## Recipe data generation
 
-The repetitive machine recipes are generated data and have one authoritative definition in `RecipeGenerator`. Hand-authored crafting recipes remain in `src/main/resources`. Do not edit a generated machine recipe JSON directly; regenerate it instead.
+The repetitive machine recipes are generated data. Shared gameplay definitions live in the common source tiers, while the 1.20.1 and 1.21+ generator implementations serialize the version-specific JSON contracts. Hand-authored crafting recipes remain in each target's `src/main/resources` because Minecraft changes the datapack directory/schema between version families. Do not edit a generated machine recipe JSON directly; regenerate it instead.
 
 Each supported target exposes a `generateRecipes` Gradle task. Normal tests/builds also regenerate and verify the generated data before packaging, so stale checked-in output cannot silently become the shipped recipe set.
 

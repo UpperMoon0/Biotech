@@ -1,6 +1,16 @@
 # Biotech 2.1
 
 ## Fixed
+
+- Consolidate byte-identical Java, tests, assets, language data, Patchouli content, and build-time generation infrastructure into shared `common`, `common-legacy`, and `common-neoforge` source tiers; keep per-target sources only where Minecraft/loader APIs actually differ.
+- Share captured-entity sanitization and machine-screen progress/time calculations across all supported targets to reduce behavior drift in otherwise platform-specific UI and item code.
+- Correct Patchouli machine/hatch documentation, add a Machine Basics entry, define a stable guide order, and verify all crafting references and Biotech item/block references resolve on every supported target.
+- Correct resource-pack metadata for each Minecraft family (1.20.1 format 15, 1.21.1 format 34, 26.1.2 format 84.0).
+- Make machine data generation read shared source assets and fail the build on generation errors instead of logging a severe error and continuing.
+- Preserve full captured `ItemStack` state/components in the NeoForge 26.1.2 Slaughterhouse JEI category.
+- Refresh README, upgrade/recipe documentation, in-game metadata description, project URLs, and add a player-facing `CURSEFORGE.md` modeled after the presentation quality of NsTut Economy.
+- Fix hand-authored NeoForge 1.21.1 machine recipes that still used 1.20-era fields, replace the removed `minecraft:grass` item id with `minecraft:short_grass`, and modernize the Patchouli guide-book crafting recipe to the registered guide item plus `patchouli:book` data component.
+- Add a cross-target verifier for the six hand-authored machine recipes and include Architectury API in the Forge development/GameTest runtime required by Powah.
 - Migrate all machine processing to NsTut Lib's persisted transactional recipe engine.
 - Prevent duplicate/chance-overrolled/overstacked outputs and NBT-insensitive recipe matching through NsTut Lib 0.8.1.
 - Persist probabilistic item-output decisions with the active recipe so reloads and safe rollback retries cannot reroll results.
@@ -32,5 +42,6 @@
 - Align build/runtime metadata on NsTut Lib 0.8.1 and require 0.8.1+ within the 0.8.x line on every supported target; NeoForge 26.1.2 specifically needs the corrected keyed `MachineBlock` constructor.
 - Make CI build against the exact coordinated NsTut Lib source revision through local Maven instead of depending on JitPack availability.
 - Fix NeoForge 1.21.1 GameTests by generating a deterministic `biotech:empty` structure at build time instead of relying on loader-owned test templates that are not shipped by that target.
+- Fix Forge 1.20.1 GameTest discovery by packaging a deterministic iotech:empty structure, require at least five real Biotech tests, and verify generated plus hand-authored machine recipes resolve at runtime.
 - Add GameTests for sided hatch IO, active transaction persistence through structure invalidation/reload, and registry-backed machine recipe types alongside unit/build regression coverage.
 - Remove obsolete development dependencies, local Maven/runtime artifacts, and old ForgeGradle/Mixin configuration.

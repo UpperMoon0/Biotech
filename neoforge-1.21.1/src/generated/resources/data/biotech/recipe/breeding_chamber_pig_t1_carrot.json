@@ -1,0 +1,36 @@
+{
+  "type": "biotech:breeding_chamber",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:pig",
+        "count": 2
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:carrot",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:baby_pig",
+        "count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 200
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 20000
+}

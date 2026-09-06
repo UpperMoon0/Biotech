@@ -1,15 +1,212 @@
+subprojects {
+    plugins.withId('java') {
+        sourceSets {
+            main {
+                java.srcDir rootProject.file('common/src/main/java')
+                resources.srcDir rootProject.file('common/src/main/resources')
+
+                if (project.name in ['forge-1.20.1', 'neoforge-1.21.1']) {
+                    java.srcDir rootProject.file('common-legacy/src/main/java')
+                }
+                if (project.name.startsWith('neoforge-')) {
+                    java.srcDir rootProject.file('common-neoforge/src/main/java')
+                }
+            }
+            test {
+                java.srcDir rootProject.file('common/src/test/java')
+                if (project.name in ['forge-1.20.1', 'neoforge-1.21.1']) {
+                    java.srcDir rootProject.file('common-legacy/src/test/java')
+                }
+            }
+        }
+    }
+
+    tasks.withType(JavaExec).configureEach {
+        if (name == 'generateBiotechResources') {
+            systemProperty 'biotech.sourceResources', rootProject.file('common/src/main/resources').absolutePath
+            systemProperty 'biotech.recipeDir', project.name == 'forge-1.20.1' ? 'recipes' : 'recipe'
+            systemProperty 'biotech.lootTableDir', project.name == 'forge-1.20.1' ? 'loot_tables' : 'loot_table'
+        }
+    }
+}
 allprojects {
     group = rootProject.mod_group_id
     version = rootProject.mod_version
 }
 
+def normalizeRecipeValue
+normalizeRecipeValue = { value ->
+    if (value instanceof Map) {
+        return value.collectEntries { key, nested ->
+            def normalizedKey = ['Count': 'count', 'FluidName': 'id', 'Amount': 'amount'].get(key, key)
+            [(normalizedKey): normalizeRecipeValue(nested)]
+        }
+    }
+    if (value instanceof List) {
+        return value.collect { normalizeRecipeValue(it) }
+    }
+    return value
+}
+
+tasks.register('verifyRecipeParity') {
+    group = 'verification'
+    description = 'Verifies the generated machine recipe gameplay data is semantically identical across all supported targets.'
+    dependsOn ':forge-1.20.1:generateBiotechResources', ':neoforge-1.21.1:generateBiotechResources', ':neoforge-26.1.2:generateBiotechResources'
+
+    doLast {
+        def parser = new groovy.json.JsonSlurper()
+        def roots = [
+                'forge-1.20.1'    : file('forge-1.20.1/src/generated/resources/data/biotech/recipes'),
+                'neoforge-1.21.1' : file('neoforge-1.21.1/src/generated/resources/data/biotech/recipe'),
+                'neoforge-26.1.2' : file('neoforge-26.1.2/src/generated/resources/data/biotech/recipe')
+        ]
+        def parsed = roots.collectEntries { target, dir ->
+            if (!dir.isDirectory()) {
+                throw new GradleException("Missing generated recipe directory for ${target}: ${dir}")
+            }
+            [(target): fileTree(dir) { include '*.json' }.files.collectEntries { recipeFile ->
+                [(recipeFile.name): normalizeRecipeValue(parser.parse(recipeFile))]
+            }]
+        }
+
+        def baselineName = 'forge-1.20.1'
+        def baseline = parsed[baselineName]
+        parsed.each { target, recipes ->
+            if (recipes.keySet() != baseline.keySet()) {
+                throw new GradleException("Generated recipe file set differs between ${baselineName} and ${target}")
+            }
+            baseline.each { name, recipe ->
+                if (recipes[name] != recipe) {
+                    throw new GradleException("Generated recipe gameplay data differs for ${name} between ${baselineName} and ${target}")
+                }
+            }
+        }
+        logger.lifecycle("Verified ${baseline.size()} generated machine recipes are semantically identical across all supported targets.")
+    }
+}
+
+tasks.register('verifyHandAuthoredMachineRecipeParity') {
+    group = 'verification'
+    description = 'Verifies hand-authored Biotech machine recipes use the correct target schema and preserve cross-version gameplay parity.'
+
+    doLast {
+        def parser = new groovy.json.JsonSlurper()
+        def names = ['chicken_feed.json', 'cow_feed.json', 'pig_feed.json', 'rabbit_feed.json', 'sheep_feed.json', 'fertilizer.json']
+        def roots = [
+                'forge-1.20.1'    : file('forge-1.20.1/src/main/resources/data/biotech/recipes'),
+                'neoforge-1.21.1' : file('neoforge-1.21.1/src/main/resources/data/biotech/recipe'),
+                'neoforge-26.1.2' : file('neoforge-26.1.2/src/main/resources/data/biotech/recipe')
+        ]
+        def normalizeHandRecipe
+        normalizeHandRecipe = { value ->
+            if (value instanceof Map) {
+                return value.collectEntries { key, nested ->
+                    def normalizedKey = ['Count': 'count', 'FluidName': 'id', 'Amount': 'amount'].get(key, key)
+                    [(normalizedKey): normalizeHandRecipe(nested)]
+                }
+            }
+            if (value instanceof List) {
+                return value.collect { normalizeHandRecipe(it) }
+            }
+            if (value == 'minecraft:grass') {
+                return 'minecraft:short_grass'
+            }
+            return value
+        }
+
+        def parsed = roots.collectEntries { target, dir ->
+            [(target): names.collectEntries { name ->
+                def recipeFile = new File(dir, name)
+                if (!recipeFile.isFile()) {
+                    throw new GradleException("Missing hand-authored machine recipe ${name} for ${target}")
+                }
+                def raw = recipeFile.getText('UTF-8')
+                if (target != 'forge-1.20.1') {
+                    ['"Count"', '"FluidName"', '"Amount"'].each { forbidden ->
+                        if (raw.contains(forbidden)) {
+                            throw new GradleException("${target}/${name} still uses legacy 1.20.1 field ${forbidden}")
+                        }
+                    }
+                    if (raw.contains('minecraft:grass')) {
+                        throw new GradleException("${target}/${name} uses removed item id minecraft:grass instead of minecraft:short_grass")
+                    }
+                }
+                [(name): normalizeHandRecipe(parser.parse(recipeFile))]
+            }]
+        }
+
+        def baseline = parsed['forge-1.20.1']
+        parsed.each { target, recipes ->
+            baseline.each { name, recipe ->
+                if (recipes[name] != recipe) {
+                    throw new GradleException("Hand-authored machine recipe gameplay data differs for ${name} between forge-1.20.1 and ${target}")
+                }
+            }
+        }
+        logger.lifecycle("Verified ${names.size()} hand-authored machine recipes have target-correct schemas and semantic parity.")
+    }
+}
+tasks.register('verifyPatchouliDocs') {
+    group = 'verification'
+    description = 'Validates the shared Patchouli guide JSON, entry ordering, and crafting recipe references on every supported target.'
+
+    doLast {
+        def parser = new groovy.json.JsonSlurper()
+        def entryDir = file('common/src/main/resources/assets/biotech/patchouli_books/biotech_guide_book/en_us/entries')
+        def bookFile = file('common/src/main/resources/data/biotech/patchouli_books/biotech_guide_book/book.json')
+        def categoryFile = file('common/src/main/resources/assets/biotech/patchouli_books/biotech_guide_book/en_us/categories/getting_started.json')
+        parser.parse(bookFile)
+        parser.parse(categoryFile)
+
+        def entries = fileTree(entryDir) { include '*.json' }.files.sort { it.name }
+        if (entries.isEmpty()) {
+            throw new GradleException('Patchouli guide has no entries')
+        }
+        def sortNumbers = []
+        def recipeRefs = [] as Set
+        entries.each { entryFile ->
+            def entry = parser.parse(entryFile)
+            ['name', 'icon', 'category', 'pages', 'sortnum'].each { key ->
+                if (!entry.containsKey(key)) {
+                    throw new GradleException("Patchouli entry ${entryFile.name} is missing ${key}")
+                }
+            }
+            sortNumbers << entry.sortnum
+            entry.pages.each { page ->
+                if (page.recipe) recipeRefs << page.recipe
+                if (page.recipe2) recipeRefs << page.recipe2
+            }
+        }
+        if (sortNumbers.size() != sortNumbers.toSet().size()) {
+            throw new GradleException('Patchouli entry sortnum values must be unique')
+        }
+
+        def recipeRoots = [
+                'forge-1.20.1'    : file('forge-1.20.1/src/main/resources/data/biotech/recipes'),
+                'neoforge-1.21.1' : file('neoforge-1.21.1/src/main/resources/data/biotech/recipe'),
+                'neoforge-26.1.2' : file('neoforge-26.1.2/src/main/resources/data/biotech/recipe')
+        ]
+        recipeRoots.each { target, dir ->
+            recipeRefs.each { ref ->
+                if (!ref.startsWith('biotech:')) {
+                    throw new GradleException("Unsupported Patchouli crafting reference ${ref} in shared guide")
+                }
+                def id = ref.substring('biotech:'.length())
+                if (!new File(dir, "${id}.json").isFile()) {
+                    throw new GradleException("Patchouli recipe ${ref} is missing for ${target}")
+                }
+            }
+        }
+        logger.lifecycle("Verified ${entries.size()} Patchouli entries and ${recipeRefs.size()} crafting references across all supported targets.")
+    }
+}
 tasks.register('buildAll') {
     group = 'build'
-    dependsOn ':forge-1.20.1:build', ':neoforge-1.21.1:build', ':neoforge-26.1.2:build'
+    dependsOn ':forge-1.20.1:build', ':neoforge-1.21.1:build', ':neoforge-26.1.2:build', 'verifyRecipeParity', 'verifyHandAuthoredMachineRecipeParity', 'verifyPatchouliDocs'
 }
 tasks.register('testAllVersions') {
     group = 'verification'
-    dependsOn ':forge-1.20.1:test', ':neoforge-1.21.1:test', ':neoforge-26.1.2:test'
+    dependsOn ':forge-1.20.1:test', ':neoforge-1.21.1:test', ':neoforge-26.1.2:test', 'verifyRecipeParity', 'verifyHandAuthoredMachineRecipeParity', 'verifyPatchouliDocs'
 }
 tasks.register('gameTestAll') {
     group = 'verification'

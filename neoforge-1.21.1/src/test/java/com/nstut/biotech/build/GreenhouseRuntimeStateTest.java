@@ -12,7 +12,7 @@ class GreenhouseRuntimeStateTest {
     @Test
     void patternAvoidsNeighborAndRandomTickManagedStates() throws IOException {
         Path root = findRepositoryRoot();
-        String source = Files.readString(root.resolve("neoforge-1.21.1/src/main/java/com/nstut/biotech/blocks/entites/machines/GreenhouseBlockEntity.java"));
+        String source = Files.readString(root.resolve("common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/GreenhouseBlockEntity.java"));
         assertFalse(source.contains("\"moisture\", \"0\""));
         assertFalse(source.contains("\"shape\", \"straight\""));
         assertFalse(source.contains("\"east\", \"none\""));

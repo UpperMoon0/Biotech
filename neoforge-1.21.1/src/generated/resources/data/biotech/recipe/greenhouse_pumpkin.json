@@ -1,0 +1,29 @@
+{
+  "type": "biotech:greenhouse",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "pumpkin_seeds",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "pumpkin",
+        "count": 2
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 400
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 128000
+}

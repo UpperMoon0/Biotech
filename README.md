@@ -1,132 +1,182 @@
 # Biotech
 
-## Overview
-Biotech is a Minecraft mod that allows players to biologically engineer and manipulate various elements within the game.
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1%20%7C%201.21.1%20%7C%2026.1.2-brightgreen)
+![Loaders](https://img.shields.io/badge/loaders-Forge%20%7C%20NeoForge-orange)
+![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-lightgrey)
 
-CurseForge link: [https://www.curseforge.com/minecraft/mc-mods/biotech](https://www.curseforge.com/minecraft/mc-mods/biotech)
+**Biotech** turns crops and livestock into compact, automation-friendly production lines. Capture supported animals as items, build purpose-built multiblock machines, grow crops, breed and raise livestock, process animal drops, and recycle manure into fertilizer.
 
-## Current release line
+CurseForge: https://www.curseforge.com/minecraft/mc-mods/biotech
 
-Biotech **2.1** supports:
+## Required dependencies
 
-- Forge 1.20.1 on Java 17
-- NeoForge 1.21.1 on Java 21
-- NeoForge 26.1.2 on Java 25
+Biotech requires:
 
-Biotech 2.1 requires **NsTut Lib 0.8.1 or newer within the 0.8.x compatibility line**. NeoForge 26.1.2 must not use the earlier incompatible 0.8 binary.
+- **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
+- **Patchouli** for the in-game Biotech Guide Book
 
-The 2.1 release uses persisted transactional machine recipes, directional external hatch IO, scoped network synchronization, and registry-backed custom machine recipe types.
+JEI and Jade integrations are included when those mods are installed. JEI is strongly recommended for inspecting exact machine recipes and Jade can display machine status, energy, fluid, and progress information.
 
-### Release and migration documentation
+## Supported targets
 
-- [`CHANGELOG.md`](CHANGELOG.md) — canonical changelog
-- [`CHANGELOG-2.1.md`](CHANGELOG-2.1.md) — full 2.1 change list
-- [`docs/upgrade-2.1.md`](docs/upgrade-2.1.md) — upgrade notes and compatibility requirements
-- [`docs/recipes-2.1.md`](docs/recipes-2.1.md) — transactional recipe behavior
-- [`docs/networking-2.1.md`](docs/networking-2.1.md) — network and recipe-sync behavior
-- [`README_HARDENING.md`](README_HARDENING.md) — hardening and CI summary
+| Minecraft | Loader | Runtime Java | Module / artifact |
+| :--- | :--- | ---: | :--- |
+| 1.20.1 | Forge | 17 | `forge-1.20.1` / `biotech-forge-1.20.1` |
+| 1.21.1 | NeoForge | 21 | `neoforge-1.21.1` / `biotech-neoforge-1.21.1` |
+| 26.1.2 | NeoForge | 25 | `neoforge-26.1.2` / `biotech-neoforge-26.1.2` |
 
----
-
-## Recipe JSON Format
-Every machine recipe follows this structure:
-
-- **`type`**: A string representing the recipe type identifier.  
-  Example: `"biotech:mixer"`
-
-- **`itemInputs`**: An array of input item objects. Each object must include:
-    - **`itemStack`**: An object containing:
-        - **`id`**: The item identifier.
-        - **`Count`**: The quantity required.
-    - **`isConsumable`**: A Boolean indicating if the item is consumed when the recipe is processed.
-
-- **`itemOutputs`**: An array of output item objects. Each object includes:
-    - **`itemStack`**: An object containing:
-        - **`id`**: The output item identifier.
-        - **`Count`**: The quantity produced.
-    - **`chance`**: (Optional) A float value representing the probability of the output (default is 1.0).
-
-- **`fluidInputs`** and **`fluidOutputs`**: Arrays of fluid objects (if your recipe involves fluids). Their format should match what your custom serializer expects (for example, with `"fluid"` and `"amount"` properties).
-
-- **`energy`**: An integer that represents the total energy cost for processing the recipe.
+Install the file matching both your Minecraft version and loader. A jar built for one target is not a cross-version artifact.
 
 ---
 
-## How to Add Custom Recipes with KubeJS
+## Key features
 
-Biotech supports dynamic recipe customization through KubeJS. This allows modpack makers and server admins to add or modify machine recipes without altering the mod’s core files. All recipes use the unified JSON format described above; only the `"type"` field changes to target different machines.
+### Capture livestock instead of moving entities through your factory
 
-### Step 1: Set Up the KubeJS Folder Structure
+Place a **Net Trap** and let a supported animal step onto it. The animal becomes an item that preserves relevant gameplay state and can later be released again or processed by Biotech machines.
 
-Ensure your Minecraft directory includes a `kubejs` folder with the following structure:
+Current captured-animal support covers:
 
-`.minecraft/kubejs/server_scripts/biotech_recipes.js`
+- Cows
+- Chickens
+- Pigs
+- Sheep
+- Rabbits
 
-If these folders do not exist, create them manually.
+Adult and baby forms are represented separately so breeding and growth can be automated as explicit production steps.
 
-### Step 2: Create the KubeJS Script
+### Six multiblock machines
 
-Inside the `server_scripts` folder, create a file named `biotech_recipes.js` or another name of your choice.
+- **Greenhouse** — grows wheat, beetroot, carrots, potatoes, melons, pumpkins, cactus, and sugar cane. Supported crops have higher-yield fertilizer recipes.
+- **Breeding Chamber** — combines two captured adult parents with matching food, water, and energy to produce a baby animal. Parent items are required but not consumed.
+- **Terrestrial Habitat** — raises captured baby animals into adults and produces manure as a by-product.
+- **Slaughterhouse** — converts captured adult animals into larger batches of their normal drops.
+- **Mixer** — produces animal feeds and supports recipes with item and fluid inputs/outputs.
+- **Fermenter** — processes organic materials, including turning manure into Fertilizer.
 
-### Step 3: Add Your Custom Recipe Script
+Every machine has a Patchouli multiblock preview and crafting recipe in the Biotech Guide Book.
 
-This example adds a custom mixer recipe using the unified recipe format:
+### Automation-ready hatches
 
-```js
-ServerEvents.recipes(event => {
-    event.custom({
-        "type": "biotech:mixer",
-        "itemInputs": [
-            {
-                "itemStack": {
-                    "id": "biotech:paper_bag",
-                    "Count": 12
-                },
-                "isConsumable": true
-            },
-            {
-                "itemStack": {
-                    "id": "minecraft:diamond",
-                    "Count": 3
-                },
-                "isConsumable": true
-            },
-            {
-                "itemStack": {
-                    "id": "minecraft:carrot",
-                    "Count": 2
-                },
-                "isConsumable": true
-            },
-            {
-                "itemStack": {
-                    "id": "minecraft:potato",
-                    "Count": 2
-                },
-                "isConsumable": true
-            },
-            {
-                "itemStack": {
-                    "id": "minecraft:apple",
-                    "Count": 1
-                },
-                "isConsumable": true
-            }
-        ],
-        "itemOutputs": [
-            {
-                "itemStack": {
-                    "id": "biotech:cow_feed",
-                    "Count": 12
-                },
-                "chance": 1.0
-            }
-        ],
-        "fluidInputs": [],
-        "fluidOutputs": [],
-        "energy": 24000
-    });
-});
+Biotech multiblocks use explicit IO blocks:
+
+- Item Input Hatch: 9 inventory slots
+- Item Output Hatch: 9 inventory slots
+- Fluid Input Hatch: 32,000 mB
+- Fluid Output Hatch: 32,000 mB
+- Energy Input Hatch: 614,400 FE storage, up to 512 FE/t input
+
+External automation is directional: connect item pipes, fluid pipes, or energy cables to the hatch-facing side. Input hatches accept resources and output hatches expose completed products.
+
+### Transaction-safe machine processing
+
+The 2.1 line uses NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid.
+
+---
+
+## In-game guide and integrations
+
+The **Biotech Guide Book** is the main player reference. It covers machine basics, Net Traps, hatches, crafting recipes, and every multiblock structure.
+
+With **JEI**, each Biotech machine has a recipe category showing exact inputs, fluid quantities, outputs, chances, and energy cost. With **Jade**, machine controllers expose status information such as structure validity, progress, energy, and fluid state.
+
+---
+
+## Custom recipes / KubeJS
+
+Biotech machine recipes can be added with datapacks or `event.custom(...)` in KubeJS. Use the schema for the Minecraft version you target.
+
+### Recipe types
+
+- `biotech:breeding_chamber`
+- `biotech:terrestrial_habitat`
+- `biotech:slaughterhouse`
+- `biotech:greenhouse`
+- `biotech:fermenter`
+- `biotech:mixer`
+
+### 1.20.1 schema
+
+Forge 1.20.1 uses the legacy serialized field names:
+
+```json
+{
+  "type": "biotech:mixer",
+  "itemInputs": [
+    {
+      "itemStack": { "id": "minecraft:wheat", "Count": 1 },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": { "id": "biotech:cow_feed", "Count": 1 },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    { "FluidName": "minecraft:water", "Amount": 1000 }
+  ],
+  "fluidOutputs": [],
+  "energy": 24000
+}
 ```
 
-To target another machine, change the recipe `type`, for example `biotech:breeding_chamber`, `biotech:fermenter`, `biotech:greenhouse`, `biotech:slaughterhouse`, or `biotech:terrestrial_habitat`.
+### 1.21.1 and 26.1.2 schema
+
+NeoForge 1.21.1 and 26.1.2 use lowercase item counts and modern fluid fields:
+
+```json
+{
+  "type": "biotech:mixer",
+  "itemInputs": [
+    {
+      "itemStack": { "id": "minecraft:wheat", "count": 1 },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": { "id": "biotech:cow_feed", "count": 1 },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    { "id": "minecraft:water", "amount": 1000 }
+  ],
+  "fluidOutputs": [],
+  "energy": 24000
+}
+```
+
+`isConsumable: false` keeps an input present after a successful recipe. `chance: 1.0` means the output is guaranteed.
+
+---
+
+## Release and migration documentation
+
+- [`CHANGELOG.md`](CHANGELOG.md) — canonical changelog
+- [`CHANGELOG-2.1.md`](CHANGELOG-2.1.md) — complete Biotech 2.1 changes
+- [`docs/upgrade-2.1.md`](docs/upgrade-2.1.md) — upgrade and compatibility notes
+- [`docs/recipes-2.1.md`](docs/recipes-2.1.md) — transactional recipe behavior
+- [`docs/networking-2.1.md`](docs/networking-2.1.md) — synchronization behavior
+- [`README_HARDENING.md`](README_HARDENING.md) — hardening and validation notes
+
+## Building and testing
+
+```bash
+# JVM/unit/regression suites across all supported targets
+./gradlew testAllVersions
+
+# Build every supported target
+./gradlew buildAll
+
+# Real GameTest coverage across all supported targets
+./gradlew gameTestAll
+```
+
+Generated machine data is deterministic and verified during builds. Each target must generate exactly 59 machine recipes using the schema and datapack layout required by that Minecraft version.
+
+## License
+
+All Rights Reserved. Created by **NsTut**.

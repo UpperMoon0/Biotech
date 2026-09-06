@@ -1,0 +1,16 @@
+{
+  "name": "Net Trap",
+  "icon": "biotech:net_trap",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Biotech animal machines use captured mobs as items. The Net Trap is the simplest way to capture them.$(br)$(br)Place a Net Trap on the ground and let a capturable mob step on it. The trap is consumed and the mob becomes an item that can be used by Biotech machines. Not every mob can be captured."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:net_trap"
+    }
+  ],
+  "sortnum": 10
+}

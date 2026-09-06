@@ -24,6 +24,9 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(Biotech.MOD_ID, "textures/gui/" + MachineRegistries.GREENHOUSE.id() + ".png");
     private static final int MAX_PROGRESS_WIDTH = 24;
     private static final int PROGRESS_HEIGHT = 24;
+    private static final int OUTPUT_CENTER_X = 106;
+    private static final int OUTPUT_SPACING = 28;
+    private static final int OUTPUT_ITEM_SIZE = 16;
 
     public GreenhouseScreen(GreenhouseMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
@@ -62,7 +65,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
                 String chance = outputItems[i].getChance() < 1
                         ? " (" + (int) (outputItems[i].getChance() * 100) + "%)"
                         : "";
-                pGuiGraphics.drawCenteredString(font, outputItems[i].getItemStack().getCount() + chance, 55 + i * 28, 136, 0xFFFFFF);
+                pGuiGraphics.drawCenteredString(font, outputItems[i].getItemStack().getCount() + chance, getFirstOutputCenter(outputItems.length) + i * OUTPUT_SPACING, 136, 0xFFFFFF);
             }
         }
 
@@ -95,12 +98,12 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             }
         }
 
-        if (isHovering(97, 85, 20, 19, pMouseX, pMouseY)) {
+        if (isHovering(94, 87, MAX_PROGRESS_WIDTH + 1, PROGRESS_HEIGHT, pMouseX, pMouseY)) {
             if (menu.getStructureValid()) {
                 if (menu.getIsOperating()) {
                     int energyCost = menu.getRecipe().getTotalEnergy();
-                    float totalTimeProgress = ((float) energyCost / energyConsumeRate) / 20;
-                    float currentTimeProgress = ((float) menu.getEnergyConsumed() / energyConsumeRate) / 20;
+                    float totalTimeProgress = MachineScreenMath.secondsForEnergy(energyCost, energyConsumeRate);
+                    float currentTimeProgress = MachineScreenMath.secondsForEnergy(menu.getEnergyConsumed(), energyConsumeRate);
                     pGuiGraphics.renderTooltip(font, List.of(
                             Component.literal("Progress:"),
                             Component.literal(menu.getEnergyConsumed() + " / " + energyCost + " FE"),
@@ -114,7 +117,7 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             }
         }
 
-        pGuiGraphics.drawCenteredString(font, "Using", 56, 40, 0xFFFFFF);
+        pGuiGraphics.drawCenteredString(font, "Using", 61, 40, 0xFFFFFF);
 
         String machineName = Component.translatable("menu.title.biotech." + MachineRegistries.GREENHOUSE.id()).getString();
         int x = 106 - font.width(machineName) / 2;
@@ -144,8 +147,8 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
 
                 OutputItem[] outputItems = menu.getRecipe().getOutputItems();
                 for (int i = 0; i < outputItems.length; i++) {
-                    BiotechItemRenderer outputItemRenderer = new BiotechItemRenderer(16, 16);
-                    outputItemRenderer.render(graphics.pose(), leftPos + 47 + 28 * i, topPos + 118, outputItems[i].getItemStack());
+                    BiotechItemRenderer outputItemRenderer = new BiotechItemRenderer(OUTPUT_ITEM_SIZE, OUTPUT_ITEM_SIZE);
+                    outputItemRenderer.render(graphics.pose(), leftPos + getFirstOutputCenter(outputItems.length) - OUTPUT_ITEM_SIZE / 2 + OUTPUT_SPACING * i, topPos + 118, outputItems[i].getItemStack());
                 }
 
                 FluidStack currentFluid = menu.getRecipe().getFluidIngredients()[0];
@@ -160,6 +163,10 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
             }
         }
     }
+    private int getFirstOutputCenter(int outputCount) {
+        return OUTPUT_CENTER_X - ((Math.max(outputCount, 1) - 1) * OUTPUT_SPACING) / 2;
+    }
+
 
     public int getEnergyHeight() {
         int energyHeight = menu.getEnergyStored() * 76 / menu.getEnergyCapacity();
@@ -168,6 +175,6 @@ public class GreenhouseScreen extends AbstractContainerScreen<GreenhouseMenu> {
     }
 
     public int getProgressWidth() {
-        return menu.getRecipeEnergyCost() == 0 ? 0 : menu.getEnergyConsumed() * MAX_PROGRESS_WIDTH / menu.getRecipeEnergyCost();
+        return MachineScreenMath.progressWidth(menu.getEnergyConsumed(), menu.getRecipeEnergyCost(), MAX_PROGRESS_WIDTH);
     }
 }

@@ -14,7 +14,7 @@ public final class DirtyEnergyStorageGameTests {
     private DirtyEnergyStorageGameTests() {
     }
 
-    @GameTest(templateNamespace = "forge", template = "empty3x3x3", timeoutTicks = 40)
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
     public static void dirtyCallbackOnlyRunsForExecutedMutation(GameTestHelper helper) {
         AtomicInteger changes = new AtomicInteger();
         DirtyEnergyStorage storage = new DirtyEnergyStorage(1000, 100, 100, changes::incrementAndGet);

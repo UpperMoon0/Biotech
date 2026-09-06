@@ -1,0 +1,43 @@
+{
+  "type": "biotech:greenhouse",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "potato",
+        "count": 2
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "biotech:fertilizer",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "potato",
+        "count": 12
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "poisonous_potato",
+        "count": 3
+      },
+      "chance": 0.02
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 500
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 160000
+}
