@@ -37,7 +37,7 @@ jobs:
           repository: UpperMoon0/NsTut-Lib
           ref: ${{ steps.nstut-ref.outputs.ref }}
           path: .ci/nstut-lib
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
@@ -93,7 +93,7 @@ jobs:
           repository: UpperMoon0/NsTut-Lib
           ref: ${{ steps.nstut-ref.outputs.ref }}
           path: .ci/nstut-lib
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
