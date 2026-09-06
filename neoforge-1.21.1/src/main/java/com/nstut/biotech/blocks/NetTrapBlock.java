@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.Pig;
@@ -83,19 +84,19 @@ public class NetTrapBlock extends Block {
     }
 
     private static ItemStack createCapturedStack(Entity entity) {
-        if (entity instanceof Cow cow) {
+        if (entity.getType() == EntityType.COW && entity instanceof Cow cow) {
             return new ItemStack(cow.isBaby() ? ItemRegistries.BABY_COW.get() : ItemRegistries.COW.get());
         }
-        if (entity instanceof Chicken chicken) {
+        if (entity.getType() == EntityType.CHICKEN && entity instanceof Chicken chicken) {
             return new ItemStack(chicken.isBaby() ? ItemRegistries.BABY_CHICKEN.get() : ItemRegistries.CHICKEN.get());
         }
-        if (entity instanceof Pig pig) {
+        if (entity.getType() == EntityType.PIG && entity instanceof Pig pig) {
             return new ItemStack(pig.isBaby() ? ItemRegistries.BABY_PIG.get() : ItemRegistries.PIG.get());
         }
-        if (entity instanceof Sheep sheep) {
+        if (entity.getType() == EntityType.SHEEP && entity instanceof Sheep sheep) {
             return new ItemStack(sheep.isBaby() ? ItemRegistries.BABY_SHEEP.get() : ItemRegistries.SHEEP.get());
         }
-        if (entity instanceof Rabbit rabbit) {
+        if (entity.getType() == EntityType.RABBIT && entity instanceof Rabbit rabbit) {
             return new ItemStack(rabbit.isBaby() ? ItemRegistries.BABY_RABBIT.get() : ItemRegistries.RABBIT.get());
         }
         return ItemStack.EMPTY;
