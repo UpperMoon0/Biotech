@@ -1,0 +1,148 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'idea'
+}
+version = rootProject.mod_version
+group = rootProject.mod_group_id
+base { archivesName = "biotech-neoforge-${rootProject.minecraft_version_1_21_1}" }
+java { toolchain.languageVersion = JavaLanguageVersion.of(21); withSourcesJar() }
+neoForge {
+    version = rootProject.neoforge_version_1_21_1
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+        gameTestServer { type = 'gameTestServer' }
+        configureEach { logLevel = org.slf4j.event.Level.INFO }
+    }
+    mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
+    unitTest {
+        enable()
+        testedMod = mods."${rootProject.mod_id}"
+    }
+}
+
+def generatedGameTestResources = layout.buildDirectory.dir('generated/gametestResources')
+def generateGameTestStructure = tasks.register('generateGameTestStructure') {
+    outputs.dir(generatedGameTestResources)
+    doLast {
+        def structureFile = generatedGameTestResources.get()
+                .file("data/${rootProject.mod_id}/structure/empty.nbt").asFile
+        structureFile.parentFile.mkdirs()
+        structureFile.bytes = java.util.Base64.getDecoder().decode(
+                'H4sIAAAAAAAC/03KsQ5AMBSF4SMVlIj3MZuN9qu5khu00t7J09NYDGf4cv4WMOgmUlo4JgkeGJJFmeRmg3z+ZlFfdLAqty+LBuVMJ6M/xbOLtOlIEmFRrUdwe8rRq4a9igp/xgNEun/FcgAAAA==')
+    }
+}
+
+sourceSets.main.resources {
+    srcDir generatedGameTestResources
+    srcDir 'src/generated/resources'
+    // Never package stale 1.20-era plural datapack directories on 1.21+.
+    exclude 'data/biotech/recipes/**'
+    exclude 'data/biotech/loot_tables/**'
+}
+
+def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    group = 'build'
+    description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
+    dependsOn tasks.named('compileJava')
+    classpath = files(sourceSets.main.output.classesDirs, configurations.compileClasspath)
+    mainClass = 'com.nstut.biotech.data.DataGenerator'
+    workingDir project.projectDir
+    doFirst {
+        // Remove obsolete pre-1.21 generated datapack trees before generating the authoritative layout.
+        project.delete('src/generated/resources/data/biotech/recipes')
+        project.delete('src/generated/resources/data/biotech/loot_tables')
+    }
+}
+
+tasks.register('generateRecipes') {
+    group = 'build'
+    description = 'Regenerates Biotech recipe data (and the coupled deterministic generated resources).'
+    dependsOn generateBiotechResources
+}
+
+def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
+    group = 'verification'
+    description = 'Verifies generated machine recipes are complete and use the 1.21+ datapack/schema contract.'
+    dependsOn generateBiotechResources
+    doLast {
+        def recipeDir = file('src/generated/resources/data/biotech/recipe')
+        def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
+        if (recipeFiles.size() != 59) {
+            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        }
+        recipeFiles.each { recipe ->
+            def text = recipe.getText('UTF-8')
+            ['"Count"', '"FluidName"', '"Amount"'].each { legacyKey ->
+                if (text.contains(legacyKey)) {
+                    throw new GradleException("${recipe} still contains legacy recipe key ${legacyKey}")
+                }
+            }
+        }
+        if (file('src/generated/resources/data/biotech/recipes').exists()) {
+            throw new GradleException('Legacy generated recipes/ directory still exists')
+        }
+        if (file('src/generated/resources/data/biotech/loot_tables').exists()) {
+            throw new GradleException('Legacy generated loot_tables/ directory still exists')
+        }
+        if (!file('src/generated/resources/data/biotech/loot_table').isDirectory()) {
+            throw new GradleException('Generated loot_table/ directory is missing')
+        }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    dependsOn generateGameTestStructure, generateBiotechResources
+    // Hand-authored legacy loot-table sources are still remapped until they are migrated separately.
+    from('src/main/resources/data/biotech/loot_tables') { into 'data/biotech/loot_table' }
+}
+tasks.named('sourcesJar').configure { dependsOn generateGameTestStructure, generateBiotechResources }
+tasks.named('check').configure { dependsOn verifyGeneratedRecipes }
+
+repositories {
+    mavenLocal()
+    maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
+    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    exclusiveContent {
+        forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
+        .orElse("com.nstut.nstutlib:nstutlib-neoforge-1.21.1:${rootProject.nstut_lib_version}").get()
+dependencies {
+    implementation nstutLibDependency
+    runtimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_1_21_1}"
+
+    localRuntime "curse.maven:cloth-config-348521:${rootProject.dev_cloth_config_file_1_21_1}"
+    localRuntime "curse.maven:guideme-1173950:${rootProject.dev_guideme_file_1_21_1}"
+    localRuntime "curse.maven:powah-rearchitected-633483:${rootProject.dev_powah_file_1_21_1}"
+    localRuntime "curse.maven:pipez-443900:${rootProject.dev_pipez_file_1_21_1}"
+
+    compileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-common-api:${rootProject.jei_version_1_21_1}"
+    compileOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-neoforge-api:${rootProject.jei_version_1_21_1}"
+    runtimeOnly "mezz.jei:jei-${rootProject.minecraft_version_1_21_1}-neoforge:${rootProject.jei_version_1_21_1}"
+    compileOnly "maven.modrinth:jade:${rootProject.jade_version_1_21_1}"
+    localRuntime "maven.modrinth:jade:${rootProject.jade_version_1_21_1}"
+    compileOnly "org.projectlombok:lombok:${rootProject.lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${rootProject.lombok_version}"
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+test { useJUnitPlatform() }
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    def p = [mod_id: rootProject.mod_id, mod_name: rootProject.mod_name, mod_version: rootProject.mod_version,
+             mod_description: rootProject.mod_description, mod_authors: rootProject.mod_authors, mod_license: rootProject.mod_license,
+             minecraft_version_range: rootProject.minecraft_version_range_1_21_1, neo_version: '21.1', patchouli_version_range: '[1.21.1-93,)']
+    inputs.properties p; expand p; from 'src/main/templates'; into layout.buildDirectory.dir('generated/sources/modMetadata')
+}
+sourceSets.main.resources.srcDir(generateModMetadata)
+neoForge.ideSyncTask(generateModMetadata)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+publishing { publications { mavenJava(MavenPublication) { from components.java; artifactId = base.archivesName.get() } } }

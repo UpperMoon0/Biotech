@@ -1,0 +1,16 @@
+{
+  "name": "Machine Basics",
+  "icon": "biotech:biotech_machine_casing",
+  "category": "biotech:getting_started",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Biotech machines are multiblocks. Build the structure shown in each machine entry exactly; the controller will only process recipes while the structure is valid.$(br)$(br)Once a matching recipe has its required inputs, enough energy, and room for its outputs, processing starts automatically."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Use JEI to inspect exact machine recipes, quantities, and outputs.$(br)$(br)For automation, connect pipes, cables, or inventories to the outward-facing side of each hatch. Input hatches accept resources; output hatches expose finished products for extraction."
+    }
+  ]
+}

@@ -1,230 +1,218 @@
-buildscript {
-    repositories {
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        // MixinGradle:
-        classpath 'org.spongepowered:mixingradle:0.7.+'
-    }
-}
+subprojects {
+    plugins.withId('java') {
+        sourceSets {
+            main {
+                java.srcDir rootProject.file('common/src/main/java')
+                resources.srcDir rootProject.file('common/src/main/resources')
 
-plugins {
-    id 'eclipse'
-    id 'idea'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-}
-
-apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
-apply plugin: 'maven-publish'
-// MixinGradle:
-apply plugin: 'org.spongepowered.mixin'
-
-version = mod_version
-group = mod_group_id
-
-base {
-    archivesName = mod_id
-}
-
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-minecraft {
-    // The mappings can be changed at any time and must be in the following format.
-    // Channel:   Version:
-    // official   MCVersion             Official field/method names from Mojang mapping files
-    // parchment  YYYY.MM.DD-MCVersion  Open community-sourced parameter names and javadocs layered on top of official
-    //
-    // You must be aware of the Mojang license when using the 'official' or 'parchment' mappings.
-    // See more information here: https://github.com/MinecraftForge/MCPConfig/blob/master/Mojang.md
-    //
-    // Parchment is an unofficial project maintained by ParchmentMC, separate from MinecraftForge
-    // Additional setup is needed to use their mappings: https://parchmentmc.org/docs/getting-started
-    //
-    // Use non-default mappings at your own risk. They may not always work.
-    // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
-
-    // When true, this property will have all Eclipse/IntelliJ IDEA run configurations run the "prepareX" task for the given run configuration before launching the game.
-    // In most cases, it is not necessary to enable.
-    // enableEclipsePrepareRuns = true
-    // enableIdeaPrepareRuns = true
-
-    // This property allows configuring Gradle's ProcessResources task(s) to run on IDE output locations before launching the game.
-    // It is REQUIRED to be set to true for this template to function.
-    // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
-    copyIdeResources = true
-
-    // When true, this property will add the folder name of all declared run configurations to generated IDE run configurations.
-    // The folder name can be set on a run configuration using the "folderName" property.
-    // By default, the folder name of a run configuration is the name of the Gradle project containing it.
-    // generateRunFolders = true
-
-    // This property enables access transformers for use in development.
-    // They will be applied to the Minecraft artifact.
-    // The access transformer file can be anywhere in the project.
-    // However, it must be at "META-INF/accesstransformer.cfg" in the final mod jar to be loaded by Forge.
-    // This default location is a best practice to automatically put the file in the right place in the final jar.
-    // See https://docs.minecraftforge.net/en/latest/advanced/accesstransformers/ for more information.
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
-    // Default run configurations.
-    // These can be tweaked, removed, or duplicated as needed.
-    runs {
-        // applies to all the run configs below
-        configureEach {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'REGISTRIES'
-
-            // Recommended logging level for the console
-            // You can set various levels here.
-            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
+                if (project.name in ['forge-1.20.1', 'neoforge-1.21.1']) {
+                    java.srcDir rootProject.file('common-legacy/src/main/java')
+                }
+                if (project.name.startsWith('neoforge-')) {
+                    java.srcDir rootProject.file('common-neoforge/src/main/java')
+                }
+            }
+            test {
+                java.srcDir rootProject.file('common/src/test/java')
+                if (project.name in ['forge-1.20.1', 'neoforge-1.21.1']) {
+                    java.srcDir rootProject.file('common-legacy/src/test/java')
                 }
             }
         }
+    }
 
-        client {
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
-        server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
-        }
-
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
-        // By default, the server will crash when no gametests are provided.
-        // The gametest system is also enabled by default for other run configs under the /test command.
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
-        data {
-            // example of overriding the workingDirectory set in configureEach above
-            workingDirectory project.file('run-data')
-
-            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+    tasks.withType(JavaExec).configureEach {
+        if (name == 'generateBiotechResources') {
+            systemProperty 'biotech.sourceResources', rootProject.file('common/src/main/resources').absolutePath
+            systemProperty 'biotech.recipeDir', project.name == 'forge-1.20.1' ? 'recipes' : 'recipe'
+            systemProperty 'biotech.lootTableDir', project.name == 'forge-1.20.1' ? 'loot_tables' : 'loot_table'
         }
     }
 }
+allprojects {
+    group = rootProject.mod_group_id
+    version = rootProject.mod_version
+}
 
-// Include resources generated by data generators.
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-repositories {
-    maven {
-        // location of the maven that hosts JEI files since January 2023
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
-    }
-    maven {
-        url 'https://www.cursemaven.com'
-        content {
-            includeGroup "curse.maven"
+def normalizeRecipeValue
+normalizeRecipeValue = { value ->
+    if (value instanceof Map) {
+        return value.collectEntries { key, nested ->
+            def normalizedKey = ['Count': 'count', 'FluidName': 'id', 'Amount': 'amount'].get(key, key)
+            [(normalizedKey): normalizeRecipeValue(nested)]
         }
     }
-    maven {
-        url "file://${rootProject.projectDir}/../MC-Mod-NsTut-Lib/mcmodsrepo"
+    if (value instanceof List) {
+        return value.collect { normalizeRecipeValue(it) }
     }
+    return value
 }
 
-dependencies {
-    minecraft "net.minecraftforge:forge:1.20.1-47.3.11"
+tasks.register('verifyRecipeParity') {
+    group = 'verification'
+    description = 'Verifies the generated machine recipe gameplay data is semantically identical across all supported targets.'
+    dependsOn ':forge-1.20.1:generateBiotechResources', ':neoforge-1.21.1:generateBiotechResources', ':neoforge-26.1.2:generateBiotechResources'
 
-    implementation fg.deobf("curse.maven:pipez-443900:4629656")
-    implementation fg.deobf("curse.maven:itank-256991:4647928")
-    implementation fg.deobf("curse.maven:generatorgalore-691049:4661531")
-    implementation fg.deobf("curse.maven:patchouli-306770:4966125")
-    implementation fg.deobf("curse.maven:kubejs-238086:5853326")
-    implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
-    implementation fg.deobf("curse.maven:rhino-416294:6186971")
-    implementation 'com.nstut.nstutlib:MC-Mod-NsTut-Lib:0.7'
-    implementation 'com.google.code.gson:gson:2.11.0'
-
-    // compile against the JEI API but do not include it at runtime
-    compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
-    compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
-
-    // at runtime, use the full JEI jar for Forge
-    runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
-
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
-}
-
-// This block of code expands all declared replace properties in the specified resource targets.
-// A missing property will result in an error. Properties are expanded using ${} Groovy notation.
-// When "copyIdeResources" is enabled, this will also run before the game launches in IDE environments.
-// See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
-tasks.named('processResources', ProcessResources).configure {
-    var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
-    ]
-    inputs.properties replaceProperties
-
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
-}
-
-// Example for how to get properties into the manifest for reading at runtime.
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                'Specification-Title'     : mod_id,
-                'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1', // We are version 1 of ourselves
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
-
-    // This is the preferred method to reobfuscate your jar file
-    // finalizedBy 'reobfJar'
-}
-
-// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing:
-// tasks.named('publish').configure {
-//     dependsOn 'reobfJar'
-// }
-
-// Example configuration to allow publishing using the maven-publish plugin
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            artifact jar
+    doLast {
+        def parser = new groovy.json.JsonSlurper()
+        def roots = [
+                'forge-1.20.1'    : file('forge-1.20.1/src/generated/resources/data/biotech/recipes'),
+                'neoforge-1.21.1' : file('neoforge-1.21.1/src/generated/resources/data/biotech/recipe'),
+                'neoforge-26.1.2' : file('neoforge-26.1.2/src/generated/resources/data/biotech/recipe')
+        ]
+        def parsed = roots.collectEntries { target, dir ->
+            if (!dir.isDirectory()) {
+                throw new GradleException("Missing generated recipe directory for ${target}: ${dir}")
+            }
+            [(target): fileTree(dir) { include '*.json' }.files.collectEntries { recipeFile ->
+                [(recipeFile.name): normalizeRecipeValue(parser.parse(recipeFile))]
+            }]
         }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
+
+        def baselineName = 'forge-1.20.1'
+        def baseline = parsed[baselineName]
+        parsed.each { target, recipes ->
+            if (recipes.keySet() != baseline.keySet()) {
+                throw new GradleException("Generated recipe file set differs between ${baselineName} and ${target}")
+            }
+            baseline.each { name, recipe ->
+                if (recipes[name] != recipe) {
+                    throw new GradleException("Generated recipe gameplay data differs for ${name} between ${baselineName} and ${target}")
+                }
+            }
         }
+        logger.lifecycle("Verified ${baseline.size()} generated machine recipes are semantically identical across all supported targets.")
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+tasks.register('verifyHandAuthoredMachineRecipeParity') {
+    group = 'verification'
+    description = 'Verifies hand-authored Biotech machine recipes use the correct target schema and preserve cross-version gameplay parity.'
+
+    doLast {
+        def parser = new groovy.json.JsonSlurper()
+        def names = ['chicken_feed.json', 'cow_feed.json', 'pig_feed.json', 'rabbit_feed.json', 'sheep_feed.json', 'fertilizer.json']
+        def roots = [
+                'forge-1.20.1'    : file('forge-1.20.1/src/main/resources/data/biotech/recipes'),
+                'neoforge-1.21.1' : file('neoforge-1.21.1/src/main/resources/data/biotech/recipe'),
+                'neoforge-26.1.2' : file('neoforge-26.1.2/src/main/resources/data/biotech/recipe')
+        ]
+        def normalizeHandRecipe
+        normalizeHandRecipe = { value ->
+            if (value instanceof Map) {
+                return value.collectEntries { key, nested ->
+                    def normalizedKey = ['Count': 'count', 'FluidName': 'id', 'Amount': 'amount'].get(key, key)
+                    [(normalizedKey): normalizeHandRecipe(nested)]
+                }
+            }
+            if (value instanceof List) {
+                return value.collect { normalizeHandRecipe(it) }
+            }
+            if (value == 'minecraft:grass') {
+                return 'minecraft:short_grass'
+            }
+            return value
+        }
+
+        def parsed = roots.collectEntries { target, dir ->
+            [(target): names.collectEntries { name ->
+                def recipeFile = new File(dir, name)
+                if (!recipeFile.isFile()) {
+                    throw new GradleException("Missing hand-authored machine recipe ${name} for ${target}")
+                }
+                def raw = recipeFile.getText('UTF-8')
+                if (target != 'forge-1.20.1') {
+                    ['"Count"', '"FluidName"', '"Amount"'].each { forbidden ->
+                        if (raw.contains(forbidden)) {
+                            throw new GradleException("${target}/${name} still uses legacy 1.20.1 field ${forbidden}")
+                        }
+                    }
+                    if (raw.contains('minecraft:grass')) {
+                        throw new GradleException("${target}/${name} uses removed item id minecraft:grass instead of minecraft:short_grass")
+                    }
+                }
+                [(name): normalizeHandRecipe(parser.parse(recipeFile))]
+            }]
+        }
+
+        def baseline = parsed['forge-1.20.1']
+        parsed.each { target, recipes ->
+            baseline.each { name, recipe ->
+                if (recipes[name] != recipe) {
+                    throw new GradleException("Hand-authored machine recipe gameplay data differs for ${name} between forge-1.20.1 and ${target}")
+                }
+            }
+        }
+        logger.lifecycle("Verified ${names.size()} hand-authored machine recipes have target-correct schemas and semantic parity.")
+    }
+}
+tasks.register('verifyPatchouliDocs') {
+    group = 'verification'
+    description = 'Validates the shared Patchouli guide JSON, entry ordering, and crafting recipe references on every supported target.'
+
+    doLast {
+        def parser = new groovy.json.JsonSlurper()
+        def entryDir = file('common/src/main/resources/assets/biotech/patchouli_books/biotech_guide_book/en_us/entries')
+        def bookFile = file('common/src/main/resources/data/biotech/patchouli_books/biotech_guide_book/book.json')
+        def categoryFile = file('common/src/main/resources/assets/biotech/patchouli_books/biotech_guide_book/en_us/categories/getting_started.json')
+        parser.parse(bookFile)
+        parser.parse(categoryFile)
+
+        def entries = fileTree(entryDir) { include '*.json' }.files.sort { it.name }
+        if (entries.isEmpty()) {
+            throw new GradleException('Patchouli guide has no entries')
+        }
+        def sortNumbers = []
+        def recipeRefs = [] as Set
+        entries.each { entryFile ->
+            def entry = parser.parse(entryFile)
+            ['name', 'icon', 'category', 'pages', 'sortnum'].each { key ->
+                if (!entry.containsKey(key)) {
+                    throw new GradleException("Patchouli entry ${entryFile.name} is missing ${key}")
+                }
+            }
+            sortNumbers << entry.sortnum
+            entry.pages.each { page ->
+                if (page.recipe) recipeRefs << page.recipe
+                if (page.recipe2) recipeRefs << page.recipe2
+            }
+        }
+        if (sortNumbers.size() != sortNumbers.toSet().size()) {
+            throw new GradleException('Patchouli entry sortnum values must be unique')
+        }
+
+        def recipeRoots = [
+                'forge-1.20.1'    : file('forge-1.20.1/src/main/resources/data/biotech/recipes'),
+                'neoforge-1.21.1' : file('neoforge-1.21.1/src/main/resources/data/biotech/recipe'),
+                'neoforge-26.1.2' : file('neoforge-26.1.2/src/main/resources/data/biotech/recipe')
+        ]
+        recipeRoots.each { target, dir ->
+            recipeRefs.each { ref ->
+                if (!ref.startsWith('biotech:')) {
+                    throw new GradleException("Unsupported Patchouli crafting reference ${ref} in shared guide")
+                }
+                def id = ref.substring('biotech:'.length())
+                if (!new File(dir, "${id}.json").isFile()) {
+                    throw new GradleException("Patchouli recipe ${ref} is missing for ${target}")
+                }
+            }
+        }
+        logger.lifecycle("Verified ${entries.size()} Patchouli entries and ${recipeRefs.size()} crafting references across all supported targets.")
+    }
+}
+tasks.register('buildAll') {
+    group = 'build'
+    dependsOn ':forge-1.20.1:build', ':neoforge-1.21.1:build', ':neoforge-26.1.2:build', 'verifyRecipeParity', 'verifyHandAuthoredMachineRecipeParity', 'verifyPatchouliDocs'
+}
+tasks.register('testAllVersions') {
+    group = 'verification'
+    dependsOn ':forge-1.20.1:test', ':neoforge-1.21.1:test', ':neoforge-26.1.2:test', 'verifyRecipeParity', 'verifyHandAuthoredMachineRecipeParity', 'verifyPatchouliDocs'
+}
+tasks.register('gameTestAll') {
+    group = 'verification'
+    dependsOn ':forge-1.20.1:runGameTestServer', ':neoforge-1.21.1:runGameTestServer', ':neoforge-26.1.2:runGameTestServer'
+}
+tasks.register('publishAllToMavenLocal') {
+    group = 'publishing'
+    dependsOn ':forge-1.20.1:publishToMavenLocal', ':neoforge-1.21.1:publishToMavenLocal', ':neoforge-26.1.2:publishToMavenLocal'
 }

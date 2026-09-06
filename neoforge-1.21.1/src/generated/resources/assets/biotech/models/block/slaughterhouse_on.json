@@ -1,0 +1,8 @@
+{
+  "textures": {
+    "top": "biotech:block/biotech_machine_casing",
+    "side": "biotech:block/biotech_machine_casing",
+    "front": "biotech:block/slaughterhouse_on"
+  },
+  "parent": "minecraft:block/orientable"
+}

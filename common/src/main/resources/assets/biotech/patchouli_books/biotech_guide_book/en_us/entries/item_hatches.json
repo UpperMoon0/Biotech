@@ -1,0 +1,27 @@
+{
+  "name": "Item Hatches",
+  "icon": "biotech:item_input_hatch",
+  "category": "biotech:getting_started",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Item hatches move ingredients and products between a multiblock and your storage or item transport.$(br)$(br)Each Item Input Hatch and Item Output Hatch provides 9 inventory slots."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:item_input_hatch",
+      "text": "The Item Input Hatch accepts inserted items from external automation on its facing side."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "biotech:item_output_hatch",
+      "text": "The Item Output Hatch allows external automation to extract products from its facing side."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "biotech:item_input_hatch",
+      "recipe2": "biotech:item_output_hatch"
+    }
+  ],
+  "sortnum": 20
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:book",
+    "C": "biotech:biotech_machine_casing"
+  },
+  "pattern": ["BC"],
+  "result": {
+    "id": "patchouli:guide_book",
+    "count": 1,
+    "components": {"patchouli:book": "biotech:biotech_guide_book"}
+  }
+}

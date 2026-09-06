@@ -1,0 +1,12 @@
+{
+  "type": "biotech:fermenter",
+  "itemInputs": [
+    {"itemStack":{"id":"biotech:paper_bag","count":16},"isConsumable":true},
+    {"itemStack":{"id":"minecraft:dirt","count":1},"isConsumable":true},
+    {"itemStack":{"id":"minecraft:bone_meal","count":3},"isConsumable":true},
+    {"itemStack":{"id":"biotech:manure","count":4},"isConsumable":true}
+  ],
+  "itemOutputs": [{"itemStack":{"id":"biotech:fertilizer","count":16},"chance":1.0}],
+  "fluidInputs": [{"id":"minecraft:water","amount":500}],
+  "fluidOutputs": [],"energy": 32000
+}

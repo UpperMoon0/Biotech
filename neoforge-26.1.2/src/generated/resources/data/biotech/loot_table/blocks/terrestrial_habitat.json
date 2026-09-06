@@ -1,0 +1,21 @@
+{
+  "random_sequence": "biotech:blocks/terrestrial_habitat",
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "name": "biotech:terrestrial_habitat",
+          "type": "minecraft:item"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "rolls": 1.0,
+      "bonus_rolls": 0.0
+    }
+  ]
+}
