@@ -42,7 +42,7 @@ jobs:
           ./gradlew :neoforge-26.1.2:test :neoforge-26.1.2:build --no-daemon --stacktrace 2>&1 | tee neoforge-26.1.2-build.log
       - name: Upload failing Gradle log
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: draft-neoforge-26.1.2-build-log
           path: neoforge-26.1.2-build.log
@@ -88,7 +88,7 @@ jobs:
           ./gradlew :${{ matrix.target }}:test :${{ matrix.target }}:build --no-daemon --stacktrace 2>&1 | tee "${{ matrix.target }}-build.log"
       - name: Upload failing 26.1.2 Gradle log
         if: failure() && matrix.target == 'neoforge-26.1.2'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: neoforge-26.1.2-build-log
           path: neoforge-26.1.2-build.log
