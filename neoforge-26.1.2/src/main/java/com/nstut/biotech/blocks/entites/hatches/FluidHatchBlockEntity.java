@@ -57,7 +57,8 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
         @Override public FluidResource getResource(int index) { return tank.getResource(index); }
         @Override public long getAmountAsLong(int index) { return tank.getAmountAsLong(index); }
         @Override public long getCapacityAsLong(int index, FluidResource resource) {
-            return externalInsertionCapacity(isInputHatch(), tank.getCapacityAsLong(index, resource));
+            return FluidHatchCapabilityPolicy.externalCapacity(
+                    isInputHatch(), resource.isEmpty(), tank.getCapacityAsLong(index, resource));
         }
         @Override public boolean isValid(int index, FluidResource resource) { return isInputHatch() && tank.isValid(index, resource); }
         @Override public int insert(int index, FluidResource resource, int amount, TransactionContext transaction) {
@@ -72,10 +73,6 @@ public abstract class FluidHatchBlockEntity extends CapabilityBlockEntity {
 
     protected FluidHatchBlockEntity(@NotNull BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     protected abstract boolean isInputHatch();
-
-    static long externalInsertionCapacity(boolean inputHatch, long delegateCapacity) {
-        return inputHatch ? delegateCapacity : 0L;
-    }
 
     /** Legacy views used by existing machine transaction code. */
     public final IItemHandler getInternalItemStorage() { return internalSlots; }
