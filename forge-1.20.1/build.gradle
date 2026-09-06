@@ -24,12 +24,9 @@ legacyForge {
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
-    unitTest {
-        enable()
-        testedMod = mods."${rootProject.mod_id}"
-    }
 }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+legacyForge.addModdingDependenciesTo(sourceSets.test)
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
     group = 'build'
@@ -109,7 +106,17 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
 }
-test { useJUnitPlatform(); dependsOn generateBiotechResources }
+test {
+    useJUnitPlatform()
+    dependsOn generateBiotechResources
+
+    // LegacyForge 1.20.1 has no mod-aware JUnit launcher. These two shared tests initialize
+    // signed Forge/Minecraft runtime classes and are covered by equivalent Forge GameTests instead.
+    filter {
+        excludeTestsMatching 'com.nstut.biotech.blocks.entites.hatches.DirtyEnergyStorageTest'
+        excludeTestsMatching 'com.nstut.biotech.items.MobItemStateTest'
+    }
+}
 tasks.named('processResources', ProcessResources).configure {
     dependsOn generateBiotechResources
     def p = [minecraft_version_range: rootProject.minecraft_version_range_1_20_1,
