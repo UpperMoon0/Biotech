@@ -1,13 +1,12 @@
 package com.nstut.biotech.recipes;
 
-import com.nstut.nstutlib.recipes.ModRecipe;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.nstutlib.recipes.RecipeSerializerFactory;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 
-public class BreedingChamberRecipe extends ModRecipe<BreedingChamberRecipe> {
+public class BreedingChamberRecipe extends AnimalMobRecipe<BreedingChamberRecipe> {
     public static final RecipeSerializer<BreedingChamberRecipe> SERIALIZER =
             new RecipeSerializerFactory<BreedingChamberRecipe>().createSerializer(BreedingChamberRecipe::new);
 

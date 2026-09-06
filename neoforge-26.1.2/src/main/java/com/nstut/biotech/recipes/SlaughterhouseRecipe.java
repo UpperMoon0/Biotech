@@ -1,13 +1,12 @@
 package com.nstut.biotech.recipes;
 
-import com.nstut.nstutlib.recipes.ModRecipe;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.nstutlib.recipes.RecipeSerializerFactory;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 
-public class SlaughterhouseRecipe extends ModRecipe<SlaughterhouseRecipe> {
+public class SlaughterhouseRecipe extends AnimalMobRecipe<SlaughterhouseRecipe> {
     public static final RecipeSerializer<SlaughterhouseRecipe> SERIALIZER =
             new RecipeSerializerFactory<SlaughterhouseRecipe>().createSerializer(SlaughterhouseRecipe::new);
 

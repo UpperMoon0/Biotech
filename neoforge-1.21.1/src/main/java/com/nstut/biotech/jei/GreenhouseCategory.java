@@ -32,34 +32,43 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
     private final IDrawable icon;
 
     public GreenhouseCategory(IGuiHelper helper) {
-        this.background = helper.createDrawable(TEXTURE, 0, 0, 153, 52);
-        this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(MachineRegistries.GREENHOUSE.blockItem().get()));
+        background = helper.createDrawable(TEXTURE, 0, 0, 153, 52);
+        icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(MachineRegistries.GREENHOUSE.blockItem().get()));
     }
 
     @Override public @NotNull RecipeType<GreenhouseRecipe> getRecipeType() { return TYPE; }
     @Override public @NotNull Component getTitle() { return Component.translatable("block.biotech." + MachineRegistries.GREENHOUSE.id()); }
-    @Override public @NotNull IDrawable getBackground() { return this.background; }
-    @Override public @NotNull IDrawable getIcon() { return this.icon; }
+    @Override public @NotNull IDrawable getBackground() { return background; }
+    @Override public @NotNull IDrawable getIcon() { return icon; }
 
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull GreenhouseRecipe recipe, @NotNull IFocusGroup focuses) {
-        List<Ingredient> itemIngredients = recipe.getItemIngredients().stream().map(ingredientItem -> Ingredient.of(ingredientItem.getItemStack())).toList();
-        FluidStack fluidIngredient = recipe.getFluidIngredients().get(0);
-        List<Ingredient> itemOutputs = recipe.getItemOutputs().stream().map(outputItem -> Ingredient.of(outputItem.getItemStack())).toList();
-        builder.addSlot(RecipeIngredientRole.INPUT, 23, 1).addIngredients(itemIngredients.get(0));
-        if (itemIngredients.size() > 1) builder.addSlot(RecipeIngredientRole.INPUT, 41, 1).addIngredients(itemIngredients.get(1));
-        builder.addSlot(RecipeIngredientRole.INPUT, 32, 21).addFluidStack(fluidIngredient.getFluid(), fluidIngredient.getAmount()).setFluidRenderer(fluidIngredient.getAmount(), false, 16, 16);
-        for (int i = 0; i < itemOutputs.size(); i++) builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + i * 20, 6).addIngredients(itemOutputs.get(i));
+        List<Ingredient> itemInputs = recipe.getItemIngredients().stream().map(v -> Ingredient.of(v.getItemStack())).toList();
+        List<Ingredient> itemOutputs = recipe.getItemOutputs().stream().map(v -> Ingredient.of(v.getItemStack())).toList();
+        for (int i = 0; i < itemInputs.size(); i++)
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 1 + (i / 2) * 18).addIngredients(itemInputs.get(i));
+        for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
+            FluidStack fluid = recipe.getFluidIngredients().get(i);
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 21 + (i / 2) * 18)
+                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
+        }
+        for (int i = 0; i < itemOutputs.size(); i++)
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + (i % 3) * 18, 1 + (i / 3) * 18).addIngredients(itemOutputs.get(i));
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluid = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + (i % 3) * 18, 21 + (i / 3) * 18)
+                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
+        }
     }
 
     @Override
-    public void draw(GreenhouseRecipe recipe, @NotNull IRecipeSlotsView recipeSlotsView, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(GreenhouseRecipe recipe, @NotNull IRecipeSlotsView slots, @NotNull GuiGraphics graphics, double mouseX, double mouseY) {
         Minecraft minecraft = Minecraft.getInstance();
-        guiGraphics.drawString(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
-        List<OutputItem> outputItems = recipe.getItemOutputs();
-        for (int i = 0; i < outputItems.size(); i++) {
-            String chance = recipe.getItemOutputs().get(i).getChance() < 1 ? (int) (recipe.getItemOutputs().get(i).getChance() * 100) + "%" : "";
-            guiGraphics.drawString(minecraft.font, chance, 96 + i * 20, 25, 4210752, false);
+        graphics.drawString(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
+        List<OutputItem> outputs = recipe.getItemOutputs();
+        for (int i = 0; i < outputs.size(); i++) {
+            String chance = outputs.get(i).getChance() < 1 ? (int) (outputs.get(i).getChance() * 100) + "%" : "";
+            graphics.drawString(minecraft.font, chance, 96 + (i % 3) * 18, 20 + (i / 3) * 18, 4210752, false);
         }
     }
 }

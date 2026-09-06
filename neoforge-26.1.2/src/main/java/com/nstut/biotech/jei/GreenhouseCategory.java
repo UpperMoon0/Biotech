@@ -27,7 +27,6 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
     public static final Identifier UID = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, MachineRegistries.GREENHOUSE.id());
     public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "textures/gui/jei/" + MachineRegistries.GREENHOUSE.id() + ".png");
     public static final RecipeType<GreenhouseRecipe> TYPE = new RecipeType<>(UID, GreenhouseRecipe.class);
-
     private final IDrawable background;
     private final IDrawable icon;
 
@@ -44,19 +43,21 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
 
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull GreenhouseRecipe recipe, @NotNull IFocusGroup focuses) {
-        List<ItemStack> ingredients = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
-        FluidStack fluid = recipe.getFluidIngredients().get(0);
-        List<ItemStack> outputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
-
-        builder.addSlot(RecipeIngredientRole.INPUT, 23, 1).addItemStack(ingredients.get(0));
-        if (ingredients.size() > 1) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 41, 1).addItemStack(ingredients.get(1));
+        List<ItemStack> itemInputs = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
+        List<ItemStack> itemOutputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
+        for (int i = 0; i < itemInputs.size(); i++)
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 1 + (i / 2) * 18).addItemStack(itemInputs.get(i));
+        for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
+            FluidStack fluid = recipe.getFluidIngredients().get(i);
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 21 + (i / 2) * 18)
+                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
         }
-        builder.addSlot(RecipeIngredientRole.INPUT, 32, 21)
-                .addFluidStack(fluid.getFluid(), fluid.getAmount())
-                .setFluidRenderer(fluid.getAmount(), false, 16, 16);
-        for (int i = 0; i < outputs.size(); i++) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + i * 20, 6).addItemStack(outputs.get(i));
+        for (int i = 0; i < itemOutputs.size(); i++)
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + (i % 3) * 18, 1 + (i / 3) * 18).addItemStack(itemOutputs.get(i));
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluid = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 96 + (i % 3) * 18, 21 + (i / 3) * 18)
+                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
         }
     }
 
@@ -65,11 +66,10 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
         background.draw(graphics);
         Minecraft minecraft = Minecraft.getInstance();
         graphics.text(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
-
         List<OutputItem> outputs = recipe.getItemOutputs();
         for (int i = 0; i < outputs.size(); i++) {
             String chance = outputs.get(i).getChance() < 1 ? (int) (outputs.get(i).getChance() * 100) + "%" : "";
-            graphics.text(minecraft.font, chance, 96 + i * 20, 25, 4210752, false);
+            graphics.text(minecraft.font, chance, 96 + (i % 3) * 18, 20 + (i / 3) * 18, 4210752, false);
         }
     }
 }

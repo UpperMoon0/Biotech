@@ -26,7 +26,6 @@ public class BreedingChamberCategory implements IRecipeCategory<BreedingChamberR
     public static final Identifier UID = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, MachineRegistries.BREEDING_CHAMBER.id());
     public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "textures/gui/jei/" + MachineRegistries.BREEDING_CHAMBER.id() + ".png");
     public static final RecipeType<BreedingChamberRecipe> TYPE = new RecipeType<>(UID, BreedingChamberRecipe.class);
-
     private final IDrawable background;
     private final IDrawable icon;
 
@@ -43,16 +42,22 @@ public class BreedingChamberCategory implements IRecipeCategory<BreedingChamberR
 
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull BreedingChamberRecipe recipe, @NotNull IFocusGroup focuses) {
-        List<ItemStack> items = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
-        FluidStack fluid = recipe.getFluidIngredients().get(0);
-        List<ItemStack> outputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
-
-        builder.addSlot(RecipeIngredientRole.INPUT, 23, 1).addItemStack(items.get(0));
-        builder.addSlot(RecipeIngredientRole.INPUT, 41, 1).addItemStack(items.get(1));
-        builder.addSlot(RecipeIngredientRole.INPUT, 32, 21)
-                .addFluidStack(fluid.getFluid(), fluid.getAmount())
-                .setFluidRenderer(fluid.getAmount(), false, 16, 16);
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 101, 11).addItemStack(outputs.get(0));
+        List<ItemStack> itemInputs = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
+        List<ItemStack> itemOutputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
+        for (int i = 0; i < itemInputs.size(); i++)
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 1 + (i / 2) * 18).addItemStack(itemInputs.get(i));
+        for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
+            FluidStack fluid = recipe.getFluidIngredients().get(i);
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 21 + (i / 2) * 18)
+                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
+        }
+        for (int i = 0; i < itemOutputs.size(); i++)
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 85 + (i % 2) * 18, 1 + (i / 2) * 18).addItemStack(itemOutputs.get(i));
+        for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
+            FluidStack fluid = recipe.getFluidOutputs().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 85 + (i % 2) * 18, 21 + (i / 2) * 18)
+                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
+        }
     }
 
     @Override
