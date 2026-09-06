@@ -64,6 +64,9 @@ public abstract class ItemHatchBlockEntity extends CapabilityBlockEntity {
         @Override public ItemResource getResource(int index) { return slots.getResource(index); }
         @Override public long getAmountAsLong(int index) { return slots.getAmountAsLong(index); }
         @Override public long getCapacityAsLong(int index, ItemResource resource) {
+            if (resource.isEmpty()) {
+                return slots.getCapacityAsLong(index, resource);
+            }
             return isInputHatch() ? slots.getCapacityAsLong(index, resource) : 0;
         }
         @Override public boolean isValid(int index, ItemResource resource) {
