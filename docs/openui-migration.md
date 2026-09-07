@@ -15,3 +15,20 @@ OpenUI owns component layout, lifecycle, and overlays. Vanilla owns real invento
 - Client checks: open every machine and hatch; inspect invalid, idle, and active machine states; hover energy, fluid, progress, and recipe outputs; resize and change GUI scale; close/reopen; exercise hatch pickup, drag, shift-click, carried stacks, and inventory-key dismissal.
 
 The OpenUI source revision is pinned in `gradle.properties`; CI and release jobs publish that exact provider to Maven Local before compiling Biotech. OpenUI is required on the client only.
+
+## PNG preview job
+
+Run `./gradlew :neoforge-1.21.1:renderUiPreviews` (Windows: `gradlew.bat`) after publishing the pinned 1.21.1 providers. The job launches its own client, waits for resources to load at the title screen, renders each case, saves PNGs, and exits automatically. No world, account login, or manual clicks are needed. Linux without a display requires `xvfb-run -a` and an OpenGL implementation.
+
+The output is `neoforge-1.21.1/build/ui-previews/`. Open `index.html` for a gallery, or use the individual PNGs. `manifest.json` records every file and its dimensions and is written only after successful completion. Each run clears its own previous output, and the Gradle task fails when the manifest or any PNG is missing or invalid.
+
+The 28 cases cover all 11 screens:
+
+- Six machines, each active, idle, and with an invalid structure (18 PNGs).
+- Item input/output, fluid input/output, and energy input hatches, each empty and filled (10 PNGs).
+
+Images use English labels, GUI scale 2, a flat background, fixed sample values, and no pointer hover. Machine PNGs are 528 × 416; hatch PNGs are 400 × 380. Machine and hatch content comes from the production `MachineUi` and `HatchUi` builders; hatch slots use deterministic display fixtures at menu coordinates. This is a visual preview job, not an inventory-interaction test or a pixel-perfect comparison against golden images. Software and hardware OpenGL may differ slightly.
+
+The `UI PNG previews` GitHub Actions workflow runs on pull requests, pushes to main, and manual dispatch. Download the `biotech-ui-previews` artifact for the images and gallery. The canonical renderer runs on NeoForge 1.21.1, covering the shared layouts; it does not certify the rendering adapters on every Minecraft version.
+
+The renderer is a separate `uiPreview` source set and development mod. Only `runUiPreview` loads it. Normal clients, servers, unit tests, and release JARs do not include the preview runner.
