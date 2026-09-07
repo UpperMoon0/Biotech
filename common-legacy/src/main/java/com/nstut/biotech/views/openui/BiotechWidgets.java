@@ -13,12 +13,36 @@ import java.util.function.Supplier;
 
 /** Live OpenUI components shared by the machine and hatch layouts. */
 public final class BiotechWidgets {
+    public static UIComponent surface(com.nstut.openui.graphics.SurfaceStyle style) {
+        return new UIComponent() {
+            @Override public int preferredWidth(Font f) { return 0; }
+            @Override public int preferredHeight(Font f) { return 0; }
+            @Override public void render(GuiGraphics g, Font f, int mx, int my, float pt) {
+                new com.nstut.openui.graphics.UiCanvas(g, f).surface(x, y, width, height, style);
+            }
+        };
+    }
+    public static UIComponent text(Supplier<String> value, int color) {
+        return new UIComponent() {
+            @Override public int preferredWidth(Font f) { return f.width(value.get()); }
+            @Override public int preferredHeight(Font f) { return 9; }
+            @Override public void render(GuiGraphics g, Font f, int mx, int my, float pt) {
+                UiRender.text(g, f, f.plainSubstrByWidth(value.get(), width), x, y, color);
+            }
+        };
+    }
+    public static UIComponent caption(String key) {
+        return text(() -> Component.translatable("ui.biotech." + key).getString(), BiotechStyle.MUTED);
+    }
     private BiotechWidgets() { }
     public static UIComponent at(UIComponent child, int x, int y, int w, int h) {
         return Ui.positioned(child.width(w).height(h)).left(x).top(y);
     }
     public static UIComponent label(Supplier<String> text) { return Ui.text(() -> Component.literal(text.get())).centered(); }
     public static UIComponent gauge(IntSupplier amount, IntSupplier capacity, boolean vertical, Supplier<String> tip) {
+        return gauge(amount, capacity, vertical, tip, vertical ? 0xFFE8BA58 : BiotechStyle.MINT);
+    }
+    public static UIComponent gauge(IntSupplier amount, IntSupplier capacity, boolean vertical, Supplier<String> tip, int color) {
         return new LiveTooltipComponent() {
             @Override public int preferredWidth(Font f) { return vertical ? 12 : 26; }
             @Override public int preferredHeight(Font f) { return vertical ? 76 : 12; }
@@ -27,7 +51,7 @@ public final class BiotechWidgets {
                 UiRender.roundedRect(g, x, y, width, height, 3, 0xFF0D1713);
                 int fill = DisplayMath.fill(amount.getAsInt(), capacity.getAsInt(), vertical ? height : width);
                 if (fill > 0) UiRender.roundedRect(g, x, vertical ? y + height - fill : y,
-                    vertical ? width : fill, vertical ? fill : height, 3, vertical ? 0xFFE8BA58 : 0xFF67CD9A);
+                    vertical ? width : fill, vertical ? fill : height, 3, color);
             }
         };
     }
@@ -57,7 +81,7 @@ public final class BiotechWidgets {
                 for (int i = 0; i < values.size(); i++) {
                     Entry e = values.get(i);
                     int cx = cellX(i, values.size()), cy = y + (i / columns) * spacing;
-                    UiRender.slot(g, cx, cy, 18, 18);
+                    new com.nstut.openui.graphics.UiCanvas(g, f).surface(cx - 2, cy - 2, 22, 22, BiotechStyle.WELL);
                     g.renderItem(e.stack(), cx + 1, cy + 1);
                     g.renderItemDecorations(f, e.stack(), cx + 1, cy + 1);
                     if (columns == 1) UiRender.text(g, f, e.detail(), cx + 22, cy + 5, 0xFFD4E9DD);

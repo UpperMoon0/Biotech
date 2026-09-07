@@ -17,9 +17,10 @@ public abstract class BiotechContainerScreen<T extends AbstractContainerMenu> ex
     @Override protected void extractLabels(GuiGraphicsExtractor g, int mx, int my) { }
     @Override public void extractBackground(GuiGraphicsExtractor g, int mx, int my, float pt) {
         super.extractBackground(g, mx, my, pt);
-        UiRender.roundedOutline(g, leftPos, topPos, panelWidth, panelHeight, 6, 0xFF192622, 0xFF517464);
+        var canvas = new com.nstut.openui.graphics.UiCanvas(g, font);
+        BiotechBackdrop.paint(canvas, leftPos, topPos, panelWidth, panelHeight);
         for (var slot : menu.slots) {
-            UiRender.slot(g, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
+            canvas.surface(leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18, BiotechStyle.WELL);
         }
     }
 }

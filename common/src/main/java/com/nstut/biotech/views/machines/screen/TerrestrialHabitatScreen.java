@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class TerrestrialHabitatScreen extends BiotechContainerScreen<TerrestrialHabitatMenu> {
-    public TerrestrialHabitatScreen(TerrestrialHabitatMenu menu, Inventory inventory, Component title) { super(menu, inventory, title, 240, 184); }
+    public TerrestrialHabitatScreen(TerrestrialHabitatMenu menu, Inventory inventory, Component title) { super(menu, inventory, title, BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT); }
     @Override protected UIComponent buildUI() {
         MachineDisplay display = new MachineDisplay(menu::getStructureValid, menu::getIsOperating,
                 menu::getEnergyStored, menu::getEnergyCapacity, menu::getEnergyConsumed,

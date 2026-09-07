@@ -22,6 +22,10 @@ public final class FluidWidget extends LiveTooltipComponent {
     }
     @Override public int preferredWidth(Font f) { return 16; }
     @Override public int preferredHeight(Font f) { return 52; }
+    public String amountLabel() {
+        int amount = valid.getAsBoolean() ? fluid.get().getAmount() : 0;
+        return amount >= 10000 ? String.format(java.util.Locale.ROOT, "%.0fk", amount / 1000.0) : Integer.toString(amount);
+    }
     @Override protected String tooltipText(int mx, int my) {
         if (!valid.getAsBoolean()) return "Invalid Structure";
         FluidStack value = fluid.get();
@@ -29,7 +33,7 @@ public final class FluidWidget extends LiveTooltipComponent {
             + "\n" + value.getAmount() + " / " + capacity.getAsInt() + " mB";
     }
     @Override public void render(GuiGraphics g, Font f, int mx, int my, float pt) {
-        UiRender.slot(g, x - 1, y - 1, width + 2, height + 2);
+        new com.nstut.openui.graphics.UiCanvas(g, f).surface(x - 1, y - 1, width + 2, height + 2, BiotechStyle.WELL);
         if (valid.getAsBoolean() && capacity.getAsInt() > 0) {
             new BiotechFluidTankRenderer(capacity.getAsInt(), width, height).renderFluid(g.pose(), x, y, fluid.get());
         }

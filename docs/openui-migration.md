@@ -22,12 +22,14 @@ Run `./gradlew :neoforge-1.21.1:renderUiPreviews` (Windows: `gradlew.bat`) after
 
 The output is `neoforge-1.21.1/build/ui-previews/`. Open `index.html` for a gallery, or use the individual PNGs. `manifest.json` records every file and its dimensions and is written only after successful completion. Each run clears its own previous output, and the Gradle task fails when the manifest or any PNG is missing or invalid.
 
-The 28 cases cover all 11 screens:
+The 28 screen/state cases cover all 11 screens and run against both plain and textured backgrounds, producing 56 PNGs:
 
 - Six machines, each active, idle, and with an invalid structure (18 PNGs).
 - Item input/output, fluid input/output, and energy input hatches, each empty and filled (10 PNGs).
 
-Images use English labels, GUI scale 2, a flat background, fixed sample values, and no pointer hover. Machine PNGs are 528 × 416; hatch PNGs are 400 × 380. Machine and hatch content comes from the production `MachineUi` and `HatchUi` builders; hatch slots use deterministic display fixtures at menu coordinates. This is a visual preview job, not an inventory-interaction test or a pixel-perfect comparison against golden images. Software and hardware OpenGL may differ slightly.
+Images use English labels, GUI scale 2, fixed sample values, and no pointer hover. Machine PNGs are 688 × 496; hatch PNGs are 432 × 460, including the extended header and shadow padding. Both production and preview backgrounds use `BiotechBackdrop` and `BiotechStyle`. Machine and hatch content comes from the production `MachineUi` and `HatchUi` builders; hatch slots use deterministic display fixtures at menu coordinates. The manifest records dimensions, background, GUI scale, and effect mode. This is a visual preview job, not an inventory-interaction test or a pixel-perfect comparison against golden images. Software and hardware OpenGL may differ slightly.
+
+The current glass appearance uses OpenUI's portable tinted gradient surfaces, disjoint translucent borders, and exterior shadows. It does not perform framebuffer blur. This keeps the same material available on immediate and extraction renderers while preserving sharp foreground content.
 
 The `UI PNG previews` GitHub Actions workflow runs on pull requests, pushes to main, and manual dispatch. Download the `biotech-ui-previews` artifact for the images and gallery. The canonical renderer runs on NeoForge 1.21.1, covering the shared layouts; it does not certify the rendering adapters on every Minecraft version.
 

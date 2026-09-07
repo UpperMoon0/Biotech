@@ -11,8 +11,9 @@ public final class HatchUi {
     private HatchUi() { }
 
     public static UIComponent items(Component title) {
-        return Ui.stack(at(Ui.text(title), 8, 5, 160, 12),
-                at(Ui.text(Component.translatable("container.inventory")), 8, 72, 160, 12));
+        return Ui.stack(at(text(title::getString, BiotechStyle.TEXT), 1, -23, 174, 12),
+                at(caption("storage"), 8, 5, 150, 10),
+                at(Ui.text(Component.translatable("container.inventory")), 8, 73, 160, 10));
     }
 
     public static UIComponent fluid(Component title, UIComponent tank) {

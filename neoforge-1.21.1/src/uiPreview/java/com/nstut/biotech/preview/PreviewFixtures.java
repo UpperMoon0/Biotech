@@ -22,7 +22,11 @@ import java.util.function.Supplier;
 
 /** Fixed sample data: previews exercise production layouts without needing a world or server. */
 final class PreviewFixtures {
-    record Preview(String name, int width, int height, Supplier<UIComponent> content) { }
+    record Preview(String name, int width, int height, Supplier<UIComponent> content, boolean textured) {
+        Preview(String name, int width, int height, Supplier<UIComponent> content) {
+            this(name, width, height, content, false);
+        }
+    }
     private record SlotPreview(int x, int y, ItemStack stack) { }
     private PreviewFixtures() { }
 
@@ -30,7 +34,7 @@ final class PreviewFixtures {
         List<Preview> result = new ArrayList<>();
         for (var kind : MachineUi.Kind.values()) {
             for (String state : List.of("active", "idle", "invalid")) {
-                result.add(new Preview(machineId(kind) + "-" + state, 240, 184,
+                result.add(new Preview(machineId(kind) + "-" + state, BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT,
                         () -> machine(kind, state)));
             }
         }
@@ -41,7 +45,12 @@ final class PreviewFixtures {
                         () -> hatch(id, filled)));
             }
         }
-        return List.copyOf(result);
+        List<Preview> backgrounds = new ArrayList<>();
+        for (Preview p : result) {
+            backgrounds.add(p);
+            backgrounds.add(new Preview(p.name() + "-textured", p.width(), p.height(), p.content(), true));
+        }
+        return List.copyOf(backgrounds);
     }
 
     private static String machineId(MachineUi.Kind kind) {
@@ -130,7 +139,8 @@ final class PreviewFixtures {
             @Override public int preferredHeight(Font font) { return 166; }
             @Override public void render(GuiGraphics g, Font font, int mx, int my, float pt) {
                 for (SlotPreview slot : slots) {
-                    UiRender.slot(g, x + slot.x() - 1, y + slot.y() - 1, 18, 18);
+                    new com.nstut.openui.graphics.UiCanvas(g, font).surface(
+                            x + slot.x() - 1, y + slot.y() - 1, 18, 18, BiotechStyle.WELL);
                     if (!slot.stack().isEmpty()) {
                         g.renderItem(slot.stack(), x + slot.x(), y + slot.y());
                         g.renderItemDecorations(font, slot.stack(), x + slot.x(), y + slot.y());

@@ -48,24 +48,29 @@ neoForge {
 
 tasks.register('renderUiPreviews') {
     group = 'verification'
-    description = 'Runs the isolated client renderer and verifies all 28 UI PNG previews.'
+    description = 'Runs the isolated client renderer and verifies all 56 UI PNG previews.'
     dependsOn 'runUiPreview'
     doLast {
         def output = layout.buildDirectory.dir('ui-previews').get().asFile
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('UI renderer did not finish: manifest.json is missing')
         def entries = new groovy.json.JsonSlurper().parse(manifest)
-        if (entries.size() != 28 || entries.collect { it.file }.toSet().size() != 28) {
-            throw new GradleException('Expected exactly 28 unique UI previews')
+        if (entries.size() != 56 || entries.collect { it.file }.toSet().size() != 56) {
+            throw new GradleException('Expected exactly 56 unique UI previews')
         }
         entries.each { entry ->
+            def hatch = entry.file.contains('_hatch-')
+            if (entry.width != (hatch ? 432 : 688) || entry.height != (hatch ? 460 : 496) ||
+                    entry.guiScale != 2 || !(entry.background in ['plain', 'textured'])) {
+                throw new GradleException("Unexpected preview dimensions or settings: ${entry.file}")
+            }
             def png = new File(output, entry.file)
             def rendered = javax.imageio.ImageIO.read(png)
             if (rendered == null || rendered.width != entry.width || rendered.height != entry.height) {
                 throw new GradleException("Missing or invalid PNG: ${entry.file}")
             }
         }
-        logger.lifecycle("Verified 28 UI previews in ${output}")
+        logger.lifecycle("Verified 56 UI previews in ${output}")
     }
 }
 

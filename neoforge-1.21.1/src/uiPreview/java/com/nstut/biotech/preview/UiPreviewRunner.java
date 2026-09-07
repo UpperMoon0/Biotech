@@ -25,7 +25,7 @@ import java.util.List;
 @Mod(value = "biotech_ui_preview", dist = Dist.CLIENT)
 @EventBusSubscriber(modid = "biotech_ui_preview", value = Dist.CLIENT)
 public final class UiPreviewRunner {
-    private record ImageEntry(String file, int width, int height) { }
+    private record ImageEntry(String file, int width, int height, String background, int guiScale, String effect) { }
     private static final int PADDING = 12;
     private static final List<ImageEntry> images = new ArrayList<>();
     private static List<PreviewFixtures.Preview> previews;
@@ -42,8 +42,8 @@ public final class UiPreviewRunner {
                 output = Path.of(System.getProperty("biotech.uiPreview.output"));
                 Files.createDirectories(output);
                 previews = PreviewFixtures.all();
-                if (previews.size() != 28 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 28) {
-                    throw new IllegalStateException("Expected 28 unique preview cases");
+                if (previews.size() != 56 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 56) {
+                    throw new IllegalStateException("Expected 56 unique preview cases");
                 }
                 mc.setScreen(new PreviewScreen(previews.get(0)));
             } else if (advance) {
@@ -91,7 +91,16 @@ public final class UiPreviewRunner {
 
         @Override public void render(GuiGraphics g, int mx, int my, float pt) {
             g.fill(0, 0, width, height, 0xFF101713);
-            UiRender.roundedOutline(g, uiLeft(), uiTop(), uiWidth(), uiHeight(), 6, 0xFF192622, 0xFF517464);
+            if (preview.textured()) {
+                for (int yy = 0; yy < height; yy += 16) {
+                    for (int xx = 0; xx < width; xx += 16) {
+                        int color = ((xx / 16 + yy / 16) % 2 == 0) ? 0xFF59715A : 0xFF304B3F;
+                        g.fill(xx, yy, xx + 15, yy + 15, color);
+                    }
+                }
+            }
+            com.nstut.biotech.views.openui.BiotechBackdrop.paint(
+                    new com.nstut.openui.graphics.UiCanvas(g, font), uiLeft(), uiTop(), uiWidth(), uiHeight());
             // A neutral pointer and partial tick keep hover effects and animations out of baseline previews.
             super.render(g, -1, -1, 0);
             if (!captured && ++frames >= 8) {
@@ -106,9 +115,11 @@ public final class UiPreviewRunner {
             Minecraft mc = Minecraft.getInstance();
             int scale = (int) mc.getWindow().getGuiScale();
             if (scale != 2) throw new IllegalStateException("Preview requires GUI scale 2, got " + scale);
-            int cropWidth = (uiWidth() + PADDING * 2) * scale;
-            int cropHeight = (uiHeight() + PADDING * 2) * scale;
-            int left = (uiLeft() - PADDING) * scale, top = (uiTop() - PADDING) * scale;
+            boolean hatch = uiWidth() == 176;
+            int cropWidth = (uiWidth() + PADDING * 2 + (hatch ? 16 : 0)) * scale;
+            int cropHeight = (uiHeight() + PADDING * 2 + (hatch ? 40 : 0)) * scale;
+            int left = (uiLeft() - PADDING - (hatch ? 8 : 0)) * scale;
+            int top = (uiTop() - PADDING - (hatch ? 32 : 0)) * scale;
             try (NativeImage frame = Screenshot.takeScreenshot(mc.getMainRenderTarget());
                  NativeImage cropped = new NativeImage(cropWidth, cropHeight, false)) {
                 for (int y = 0; y < cropHeight; y++) {
@@ -116,7 +127,8 @@ public final class UiPreviewRunner {
                 }
                 String name = preview.name() + ".png";
                 cropped.writeToFile(output.resolve(name));
-                images.add(new ImageEntry(name, cropWidth, cropHeight));
+                images.add(new ImageEntry(name, cropWidth, cropHeight,
+                        preview.textured() ? "textured" : "plain", scale, "tinted-gradient"));
             } catch (IOException exception) {
                 throw new IllegalStateException("Cannot capture " + preview.name(), exception);
             }
