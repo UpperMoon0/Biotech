@@ -22,6 +22,21 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Resolve validated OpenUI revision
+        id: openui-ref
+        shell: bash
+        run: |
+          ref="$(sed -n 's/^openui_ref=//p' gradle.properties)"
+          if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid openui_ref in gradle.properties: $ref" >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/OpenUI-MC
+          ref: ${{ steps.openui-ref.outputs.ref }}
+          path: .ci/openui
       - name: Resolve validated NsTut Lib revision
         id: nstut-ref
         shell: bash
@@ -44,6 +59,9 @@ jobs:
           cache: gradle
       - name: Publish NsTut Lib fast target to Maven Local
         working-directory: .ci/nstut-lib
+        run: ./gradlew :neoforge-26.1.2:publishToMavenLocal --no-daemon --stacktrace
+      - name: Publish OpenUI target to Maven Local
+        working-directory: .ci/openui
         run: ./gradlew :neoforge-26.1.2:publishToMavenLocal --no-daemon --stacktrace
       - name: Fast unit tests and build
         shell: bash
@@ -78,6 +96,21 @@ jobs:
             java: '25'
     steps:
       - uses: actions/checkout@v4
+      - name: Resolve validated OpenUI revision
+        id: openui-ref
+        shell: bash
+        run: |
+          ref="$(sed -n 's/^openui_ref=//p' gradle.properties)"
+          if [[ ! "$ref" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid openui_ref in gradle.properties: $ref" >&2
+            exit 1
+          fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/OpenUI-MC
+          ref: ${{ steps.openui-ref.outputs.ref }}
+          path: .ci/openui
       - name: Resolve validated NsTut Lib revision
         id: nstut-ref
         shell: bash
@@ -100,6 +133,9 @@ jobs:
           cache: gradle
       - name: Publish NsTut Lib target to Maven Local
         working-directory: .ci/nstut-lib
+        run: ./gradlew :${{ matrix.nstut_target }}:publishToMavenLocal --no-daemon --stacktrace
+      - name: Publish OpenUI target to Maven Local
+        working-directory: .ci/openui
         run: ./gradlew :${{ matrix.nstut_target }}:publishToMavenLocal --no-daemon --stacktrace
       - name: Unit tests and build
         shell: bash

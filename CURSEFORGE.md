@@ -111,6 +111,7 @@ Biotech requires:
 
 - **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
 - **Patchouli**
+- **OpenUI MC 0.0.9** on clients, matching the Minecraft version and loader
 
 JEI and Jade are supported integrations and are highly useful in larger modpacks.
 

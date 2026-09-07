@@ -14,8 +14,13 @@ Biotech requires:
 
 - **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
 - **Patchouli** for the in-game Biotech Guide Book
+- **OpenUI MC 0.0.9** on clients, matching the Minecraft version and loader
 
 JEI and Jade integrations are included when those mods are installed. JEI is strongly recommended for inspecting exact machine recipes and Jade can display machine status, energy, fluid, and progress information.
+
+All six machine screens and all five hatch screens use OpenUI. Machine-specific recipe diagrams, energy and fluid gauges, progress timing, and output chances read the existing synchronized menu data. Hatch inventory slots keep vanilla click, drag, shift-click, and tooltip behavior.
+
+For source builds, publish the target from OpenUI-MC at the `openui_ref` revision in `gradle.properties` to Maven Local before building Biotech (for example, run `./gradlew :neoforge-1.21.1:publishToMavenLocal` in OpenUI-MC). CI and release builds do this automatically, alongside the pinned NsTut Lib provider. See [UI verification](docs/openui-migration.md) for the migration checks.
 
 ## Supported targets
 
