@@ -93,6 +93,7 @@ configurations {
 def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
         .orElse("com.nstut.nstutlib:nstutlib-neoforge-26.1.2:${rootProject.nstut_lib_version}").get()
 dependencies {
+    implementation "com.nstut:openui-mc-neoforge-26.1.2:${rootProject.openui_version}"
     implementation nstutLibDependency
     runtimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_26_1_2}"
 

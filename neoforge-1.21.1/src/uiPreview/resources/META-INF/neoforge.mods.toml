@@ -1,0 +1,15 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="biotech_ui_preview"
+version="1.0"
+displayName="Biotech UI Preview Runner (development only)"
+
+[[dependencies.biotech_ui_preview]]
+modId="biotech"
+type="required"
+versionRange="[2.1,)"
+ordering="AFTER"
+side="CLIENT"

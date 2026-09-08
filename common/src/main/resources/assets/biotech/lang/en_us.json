@@ -1,4 +1,17 @@
 {
+  "ui.biotech.control_panel": "BIOTECH / CONTROL PANEL",
+  "ui.biotech.process": "RECIPE PROCESS",
+  "ui.biotech.energy": "ENERGY",
+  "ui.biotech.fluid": "FLUID",
+  "ui.biotech.recipe": "RECIPE",
+  "ui.biotech.inputs": "INPUTS",
+  "ui.biotech.outputs": "OUTPUTS",
+  "ui.biotech.storage": "STORAGE",
+  "ui.biotech.operating": "Operating",
+  "ui.biotech.idle": "Idle",
+  "ui.biotech.invalid": "Invalid",
+  "ui.biotech.waiting": "Waiting for a recipe",
+  "ui.biotech.check_structure": "Check multiblock structure",
   "block.biotech.net_trap": "Net Trap",
 
   "block.biotech.biotech_machine_casing": "Biotech Machine Casing",

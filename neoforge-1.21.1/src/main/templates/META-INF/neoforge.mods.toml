@@ -38,3 +38,10 @@ type = "required"
 versionRange = "[0.8.1,0.9)"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "openui_mc"
+type = "required"
+versionRange = "[0.0.9,0.1)"
+ordering = "AFTER"
+side = "CLIENT"
