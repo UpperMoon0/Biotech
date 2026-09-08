@@ -79,7 +79,8 @@ jobs:
             minecraft: '1.20.1'
             loader: forge
             loader_name: Forge
-            java: '17'
+            # OpenUI's build plugins need Java 21; the Forge toolchain still targets Java 17.
+            java: '21'
             java_version_name: Java 17
           - project: neoforge-1.21.1
             nstut_project: neoforge-1.21.1
