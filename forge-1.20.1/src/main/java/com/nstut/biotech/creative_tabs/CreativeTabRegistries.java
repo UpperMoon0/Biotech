@@ -17,7 +17,9 @@ public class CreativeTabRegistries {
             .icon(() -> ItemRegistries.NET_TRAP_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 for (RegistryObject<Item> i : ItemRegistries.ITEM_SET) {
-                    output.accept(i.get());
+                    if (!"captured_animal".equals(i.getId().getPath())) {
+                        output.accept(i.get());
+                    }
                 }
             })
             .title(Component.translatable("itemGroup.biotech"))
