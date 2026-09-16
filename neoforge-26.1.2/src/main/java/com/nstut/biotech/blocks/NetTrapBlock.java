@@ -1,9 +1,14 @@
 package com.nstut.biotech.blocks;
 
+import com.nstut.biotech.Biotech;
+import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -29,6 +34,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class NetTrapBlock extends Block {
     public static final String CAPTURED_ENTITY_TAG = "CapturedEntity";
+    private static final TagKey<EntityType<?>> CAPTURABLE = TagKey.create(
+            Registries.ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "capturable"));
 
     public NetTrapBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -45,7 +53,7 @@ public class NetTrapBlock extends Block {
     protected void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos,
                                 @NotNull Entity entity, @NotNull InsideBlockEffectApplier effects,
                                 boolean canApplyEffects) {
-        if (level.isClientSide()) return;
+        if (level.isClientSide() || !entity.getType().is(CAPTURABLE)) return;
         ItemStack captured = createCapturedStack(entity);
         if (captured.isEmpty()) return;
 
@@ -54,6 +62,7 @@ public class NetTrapBlock extends Block {
         CompoundTag entityData = output.buildResult();
         CustomData.update(DataComponents.CUSTOM_DATA, captured, root -> {
             root.put(CAPTURED_ENTITY_TAG, entityData);
+            root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(entity.getType()).toString());
             if (entity instanceof Sheep sheep) root.putInt("SheepColor", sheep.getColor().getId());
         });
 
@@ -67,11 +76,12 @@ public class NetTrapBlock extends Block {
     }
 
     private static ItemStack createCapturedStack(Entity entity) {
+        // Preserve legacy item identities for the original five species so existing recipes/worlds remain compatible.
         if (entity.getType() == EntityType.COW && entity instanceof Cow cow) return new ItemStack(cow.isBaby() ? ItemRegistries.BABY_COW.get() : ItemRegistries.COW.get());
         if (entity.getType() == EntityType.CHICKEN && entity instanceof Chicken chicken) return new ItemStack(chicken.isBaby() ? ItemRegistries.BABY_CHICKEN.get() : ItemRegistries.CHICKEN.get());
         if (entity.getType() == EntityType.PIG && entity instanceof Pig pig) return new ItemStack(pig.isBaby() ? ItemRegistries.BABY_PIG.get() : ItemRegistries.PIG.get());
         if (entity.getType() == EntityType.SHEEP && entity instanceof Sheep sheep) return new ItemStack(sheep.isBaby() ? ItemRegistries.BABY_SHEEP.get() : ItemRegistries.SHEEP.get());
         if (entity.getType() == EntityType.RABBIT && entity instanceof Rabbit rabbit) return new ItemStack(rabbit.isBaby() ? ItemRegistries.BABY_RABBIT.get() : ItemRegistries.RABBIT.get());
-        return ItemStack.EMPTY;
+        return new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
     }
 }
