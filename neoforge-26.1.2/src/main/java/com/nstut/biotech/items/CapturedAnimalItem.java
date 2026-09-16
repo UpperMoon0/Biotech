@@ -10,7 +10,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
-/** Generic fallback for capturable species that do not use one of Biotech's legacy per-species items. */
+/** Generic fallback for capturable entity types that do not use one of Biotech's legacy per-species items. */
 public class CapturedAnimalItem extends Item {
     public static final String ENTITY_TYPE_TAG = "EntityType";
 
@@ -56,19 +55,19 @@ public class CapturedAnimalItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        Entity created = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
-        if (!(created instanceof Mob mob)) {
+        Entity entity = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        if (entity == null) {
             return InteractionResult.FAIL;
         }
 
         if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
             CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
-            mob.load(TagValueInput.create(ProblemReporter.DISCARDING, mob.registryAccess(), CapturedEntityState.sanitize(captured)));
+            entity.load(TagValueInput.create(ProblemReporter.DISCARDING, entity.registryAccess(), CapturedEntityState.sanitize(captured)));
         }
 
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
-        mob.snapTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, player.getYRot(), 0.0f);
-        if (!level.noCollision(mob, mob.getBoundingBox()) || !level.addFreshEntity(mob)) {
+        entity.snapTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, player.getYRot(), 0.0f);
+        if (!level.noCollision(entity, entity.getBoundingBox()) || !level.addFreshEntity(entity)) {
             return InteractionResult.FAIL;
         }
 
