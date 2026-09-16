@@ -53,7 +53,7 @@ public class NetTrapBlock extends Block {
     protected void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos,
                                 @NotNull Entity entity, @NotNull InsideBlockEffectApplier effects,
                                 boolean canApplyEffects) {
-        if (level.isClientSide() || !entity.getType().is(CAPTURABLE)) return;
+        if (level.isClientSide() || !entity.is(CAPTURABLE)) return;
         ItemStack captured = createCapturedStack(entity);
         if (captured.isEmpty()) return;
 
