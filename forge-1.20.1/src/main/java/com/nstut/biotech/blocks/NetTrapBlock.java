@@ -1,8 +1,13 @@
 package com.nstut.biotech.blocks;
 
+import com.nstut.biotech.Biotech;
+import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Chicken;
@@ -25,6 +30,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class NetTrapBlock extends Block {
     public static final String CAPTURED_ENTITY_TAG = "CapturedEntity";
+    private static final TagKey<EntityType<?>> CAPTURABLE = TagKey.create(
+            Registries.ENTITY_TYPE,
+            new ResourceLocation(Biotech.MOD_ID, "capturable"));
 
     public NetTrapBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).noOcclusion());
@@ -42,7 +50,7 @@ public class NetTrapBlock extends Block {
     @SuppressWarnings("deprecation")
     @Override
     public void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
-        if (level.isClientSide) {
+        if (level.isClientSide || !entity.getType().is(CAPTURABLE)) {
             return;
         }
 
@@ -51,13 +59,15 @@ public class NetTrapBlock extends Block {
             return;
         }
 
+        CompoundTag root = captured.getOrCreateTag();
         CompoundTag entityData = entity.saveWithoutId(new CompoundTag());
-        captured.getOrCreateTag().put(CAPTURED_ENTITY_TAG, entityData);
+        root.put(CAPTURED_ENTITY_TAG, entityData);
+        root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(entity.getType()).toString());
 
         // Keep the legacy sheep-color key so old UI/tooltips and old saves remain compatible.
         if (entity instanceof Sheep sheep) {
             DyeColor color = sheep.getColor();
-            captured.getOrCreateTag().putInt("SheepColor", color.getId());
+            root.putInt("SheepColor", color.getId());
         }
 
         // The trap and animal are only consumed once the captured-item entity is accepted.
@@ -81,6 +91,7 @@ public class NetTrapBlock extends Block {
     }
 
     private static ItemStack createCapturedStack(Entity entity) {
+        // Preserve legacy item identities for the original five species so existing recipes/worlds remain compatible.
         if (entity.getType() == EntityType.COW && entity instanceof Cow cow) {
             return new ItemStack(cow.isBaby() ? ItemRegistries.BABY_COW.get() : ItemRegistries.COW.get());
         }
@@ -96,6 +107,6 @@ public class NetTrapBlock extends Block {
         if (entity.getType() == EntityType.RABBIT && entity instanceof Rabbit rabbit) {
             return new ItemStack(rabbit.isBaby() ? ItemRegistries.BABY_RABBIT.get() : ItemRegistries.RABBIT.get());
         }
-        return ItemStack.EMPTY;
+        return new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
     }
 }
