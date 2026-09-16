@@ -17,7 +17,11 @@ public final class CreativeTabRegistries {
             .withTabsBefore(CreativeModeTabs.COMBAT)
             .icon(() -> ItemRegistries.NET_TRAP_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                for (Supplier<? extends Item> item : ItemRegistries.ITEM_SET) output.accept(item.get());
+                for (Supplier<? extends Item> item : ItemRegistries.ITEM_SET) {
+                    if (item.get() != ItemRegistries.CAPTURED_ANIMAL.get()) {
+                        output.accept(item.get());
+                    }
+                }
             })
             .title(Component.translatable("itemGroup.biotech"))
             .build());
