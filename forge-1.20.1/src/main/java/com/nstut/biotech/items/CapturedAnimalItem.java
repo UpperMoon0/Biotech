@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * Generic captured-animal item used for data-driven species that do not have a legacy Biotech item.
+ * Generic captured-entity carrier used for data-driven species that do not have a legacy Biotech item.
  * Existing cow/chicken/pig/sheep/rabbit items remain valid so old recipes and worlds keep working.
  */
 public class CapturedAnimalItem extends Item {
@@ -53,18 +52,18 @@ public class CapturedAnimalItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        Entity created = entityType.create(level);
-        if (!(created instanceof Mob mob)) {
+        Entity entity = entityType.create(level);
+        if (entity == null) {
             return InteractionResult.FAIL;
         }
 
         if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            mob.load(CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
+            entity.load(CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
         }
 
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
-        mob.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, player.getYRot(), 0.0f);
-        if (!level.noCollision(mob, mob.getBoundingBox()) || !level.addFreshEntity(mob)) {
+        entity.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, player.getYRot(), 0.0f);
+        if (!level.noCollision(entity, entity.getBoundingBox()) || !level.addFreshEntity(entity)) {
             return InteractionResult.FAIL;
         }
 
