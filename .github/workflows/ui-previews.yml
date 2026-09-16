@@ -1,0 +1,76 @@
+name: UI PNG previews
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-previews-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    name: Render all shared UI layouts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      ALSOFT_DRIVERS: 'null'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned providers
+        id: providers
+        shell: bash
+        run: |
+          for key in nstut_lib_ref openui_ref; do
+            ref="$(sed -n "s/^${key}=//p" gradle.properties | tr -d '\r')"
+            [[ "$ref" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid $key" >&2; exit 1; }
+            echo "$key=$ref" >> "$GITHUB_OUTPUT"
+          done
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/NsTut-Lib
+          ref: ${{ steps.providers.outputs.nstut_lib_ref }}
+          path: .ci/nstut-lib
+      - uses: actions/checkout@v4
+        with:
+          repository: UpperMoon0/OpenUI-MC
+          ref: ${{ steps.providers.outputs.openui_ref }}
+          path: .ci/openui
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Publish pinned providers
+        run: |
+          (cd .ci/nstut-lib && ./gradlew :neoforge-1.21.1:publishToMavenLocal --no-daemon)
+          (cd .ci/openui && ./gradlew :neoforge-1.21.1:publishToMavenLocal --no-daemon)
+      - name: Install virtual display and software graphics
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libopenal1
+      - name: Render PNG previews
+        run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderUiPreviews --no-daemon --stacktrace
+      - name: Upload PNGs and browsable gallery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: biotech-ui-previews
+          path: neoforge-1.21.1/build/ui-previews/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload renderer logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: biotech-ui-preview-logs
+          path: |
+            neoforge-1.21.1/build/ui-preview-run/logs/
+            neoforge-1.21.1/build/ui-preview-run/crash-reports/
+          if-no-files-found: warn

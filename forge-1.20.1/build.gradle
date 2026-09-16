@@ -86,6 +86,7 @@ obfuscation {
 def nstutLibDependency = providers.gradleProperty('nstut_lib_dependency')
         .orElse("com.nstut.nstutlib:nstutlib-forge-1.20.1:${rootProject.nstut_lib_version}").get()
 dependencies {
+    modImplementation "com.nstut:openui-mc-forge-1.20.1:${rootProject.openui_version}"
     modImplementation nstutLibDependency
     modRuntimeOnly "curse.maven:patchouli-306770:${rootProject.patchouli_file_1_20_1}"
 

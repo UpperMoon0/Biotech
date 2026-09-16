@@ -7,6 +7,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,6 +15,9 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class FluidHatchMenu extends MachineMenu {
     private final FluidHatchBlockEntity BLOCK_ENTITY;
@@ -32,15 +36,22 @@ public abstract class FluidHatchMenu extends MachineMenu {
 
         IItemHandler handler = BLOCK_ENTITY.getItemCapability(null);
         if (handler != null) {
-            addSlot(new SlotItemHandler(handler, 0, 98, 17) {
-                @Override public boolean mayPlace(@NotNull ItemStack stack) { return FluidHatchBlockEntity.isFluidContainer(stack); }
-            });
-            addSlot(new SlotItemHandler(handler, 1, 98, 53) {
-                @Override public boolean mayPlace(@NotNull ItemStack stack) { return false; }
-            });
+            for (Slot slot : createHatchSlots(handler)) {
+                addSlot(slot);
+            }
         }
-
         addInventorySlots(inventory);
+    }
+
+    public static List<Slot> createHatchSlots(IItemHandler handler) {
+        List<Slot> slots = new ArrayList<>(2);
+        slots.add(new SlotItemHandler(handler, 0, 98, 17) {
+            @Override public boolean mayPlace(@NotNull ItemStack stack) { return FluidHatchBlockEntity.isFluidContainer(stack); }
+        });
+        slots.add(new SlotItemHandler(handler, 1, 98, 53) {
+            @Override public boolean mayPlace(@NotNull ItemStack stack) { return false; }
+        });
+        return List.copyOf(slots);
     }
 
     @Override public ItemStack quickMoveStack(Player pPlayer, int pIndex) { return adaptiveQuickMoveStack(pIndex, 2, 1); }
