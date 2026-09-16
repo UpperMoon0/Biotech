@@ -34,7 +34,10 @@ class NetTrapCaptureContractTest {
         for (String target : TARGETS) {
             String source = Files.readString(root.resolve(target + "/src/main/java/com/nstut/biotech/blocks/NetTrapBlock.java"));
 
-            assertTrue(source.contains("entity.getType().is(CAPTURABLE)"), target + " must gate capture through the entity tag");
+            String membershipCall = target.equals("neoforge-26.1.2")
+                    ? "entity.is(CAPTURABLE)"
+                    : "entity.getType().is(CAPTURABLE)";
+            assertTrue(source.contains(membershipCall), target + " must gate capture through the entity tag");
             assertTrue(source.contains("CapturedAnimalItem.ENTITY_TYPE_TAG"), target + " must persist the captured entity type");
             assertTrue(source.contains("ItemRegistries.CAPTURED_ANIMAL"), target + " must fall back to the generic carrier");
 
