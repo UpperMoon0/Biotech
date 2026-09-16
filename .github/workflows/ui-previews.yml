@@ -59,7 +59,7 @@ jobs:
         run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderUiPreviews --no-daemon --stacktrace
       - name: Upload PNGs and browsable gallery
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: biotech-ui-previews
           path: neoforge-1.21.1/build/ui-previews/
@@ -67,7 +67,7 @@ jobs:
           retention-days: 14
       - name: Upload renderer logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: biotech-ui-preview-logs
           path: |
