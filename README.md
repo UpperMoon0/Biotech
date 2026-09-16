@@ -14,7 +14,7 @@ Biotech requires:
 
 - **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
 - **Patchouli** for the in-game Biotech Guide Book
-- **OpenUI MC 0.0.9** on clients, matching the Minecraft version and loader
+- **OpenUI MC 0.0.10+** on clients, matching the Minecraft version and loader
 
 JEI and Jade integrations are included when those mods are installed. JEI is strongly recommended for inspecting exact machine recipes and Jade can display machine status, energy, fluid, and progress information.
 
@@ -75,7 +75,7 @@ External automation is directional: connect item pipes, fluid pipes, or energy c
 
 ### Transaction-safe machine processing
 
-The 2.1 line uses NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid.
+The 2.2 line keeps NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid.
 
 ---
 

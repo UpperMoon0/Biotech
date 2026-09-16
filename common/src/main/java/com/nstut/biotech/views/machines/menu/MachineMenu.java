@@ -7,19 +7,30 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class MachineMenu extends AbstractContainerMenu {
     protected MachineMenu(@Nullable MenuType<?> pMenuType, int pContainerId) {
         super(pMenuType, pContainerId);
     }
 
-    protected void addInventorySlots(Inventory inventory) {
+    public static List<Slot> createInventorySlots(Inventory inventory) {
+        List<Slot> slots = new ArrayList<>(36);
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
-                this.addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, row * 18 + 84));
+                slots.add(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, row * 18 + 84));
             }
         }
         for (int col = 0; col < 9; ++col) {
-            this.addSlot(new Slot(inventory, col, 8 + col * 18, 142));
+            slots.add(new Slot(inventory, col, 8 + col * 18, 142));
+        }
+        return List.copyOf(slots);
+    }
+
+    protected void addInventorySlots(Inventory inventory) {
+        for (Slot slot : createInventorySlots(inventory)) {
+            this.addSlot(slot);
         }
     }
 

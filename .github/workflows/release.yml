@@ -25,6 +25,7 @@ jobs:
     outputs:
       should_release: ${{ steps.check.outputs.should_release }}
       version: ${{ steps.check.outputs.version }}
+      changelog: ${{ steps.check.outputs.changelog }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,6 +42,11 @@ jobs:
           version="$(sed -n 's/^mod_version[[:space:]]*=[[:space:]]*//p' gradle.properties | head -n1 | tr -d '\r' | xargs)"
           if [[ ! "$version" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
             printf 'Invalid mod_version: %q\n' "$version" >&2
+            exit 1
+          fi
+          changelog="CHANGELOG-${version}.md"
+          if [[ ! -s "$changelog" ]]; then
+            echo "Missing release changelog: $changelog" >&2
             exit 1
           fi
           expected="v${version}"
@@ -63,6 +69,7 @@ jobs:
           fi
 
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "changelog=$changelog" >> "$GITHUB_OUTPUT"
           echo "should_release=$should_release" >> "$GITHUB_OUTPUT"
           echo "Release trigger: $should_release"
 
@@ -206,7 +213,7 @@ jobs:
           CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
           CURSEFORGE_PROJECT_ID: '1119684'
           MOD_VERSION: ${{ needs.release-gate.outputs.version }}
-          CHANGELOG_PATH: CHANGELOG-2.1.md
+          CHANGELOG_PATH: ${{ needs.release-gate.outputs.changelog }}
           JAR_PATH: ${{ steps.release_file.outputs.jar_path }}
           MINECRAFT_VERSION: ${{ matrix.minecraft }}
           LOADER_NAME: ${{ matrix.loader_name }}
@@ -250,6 +257,6 @@ jobs:
         with:
           tag_name: v${{ needs.release-gate.outputs.version }}
           name: Biotech v${{ needs.release-gate.outputs.version }}
-          body_path: CHANGELOG-2.1.md
+          body_path: ${{ needs.release-gate.outputs.changelog }}
           fail_on_unmatched_files: true
           files: artifacts/**/*.jar

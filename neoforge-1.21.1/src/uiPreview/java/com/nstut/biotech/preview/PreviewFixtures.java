@@ -1,21 +1,28 @@
 package com.nstut.biotech.preview;
 
 import com.nstut.biotech.items.ItemRegistries;
+import com.nstut.biotech.views.io_hatches.fluid.FluidHatchMenu;
+import com.nstut.biotech.views.io_hatches.item.ItemHatchMenu;
+import com.nstut.biotech.views.machines.menu.MachineMenu;
 import com.nstut.biotech.views.openui.*;
 import com.nstut.nstutlib.recipes.IngredientItem;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.nstutlib.recipes.OutputItem;
 import com.nstut.openui.api.UIComponent;
 import com.nstut.openui.api.Ui;
-import com.nstut.openui.api.UiRender;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.items.ItemStackHandler;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -27,7 +34,7 @@ final class PreviewFixtures {
             this(name, width, height, content, false);
         }
     }
-    private record SlotPreview(int x, int y, ItemStack stack) { }
+
     private PreviewFixtures() { }
 
     static List<Preview> all() {
@@ -117,37 +124,95 @@ final class PreviewFixtures {
     private static FluidStack water(int amount) { return new FluidStack(Fluids.WATER, amount); }
 
     private static UIComponent hatch(String id, boolean filled) {
-        List<SlotPreview> slots = new ArrayList<>();
+        Inventory playerInventory = new Inventory(null);
+        if (filled) playerInventory.setItem(0, new ItemStack(Items.CARROT, 16));
+
         UIComponent content;
+        List<Slot> hatchSlots;
         if (id.startsWith("item_")) {
             content = HatchUi.items(title(id));
-            for (int i = 0; i < 9; i++) slots.add(new SlotPreview(62 + (i % 3) * 18, 17 + (i / 3) * 18,
-                    filled && i == 0 ? new ItemStack(Items.WHEAT, 32) : ItemStack.EMPTY));
+            ItemStackHandler handler = new ItemStackHandler(9);
+            if (filled) handler.setStackInSlot(0, new ItemStack(Items.WHEAT, 32));
+            hatchSlots = ItemHatchMenu.createHatchSlots(handler);
         } else if (id.startsWith("fluid_")) {
             content = HatchUi.fluid(title(id), new FluidWidget(() -> filled ? water(16000) : FluidStack.EMPTY, () -> 32000, () -> true));
-            slots.add(new SlotPreview(98, 17, filled ? new ItemStack(Items.WATER_BUCKET) : ItemStack.EMPTY));
-            slots.add(new SlotPreview(98, 53, filled ? new ItemStack(Items.BUCKET) : ItemStack.EMPTY));
+            ItemStackHandler handler = new ItemStackHandler(2);
+            if (filled) {
+                handler.setStackInSlot(0, new ItemStack(Items.WATER_BUCKET));
+                handler.setStackInSlot(1, new ItemStack(Items.BUCKET));
+            }
+            hatchSlots = FluidHatchMenu.createHatchSlots(handler);
         } else {
             content = HatchUi.energy(title(id), () -> filled ? 307200 : 0, () -> 614400);
+            hatchSlots = List.of();
         }
-        // These are display fixtures at the production menus' slot coordinates, not live inventories.
-        for (int i = 0; i < 27; i++) slots.add(new SlotPreview(8 + (i % 9) * 18, 84 + (i / 9) * 18, ItemStack.EMPTY));
-        for (int i = 0; i < 9; i++) slots.add(new SlotPreview(8 + i * 18, 142,
-                filled && i == 0 ? new ItemStack(Items.CARROT, 16) : ItemStack.EMPTY));
-        UIComponent inventory = new UIComponent() {
+
+        PreviewMenu menu = new PreviewMenu(hatchSlots, playerInventory);
+        verifyHatchSlotContract(id, menu, hatchSlots.size());
+        return Ui.stack(slotLayer(menu), content);
+    }
+
+    private static UIComponent slotLayer(PreviewMenu menu) {
+        return new UIComponent() {
             @Override public int preferredWidth(Font font) { return 176; }
             @Override public int preferredHeight(Font font) { return 166; }
             @Override public void render(GuiGraphics g, Font font, int mx, int my, float pt) {
-                for (SlotPreview slot : slots) {
+                for (Slot slot : menu.slots) {
                     new com.nstut.openui.graphics.UiCanvas(g, font).surface(
-                            x + slot.x() - 1, y + slot.y() - 1, 18, 18, BiotechStyle.WELL);
-                    if (!slot.stack().isEmpty()) {
-                        g.renderItem(slot.stack(), x + slot.x(), y + slot.y());
-                        g.renderItemDecorations(font, slot.stack(), x + slot.x(), y + slot.y());
+                            x + slot.x - 1, y + slot.y - 1, 18, 18, BiotechStyle.WELL);
+                    ItemStack stack = slot.getItem();
+                    if (!stack.isEmpty()) {
+                        g.renderItem(stack, x + slot.x, y + slot.y);
+                        g.renderItemDecorations(font, stack, x + slot.x, y + slot.y);
                     }
                 }
             }
         };
-        return Ui.stack(inventory, content);
+    }
+
+    private static void verifyHatchSlotContract(String id, PreviewMenu menu, int hatchSlotCount) {
+        int expectedHatchSlots = id.startsWith("item_") ? 9 : id.startsWith("fluid_") ? 2 : 0;
+        if (hatchSlotCount != expectedHatchSlots || menu.slots.size() != expectedHatchSlots + 36) {
+            throw new IllegalStateException(id + " slot count drifted: hatch=" + hatchSlotCount + ", total=" + menu.slots.size());
+        }
+
+        if (id.startsWith("item_")) {
+            for (int row = 0; row < 3; row++) {
+                for (int col = 0; col < 3; col++) {
+                    expectSlot(id, menu, col + row * 3, 62 + col * 18, 17 + row * 18);
+                }
+            }
+        } else if (id.startsWith("fluid_")) {
+            expectSlot(id, menu, 0, 98, 17);
+            expectSlot(id, menu, 1, 98, 53);
+        }
+
+        int base = expectedHatchSlots;
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                expectSlot(id, menu, base + col + row * 9, 8 + col * 18, 84 + row * 18);
+            }
+        }
+        for (int col = 0; col < 9; col++) {
+            expectSlot(id, menu, base + 27 + col, 8 + col * 18, 142);
+        }
+    }
+
+    private static void expectSlot(String id, PreviewMenu menu, int index, int x, int y) {
+        Slot slot = menu.slots.get(index);
+        if (slot.x != x || slot.y != y) {
+            throw new IllegalStateException(id + " slot " + index + " moved to " + slot.x + "," + slot.y
+                    + "; expected " + x + "," + y);
+        }
+    }
+
+    private static final class PreviewMenu extends MachineMenu {
+        private PreviewMenu(List<Slot> hatchSlots, Inventory inventory) {
+            super(null, 0);
+            for (Slot slot : hatchSlots) addSlot(slot);
+            addInventorySlots(inventory);
+        }
+        @Override public ItemStack quickMoveStack(Player player, int index) { return ItemStack.EMPTY; }
+        @Override public boolean stillValid(Player player) { return true; }
     }
 }

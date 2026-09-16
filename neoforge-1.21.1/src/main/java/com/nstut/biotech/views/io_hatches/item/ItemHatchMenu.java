@@ -7,10 +7,15 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemHatchMenu extends MachineMenu {
     private final ItemHatchBlockEntity blockEntity;
@@ -21,14 +26,20 @@ public class ItemHatchMenu extends MachineMenu {
         this.blockEntity = (ItemHatchBlockEntity) blockEntity;
         this.level = inventory.player.level();
 
-        var handler = this.blockEntity.getInternalItemStorage();
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                addSlot(new SlotItemHandler(handler, j + i * 3, 62 + j * 18, 17 + i * 18));
+        for (Slot slot : createHatchSlots(this.blockEntity.getInternalItemStorage())) {
+            addSlot(slot);
+        }
+        addInventorySlots(inventory);
+    }
+
+    public static List<Slot> createHatchSlots(IItemHandler handler) {
+        List<Slot> slots = new ArrayList<>(9);
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                slots.add(new SlotItemHandler(handler, col + row * 3, 62 + col * 18, 17 + row * 18));
             }
         }
-
-        addInventorySlots(inventory);
+        return List.copyOf(slots);
     }
 
     @Override

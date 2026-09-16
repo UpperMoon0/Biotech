@@ -14,7 +14,7 @@ OpenUI owns component layout, lifecycle, and overlays. Vanilla owns real invento
 - `./gradlew gameTestAll`: existing gameplay integration tests on all targets.
 - Client checks: open every machine and hatch; inspect invalid, idle, and active machine states; hover energy, fluid, progress, and recipe outputs; resize and change GUI scale; close/reopen; exercise hatch pickup, drag, shift-click, carried stacks, and inventory-key dismissal.
 
-The OpenUI source revision is pinned in `gradle.properties`; CI and release jobs publish that exact provider to Maven Local before compiling Biotech. OpenUI is required on the client only.
+Biotech requires OpenUI MC 0.0.10+ on clients. The coordinated OpenUI source revision is pinned in `gradle.properties`; CI and release jobs publish that exact provider to Maven Local before compiling Biotech.
 
 ## PNG preview job
 
@@ -27,7 +27,7 @@ The 28 screen/state cases cover all 11 screens and run against both plain and te
 - Six machines, each active, idle, and with an invalid structure (18 PNGs).
 - Item input/output, fluid input/output, and energy input hatches, each empty and filled (10 PNGs).
 
-Images use English labels, GUI scale 2, fixed sample values, and no pointer hover. Machine PNGs are 688 × 496; hatch PNGs are 432 × 460, including the extended header and shadow padding. Both production and preview backgrounds use `BiotechBackdrop` and `BiotechStyle`. Machine and hatch content comes from the production `MachineUi` and `HatchUi` builders; hatch slots use deterministic display fixtures at menu coordinates. The manifest records dimensions, background, GUI scale, and effect mode. This is a visual preview job, not an inventory-interaction test or a pixel-perfect comparison against golden images. Software and hardware OpenGL may differ slightly.
+Images use English labels, GUI scale 2, fixed sample values, and no pointer hover. Machine PNGs are 688 × 496; hatch PNGs are 432 × 460, including the extended header and shadow padding. Both production and preview backgrounds use `BiotechBackdrop` and `BiotechStyle`. Machine and hatch content comes from the production `MachineUi` and `HatchUi` builders. Hatch previews construct real Minecraft `Slot` objects through the same production slot factories as the menus, render the resulting menu slot list, and assert the hatch plus player-inventory coordinates before capture. Any slot-layout drift therefore fails the preview job instead of being hidden by duplicated preview coordinates. The manifest records dimensions, background, GUI scale, and effect mode. This is not an inventory-interaction test or a pixel-perfect golden-image comparison; software and hardware OpenGL may differ slightly.
 
 The current glass appearance uses OpenUI's portable tinted gradient surfaces, disjoint translucent borders, and exterior shadows. It does not perform framebuffer blur. This keeps the same material available on immediate and extraction renderers while preserving sharp foreground content.
 

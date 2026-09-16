@@ -12,6 +12,19 @@ import static com.nstut.biotech.views.openui.BiotechWidgets.*;
 /** Each machine retains its recipe diagram, using the same live OpenUI widgets. */
 public final class MachineUi {
     public enum Kind { MIXER, FERMENTER, BREEDINGCHAMBER, TERRESTRIALHABITAT, GREENHOUSE, SLAUGHTERHOUSE }
+
+    // Shared content grid. Every machine places semantically equivalent content on these anchors.
+    private static final int INPUT_X = 28;
+    private static final int INPUT_W = 72;
+    private static final int OUTPUT_X = 146;
+    private static final int OUTPUT_W = 60;
+    private static final int PRIMARY_Y = 104;
+    private static final int SECONDARY_Y = 151;
+    private static final int PROGRESS_X = 109;
+    private static final int PROGRESS_Y = 111;
+    private static final int PROGRESS_W = 28;
+    private static final int PROGRESS_H = 7;
+
     private MachineUi() { }
 
     public static UIComponent build(Kind kind, Component title, MachineDisplay data, UIComponent... fluids) {
@@ -32,62 +45,57 @@ public final class MachineUi {
                         BiotechStyle.MINT), 226, 19, 76, 10),
                 at(surface(BiotechStyle.CARD), 12, 48, 204, 162),
                 at(caption("process"), 24, 58, 176, 10),
+                at(caption("inputs"), 26, 81, 76, 10),
+                at(caption("outputs"), 144, 81, 64, 10),
                 at(surface(BiotechStyle.CARD), 224, 48, 84, 70),
                 at(caption("energy"), 234, 58, 64, 10),
                 at(text(() -> (data.valid().getAsBoolean() ? data.stored().getAsInt() : 0) + " FE",
                         BiotechStyle.TEXT), 234, 74, 66, 10),
                 at(gauge(() -> data.valid().getAsBoolean() ? data.stored().getAsInt() : 0,
-                        data.capacity(), false, data::energyTooltip, 0xFFE8BC5A), 234, 94, 62, 7),
+                        data.capacity(), false, data::energyTooltip, 0xFFE8BC5A), 234, 93, 62, 7),
                 at(text(() -> (data.active() ? data.rate().getAsInt() : 0) + " FE/t",
-                        BiotechStyle.MUTED), 234, 105, 62, 10),
-                at(caption("inputs"), 26, 81, 76, 10),
-                at(caption("outputs"), 144, 81, 64, 10));
+                        BiotechStyle.MUTED), 234, 104, 62, 10),
+                at(surface(BiotechStyle.CARD), 224, 126, 84, 84));
+
         if (fluids.length > 0) {
-            root.addChild(at(surface(BiotechStyle.CARD), 224, 126, 84, 84));
             root.addChild(at(caption("fluid"), 234, 136, 62, 10));
             root.addChild(at(fluids[0], 237, 152, 16, 45));
-            root.addChild(at(text(() -> fluids[0] instanceof FluidWidget tank ? tank.amountLabel() : "",
-                    BiotechStyle.TEXT), 263, 157, 36, 10));
-            root.addChild(at(text(() -> "mB", BiotechStyle.MUTED), 263, 172, 32, 10));
+            root.addChild(at(text(() -> fluids[0] instanceof FluidWidget tank ? tank.amountLabel() + " mB" : "",
+                    BiotechStyle.TEXT), 258, 169, 44, 10));
         } else {
-            root.addChild(at(surface(BiotechStyle.CARD), 224, 126, 84, 84));
-            root.addChild(at(caption("recipe"), 234, 138, 62, 10));
-            root.addChild(at(text(() -> data.active() ? data.cost().getAsInt() + " FE" : "—",
+            root.addChild(at(caption("recipe"), 234, 136, 62, 10));
+            root.addChild(at(text(() -> data.active() ? data.cost().getAsInt() + " FE" : "-",
                     BiotechStyle.TEXT), 234, 156, 64, 10));
         }
+
+        // Primary lane is identical for every machine: input(s) -> progress -> output(s).
+        int primaryInputCount = switch (kind) {
+            case MIXER, FERMENTER -> Integer.MAX_VALUE;
+            default -> 1;
+        };
+        root.addChild(at(items(() -> inputs(data, 0, primaryInputCount), 3, 24, true),
+                INPUT_X, PRIMARY_Y, INPUT_W, 40));
+        root.addChild(at(items(() -> outputs(data), 2, 30, true),
+                OUTPUT_X, PRIMARY_Y, OUTPUT_W, 40));
+        progress(root, data, PROGRESS_X, PROGRESS_Y, PROGRESS_W, PROGRESS_H);
+
+        // Optional recipe requirements occupy one shared secondary baseline.
         switch (kind) {
-            case MIXER -> {
-                root.addChild(at(items(() -> inputs(data, 0, Integer.MAX_VALUE), 3, 24, false), 28, 103, 72, 76));
-                root.addChild(at(items(() -> outputs(data), 1, 24, false), 154, 112, 50, 60));
-                progress(root, data, 109, 118, 28, 7);
-            }
-            case FERMENTER -> {
-                root.addChild(at(items(() -> inputs(data, 0, Integer.MAX_VALUE), 3, 24, false), 28, 103, 72, 54));
-                root.addChild(at(items(() -> outputs(data), 1, 24, false), 154, 109, 50, 50));
-                progress(root, data, 109, 116, 28, 7);
-                recipeFluid(root, data, fluids, 30, 161);
-            }
+            case MIXER -> { }
+            case FERMENTER -> recipeFluid(root, data, fluids, 31, SECONDARY_Y);
             case BREEDINGCHAMBER, TERRESTRIALHABITAT -> {
-                root.addChild(at(items(() -> inputs(data, 0, 1), 1, 24, false), 48, 102, 24, 24));
-                root.addChild(at(items(() -> outputs(data), 2, 30, false), 146, 102, 60, 40));
-                progress(root, data, 99, 110, 30, 7);
-                root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 4, 24, false), 29, 148, 100, 24));
-                recipeFluid(root, data, fluids, 148, 152);
+                root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 3, 24, true),
+                        INPUT_X, SECONDARY_Y, INPUT_W, 30));
+                recipeFluid(root, data, fluids, 128, SECONDARY_Y);
             }
             case GREENHOUSE -> {
-                root.addChild(at(items(() -> inputs(data, 0, 1), 1, 24, false), 48, 102, 24, 24));
-                root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 2, 24, false), 30, 146, 48, 24));
-                root.addChild(at(items(() -> outputs(data), 2, 30, false), 147, 112, 60, 70));
-                if (fluids.length > 1) root.addChild(at(fluids[1], 94, 148, 14, 18));
-                progress(root, data, 100, 110, 30, 7);
+                root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 3, 24, true),
+                        INPUT_X, SECONDARY_Y, INPUT_W, 30));
+                recipeFluid(root, data, fluids, 104, SECONDARY_Y);
             }
-            case SLAUGHTERHOUSE -> {
-                root.addChild(at(items(() -> inputs(data, 0, 1), 1, 24, false), 48, 103, 24, 24));
-                root.addChild(at(items(() -> outputs(data), 1, 24, false), 148, 99, 58, 88));
-                progress(root, data, 100, 110, 28, 7);
-                recipeFluid(root, data, fluids, 30, 153);
-            }
+            case SLAUGHTERHOUSE -> recipeFluid(root, data, fluids, 31, SECONDARY_Y);
         }
+
         root.addChild(at(text(() -> data.active() ? inputName(data) :
                 Component.translatable(data.valid().getAsBoolean() ? "ui.biotech.waiting" : "ui.biotech.check_structure").getString(),
                 BiotechStyle.MUTED), 24, 192, 180, 10));
@@ -95,19 +103,20 @@ public final class MachineUi {
     }
 
     private static void progress(UIComponent root, MachineDisplay data, int x, int y, int w, int h) {
-        root.addChild(at(text(() -> ">", BiotechStyle.MINT), x + w + 2, y - 1, 8, 10));
-        root.addChild(at(text(() -> data.active() ?
-                DisplayMath.fill(data.consumed().getAsInt(), data.cost().getAsInt(), 100) + "%" : "",
-                BiotechStyle.MUTED), x, y + 12, w + 8, 10));
         root.addChild(at(gauge(() -> data.active() ? data.consumed().getAsInt() : 0,
                 data.cost(), false, data::progressTooltip), x, y, w, h));
+        root.addChild(at(text(() -> ">", BiotechStyle.MINT), x + w + 3, y - 1, 8, 10));
+        root.addChild(at(label(() -> data.active() ?
+                DisplayMath.fill(data.consumed().getAsInt(), data.cost().getAsInt(), 100) + "%" : ""),
+                x - 2, y + 12, w + 14, 10));
     }
 
     private static void recipeFluid(UIComponent root, MachineDisplay data, UIComponent[] fluids, int x, int y) {
         if (fluids.length < 2) return;
         root.addChild(at(fluids[1], x, y, 18, 18));
-        root.addChild(at(label(() -> data.active() && data.recipe().get().getFluidIngredients().length > 0
-                ? data.recipe().get().getFluidIngredients()[0].getAmount() + " mB" : ""), x + 24, y + 5, 76, 12));
+        root.addChild(at(text(() -> data.active() && data.recipe().get().getFluidIngredients().length > 0
+                ? data.recipe().get().getFluidIngredients()[0].getAmount() + " mB" : "",
+                BiotechStyle.TEXT), x + 23, y + 5, 52, 10));
     }
 
     private static String inputName(MachineDisplay data) {

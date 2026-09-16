@@ -59,7 +59,7 @@ public final class BiotechWidgets {
     /** Recipe previews are deliberately not interactive inventory slots. */
     public static UIComponent items(Supplier<List<Entry>> entries, int columns, int spacing, boolean centered) {
         return new LiveTooltipComponent() {
-            @Override public int preferredWidth(Font f) { return columns * spacing; }
+            @Override public int preferredWidth(Font f) { return columns <= 0 ? 0 : (columns - 1) * spacing + 18; }
             @Override public int preferredHeight(Font f) { return 96; }
             @Override protected String tooltipText(int mx, int my) {
                 List<Entry> values = entries.get();
@@ -74,7 +74,9 @@ public final class BiotechWidgets {
                 return null;
             }
             private int cellX(int i, int count) {
-                return x + (centered ? (width - Math.min(count, columns) * spacing) / 2 : 0) + (i % columns) * spacing;
+                int visible = Math.min(count, columns);
+                int groupWidth = visible <= 0 ? 0 : (visible - 1) * spacing + 18;
+                return x + (centered ? (width - groupWidth) / 2 : 0) + (i % columns) * spacing;
             }
             @Override public void render(GuiGraphics g, Font f, int mx, int my, float pt) {
                 List<Entry> values = entries.get();
@@ -84,8 +86,13 @@ public final class BiotechWidgets {
                     new com.nstut.openui.graphics.UiCanvas(g, f).surface(cx - 2, cy - 2, 22, 22, BiotechStyle.WELL);
                     g.renderItem(e.stack(), cx + 1, cy + 1);
                     g.renderItemDecorations(f, e.stack(), cx + 1, cy + 1);
-                    if (columns == 1) UiRender.text(g, f, e.detail(), cx + 22, cy + 5, 0xFFD4E9DD);
-                    else if (spacing >= 28) UiRender.text(g, f, e.detail(), cx, cy + 20, 0xFFD4E9DD);
+                    if (!e.detail().isEmpty()) {
+                        if (columns == 1 && spacing < 28) UiRender.text(g, f, e.detail(), cx + 22, cy + 5, 0xFFD4E9DD);
+                        else if (spacing >= 28) {
+                            int detailX = cx + Math.max(0, (18 - f.width(e.detail())) / 2);
+                            UiRender.text(g, f, e.detail(), detailX, cy + 20, 0xFFD4E9DD);
+                        }
+                    }
                 }
             }
         };

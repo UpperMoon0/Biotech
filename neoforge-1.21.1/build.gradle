@@ -74,9 +74,20 @@ tasks.register('renderUiPreviews') {
     }
 }
 
+def cleanUiPreviewRun = tasks.register('cleanUiPreviewRun') {
+    group = 'verification'
+    description = 'Removes stale NeoForge state before preparing the isolated UI preview client.'
+    outputs.upToDateWhen { false }
+    doLast { delete layout.buildDirectory.dir('ui-preview-run') }
+}
+
+tasks.named('prepareUiPreviewRun').configure {
+    dependsOn cleanUiPreviewRun
+}
+
 tasks.named('runUiPreview').configure {
     doFirst {
-        // Only this dedicated output directory is cleared, so stale screenshots cannot pass verification.
+        // Stale screenshots must never satisfy verification.
         delete layout.buildDirectory.dir('ui-previews')
         def runDir = layout.buildDirectory.dir('ui-preview-run').get().asFile
         runDir.mkdirs()
