@@ -2,9 +2,9 @@
 
 ## 2.2
 
-Biotech 2.2 migrates every machine and hatch screen to OpenUI 0.0.10+, standardizes the green glass UI layout across all supported targets, and hardens visual regression coverage so hatch previews render the real production slot geometry.
+Biotech 2.2 migrates every machine and hatch screen to OpenUI 0.0.10 within the 0.0.x compatibility line, standardizes the green glass UI layout across all supported targets, and hardens visual regression coverage so hatch previews render the real production slot geometry.
 
-- Requires OpenUI MC 0.0.10+ on clients and pins coordinated source/CI builds to OpenUI main commit `90c515f643483f1690ea73c54745b06af9f21f61`.
+- Requires OpenUI MC 0.0.10 or newer within the 0.0.x compatibility line on clients and pins coordinated source/CI builds to OpenUI main commit `90c515f643483f1690ea73c54745b06af9f21f61`.
 - Aligns machine inputs, progress, outputs, secondary requirements, energy, and fluid information to shared layout baselines.
 - Keeps vanilla inventory-slot behavior while replacing texture-backed screen panels with shared OpenUI surfaces.
 - Expands the 56-case PNG preview harness to render production-created hatch/player `Slot` objects and fail on slot-coordinate drift.

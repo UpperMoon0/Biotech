@@ -14,7 +14,7 @@ Biotech requires:
 
 - **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
 - **Patchouli** for the in-game Biotech Guide Book
-- **OpenUI MC 0.0.10+** on clients, matching the Minecraft version and loader
+- **OpenUI MC 0.0.10 or newer within the 0.0.x compatibility line** on clients, matching the Minecraft version and loader
 
 JEI and Jade integrations are included when those mods are installed. JEI is strongly recommended for inspecting exact machine recipes and Jade can display machine status, energy, fluid, and progress information.
 

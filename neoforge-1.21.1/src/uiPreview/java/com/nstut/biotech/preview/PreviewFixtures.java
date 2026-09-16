@@ -89,6 +89,7 @@ final class PreviewFixtures {
     private static ModRecipeData recipe(MachineUi.Kind kind) {
         IngredientItem[] inputs;
         OutputItem[] outputs;
+        int energy = 20000;
         switch (kind) {
             case MIXER -> {
                 inputs = new IngredientItem[]{input(Items.WHEAT, 4), input(Items.CARROT, 2), input(Items.POTATO, 2)};
@@ -111,12 +112,19 @@ final class PreviewFixtures {
                 outputs = new OutputItem[]{output(ItemRegistries.COW.get(), 1, 1), output(ItemRegistries.MANURE.get(), 2, 1)};
             }
             case SLAUGHTERHOUSE -> {
-                inputs = new IngredientItem[]{input(ItemRegistries.COW.get(), 1)};
-                outputs = new OutputItem[]{output(Items.BEEF, 8, 1), output(Items.LEATHER, 3, .75f)};
+                // Mirror the largest production recipe so the two-column second row and chance label stay covered.
+                inputs = new IngredientItem[]{input(ItemRegistries.RABBIT.get(), 1)};
+                outputs = new OutputItem[]{
+                        output(Items.RABBIT, 2, 1),
+                        output(Items.BONE, 1, 1),
+                        output(Items.RABBIT_HIDE, 2, 1),
+                        output(Items.RABBIT_FOOT, 1, .13f)
+                };
+                energy = 16000;
             }
             default -> throw new IllegalArgumentException("Missing fixture for " + kind);
         }
-        return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, new FluidStack[0], 20000);
+        return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, new FluidStack[0], energy);
     }
 
     private static IngredientItem input(Item item, int count) { return new IngredientItem(new ItemStack(item, count), true); }

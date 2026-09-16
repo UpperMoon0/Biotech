@@ -42,6 +42,6 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "openui_mc"
 type = "required"
-versionRange = "[0.0.10,)"
+versionRange = "[0.0.10,0.1)"
 ordering = "AFTER"
 side = "CLIENT"
