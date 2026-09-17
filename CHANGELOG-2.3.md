@@ -22,11 +22,13 @@ Biotech 2.3 expands captured animals from a fixed five-species implementation in
 - Prevent legacy 1.20.1/1.21.1 animal item rendering from leaking the global entity-renderer shadow setting.
 - Suppress world-only nametags, fire, and glowing-outline effects on temporary legacy item-preview entities without changing the stored captured state.
 - Stabilize reconstructed animal previews so item rendering does not inherit constructor-randomized orientation between frames.
+- Reject `#biotech:capturable` entries that are not reconstructible entity types before consuming the Net Trap or original entity, preventing datapack mistakes from creating unreleasable captures.
 
 ## Compatibility and packmakers
 
 - Existing captured cow/chicken/pig/sheep/rabbit items and existing machine recipes remain valid; no world migration is required for them.
-- Adding an entity to `#biotech:capturable` enables Net Trap capture and the generic carrier, but **does not automatically add Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes**. Add those recipes separately when extending livestock processing.
+- `#biotech:capturable` accepts only reconstructible entity types. Non-constructible entries are ignored before capture consumes anything.
+- Adding a valid animal to `#biotech:capturable` enables Net Trap capture and the generic carrier, but **does not automatically add Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes**. Add those recipes separately when extending livestock processing.
 - To extend `biotech:capturable`, datapacks use `data/biotech/tags/entity_types/capturable.json` on Forge 1.20.1 and `data/biotech/tags/entity_type/capturable.json` on NeoForge 1.21.1/26.1.2.
 - Supported targets remain Forge 1.20.1 (Java 17), NeoForge 1.21.1 (Java 21), and NeoForge 26.1.2 (Java 25).
 

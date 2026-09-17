@@ -49,7 +49,7 @@ public class NetTrapBlock extends Block {
     @SuppressWarnings("deprecation")
     @Override
     public void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
-        if (level.isClientSide || !entity.getType().is(CAPTURABLE)) {
+        if (level.isClientSide || !isCaptureTypeSupported(entity.getType(), entity.getType().is(CAPTURABLE), level)) {
             return;
         }
 
@@ -84,6 +84,23 @@ public class NetTrapBlock extends Block {
         }
 
         entity.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    /**
+     * Datapack membership is only one half of the capture contract. The type must also be
+     * reconstructible through the same EntityType factory used by release. This preflight runs
+     * before the trap or original entity is consumed.
+     */
+    public static boolean isCaptureTypeSupported(EntityType<?> entityType, boolean tagged, Level level) {
+        if (!tagged) {
+            return false;
+        }
+        Entity probe = entityType.create(level);
+        if (probe == null) {
+            return false;
+        }
+        probe.discard();
+        return true;
     }
 
     private static ItemStack createCapturedStack(Entity entity) {

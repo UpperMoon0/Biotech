@@ -9,7 +9,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Cows, chickens, pigs, sheep, and rabbits keep their legacy Biotech item forms for recipe/world compatibility. Other supported mobs use the generic Captured Animal item, whose tooltip identifies the stored entity type.$(br)$(br)Pack makers can extend capture support with the $(code)biotech:capturable$() entity-type tag. A captured mob still needs a matching machine recipe before a Biotech machine can process it."
+      "text": "Cows, chickens, pigs, sheep, and rabbits keep their legacy Biotech item forms for recipe/world compatibility. Other supported mobs use the generic Captured Animal item, whose tooltip identifies the stored entity type.$(br)$(br)Pack makers can extend capture support with the $(code)biotech:capturable$() entity-type tag. Only animal types that Minecraft can recreate are accepted; invalid entries are ignored safely. A captured mob still needs a matching machine recipe before a Biotech machine can process it."
     },
     {
       "type": "patchouli:crafting",

@@ -3,6 +3,7 @@ package com.nstut.biotech.gametest;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.IOHatchBlock;
+import com.nstut.biotech.blocks.NetTrapBlock;
 import com.nstut.biotech.blocks.entites.hatches.EnergyInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.FluidInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
@@ -30,6 +31,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -67,6 +69,7 @@ public final class BiotechGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RECIPE_TYPES_ARE_REGISTRY_BACKED = register("recipe_types_are_registry_backed", BiotechGameTests::recipeTypesAreRegistryBacked);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES = register("greenhouse_beetroot_recipe_loads_and_processes", BiotechGameTests::greenhouseBeetrootRecipeLoadsAndProcesses);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING = register("captured_animal_storage_sanitizes_before_persisting", BiotechGameTests::capturedAnimalStorageSanitizesBeforePersisting);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES = register("capture_eligibility_rejects_tagged_non_creatable_types", BiotechGameTests::captureEligibilityRejectsTaggedNonCreatableTypes);
 
     private BiotechGameTests() {}
 
@@ -82,7 +85,8 @@ public final class BiotechGameTests {
                 INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION,
                 RECIPE_TYPES_ARE_REGISTRY_BACKED,
                 GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES,
-                CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING)) {
+                CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING,
+                CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
         }
     }
@@ -199,6 +203,18 @@ public final class BiotechGameTests {
                 "Capture storage must not mutate the source entity NBT");
         helper.succeed();
     }
+    private static void captureEligibilityRejectsTaggedNonCreatableTypes(GameTestHelper helper) {
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.PLAYER, true, helper.getLevel()),
+                "A datapack-tagged player must be rejected before capture because it cannot be reconstructed");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.ARMOR_STAND, true, helper.getLevel()),
+                "A tagged constructible non-animal must remain supported by the generic datapack contract");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.COW, true, helper.getLevel()),
+                "A tagged, reconstructible animal must remain capturable");
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.COW, false, helper.getLevel()),
+                "A reconstructible animal still requires datapack tag membership");
+        helper.succeed();
+    }
+
     private static void recipeTypesAreRegistryBacked(GameTestHelper helper) {
         assertRecipeTypeRegistered(helper, MachineRegistries.BREEDING_CHAMBER.recipeType().get(), "breeding_chamber");
         assertRecipeTypeRegistered(helper, MachineRegistries.TERRESTRIAL_HABITAT.recipeType().get(), "terrestrial_habitat");

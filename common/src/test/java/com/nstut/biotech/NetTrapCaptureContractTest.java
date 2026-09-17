@@ -38,6 +38,9 @@ class NetTrapCaptureContractTest {
                     ? "entity.is(CAPTURABLE)"
                     : "entity.getType().is(CAPTURABLE)";
             assertTrue(source.contains(membershipCall), target + " must gate capture through the entity tag");
+            assertTrue(source.contains("isCaptureTypeSupported"), target + " must preflight reconstructibility and entity family");
+            assertTrue(source.indexOf("isCaptureTypeSupported") < source.indexOf("destroyBlock(pos, false)"),
+                    target + " must reject unsupported tag entries before consuming the trap or entity");
             assertTrue(source.contains("CapturedAnimalStackState.writeCapture"), target + " must route raw entity NBT through sanitized capture storage");
             assertTrue(source.contains("ItemRegistries.CAPTURED_ANIMAL"), target + " must fall back to the generic carrier");
 

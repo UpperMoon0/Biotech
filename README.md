@@ -52,7 +52,7 @@ Biotech 2.3 includes these capturable entities by default:
 - Llamas
 - Camels
 
-The original five livestock species keep their legacy item IDs for world and recipe compatibility. Other tagged entities use the generic `biotech:captured_animal` carrier. Packmakers can extend `#biotech:capturable` with datapacks; capture eligibility alone does **not** create machine recipes for a new species.
+The original five livestock species keep their legacy item IDs for world and recipe compatibility. Other valid tagged animals use the generic `biotech:captured_animal` carrier. Packmakers can extend `#biotech:capturable` with datapacks, but entries must be entity types that Minecraft can construct again for release; non-constructible entries are ignored without consuming the trap/entity. Capture eligibility alone does **not** create machine recipes for a new species.
 
 Adult/baby state, variants, custom names, and other persistent gameplay state are preserved where applicable. Animal items render the actual entity model in inventory, held-item, and JEI contexts rather than a separate flat animal texture.
 
@@ -97,7 +97,7 @@ With **JEI**, each Biotech machine has a recipe category showing exact inputs, f
 
 Biotech machine recipes can be added with datapacks or `event.custom(...)` in KubeJS. Use the schema for the Minecraft version you target.
 
-Net Trap eligibility is separately data-driven through `#biotech:capturable`. Extending that entity-type tag enables capture/release through the generic carrier; add explicit machine recipes if the new species should also work in the Breeding Chamber, Terrestrial Habitat, or Slaughterhouse. See [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) for version-specific tag paths.
+Net Trap eligibility is separately data-driven through `#biotech:capturable`. Valid entries must be reconstructible entity types; unsupported tag entries are rejected before anything is consumed. For valid entries, the tag enables capture/release through the generic carrier; add explicit machine recipes if the new species should also work in the Breeding Chamber, Terrestrial Habitat, or Slaughterhouse. See [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) for version-specific tag paths and constraints.
 
 ### Recipe types
 

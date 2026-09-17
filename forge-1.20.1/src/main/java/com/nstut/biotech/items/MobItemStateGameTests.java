@@ -100,4 +100,17 @@ public final class MobItemStateGameTests {
                 "Suppressing preview presentation must not erase the captured custom name itself");
         helper.succeed();
     }
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void captureEligibilityRejectsTaggedNonCreatableTypes(GameTestHelper helper) {
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.PLAYER, true, helper.getLevel()),
+                "A datapack-tagged player must be rejected before capture because it cannot be reconstructed");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.ARMOR_STAND, true, helper.getLevel()),
+                "A tagged constructible non-animal must remain supported by the generic datapack contract");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.COW, true, helper.getLevel()),
+                "A tagged, reconstructible animal must remain capturable");
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.COW, false, helper.getLevel()),
+                "A reconstructible animal still requires datapack tag membership");
+        helper.succeed();
+    }
+
 }

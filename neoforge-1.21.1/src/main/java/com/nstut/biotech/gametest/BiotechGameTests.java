@@ -3,6 +3,7 @@ package com.nstut.biotech.gametest;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.IOHatchBlock;
+import com.nstut.biotech.blocks.NetTrapBlock;
 import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
@@ -181,6 +182,19 @@ public final class BiotechGameTests {
                 "Suppressing preview presentation must not erase the captured custom name itself");
         helper.succeed();
     }
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    public static void captureEligibilityRejectsTaggedNonCreatableTypes(GameTestHelper helper) {
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.PLAYER, true, helper.getLevel()),
+                "A datapack-tagged player must be rejected before capture because it cannot be reconstructed");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.ARMOR_STAND, true, helper.getLevel()),
+                "A tagged constructible non-animal must remain supported by the generic datapack contract");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.COW, true, helper.getLevel()),
+                "A tagged, reconstructible animal must remain capturable");
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.COW, false, helper.getLevel()),
+                "A reconstructible animal still requires datapack tag membership");
+        helper.succeed();
+    }
+
     private static void assertRecipeTypeRegistered(GameTestHelper helper, RecipeType<?> type, String path) {
         ResourceLocation actualId = BuiltInRegistries.RECIPE_TYPE.getKey(type);
         ResourceLocation expectedId = ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, path);

@@ -75,7 +75,7 @@ Biotech 2.3 includes these capturable entities by default:
 
 The original five livestock species keep their existing Biotech item IDs for compatibility. Other tagged entities use the generic captured-animal carrier. Adult/baby state and other gameplay-relevant entity state are preserved where applicable.
 
-Packmakers can extend `#biotech:capturable` with datapacks. Adding a species to the tag enables capture and release; it does **not** automatically add Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes for that species.
+Packmakers can extend `#biotech:capturable` with datapacks. Entries must be entity types that Minecraft can construct again for release; unsupported entries are ignored before the trap or original entity is consumed. Valid tagged animals gain capture/release support, but the tag does **not** automatically add Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes for that species.
 
 ---
 
@@ -148,7 +148,7 @@ Biotech machine recipes are data-driven and can be extended with datapacks or Ku
 
 The GitHub README documents the exact JSON schema differences between 1.20.1 and 1.21.1+.
 
-Net Trap capture can also be extended with the `#biotech:capturable` entity-type tag. Tag folders are `entity_types` on Forge 1.20.1 and `entity_type` on NeoForge 1.21.1/26.1.2. Capture support is independent from machine recipes, so add explicit livestock-machine recipes for any newly tagged species that should be processed.
+Net Trap capture can also be extended with the `#biotech:capturable` entity-type tag. Tag folders are `entity_types` on Forge 1.20.1 and `entity_type` on NeoForge 1.21.1/26.1.2. Only reconstructible entity types are accepted; non-constructible tag entries are ignored safely. Capture support is independent from machine recipes, so add explicit livestock-machine recipes for any newly tagged species that should be processed.
 
 ---
 

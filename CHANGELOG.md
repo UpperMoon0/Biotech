@@ -10,6 +10,7 @@ Biotech 2.3 introduces Captured Animal v2: Net Trap capture is now data-driven, 
 - Sanitizes captured state before storage and adds runtime round-trip coverage.
 - Hardens item previews against renderer-state leaks and suppresses world-only nametag, fire, and glowing effects.
 - Replaces Biotech-owned JEI recipe backgrounds with JEI-native standard slots and arrows.
+- Rejects non-constructible `#biotech:capturable` entries before consuming the trap or original entity, preventing unreleasable captures.
 
 See [`CHANGELOG-2.3.md`](CHANGELOG-2.3.md) for the complete change list and [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) for upgrade and datapack notes.
 

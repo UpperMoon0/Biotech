@@ -32,7 +32,7 @@ Packmakers can extend the tag from a datapack. The tag directory differs by Mine
 
 Use normal tag `values`/`replace` semantics. Because the tag ID is `biotech:capturable`, contributions to that tag belong under the `data/biotech/...` namespace path even when they come from another datapack.
 
-**Capture support and machine recipe support are separate.** Adding an entity to `#biotech:capturable` lets the Net Trap capture and release it through the generic carrier; it does not invent Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes. Add explicit machine recipes if the new species should participate in those production chains.
+**Capture support and machine recipe support are separate.** `#biotech:capturable` is an allow-list inside Biotech's safe capture baseline: the entity type must be constructible again through the same Minecraft `EntityType` factory used for release. Unsupported entries (for example `minecraft:player` and other create-nothing/non-constructible types) are ignored before the trap or original entity is consumed. A valid tagged animal can be captured and released through the generic carrier, but the tag does not invent Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes. Add explicit machine recipes if the new species should participate in those production chains.
 
 ## Captured state behavior
 

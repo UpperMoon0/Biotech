@@ -11,6 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.cow.Cow;
@@ -50,7 +51,7 @@ public class NetTrapBlock extends Block {
     protected void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos,
                                 @NotNull Entity entity, @NotNull InsideBlockEffectApplier effects,
                                 boolean canApplyEffects) {
-        if (level.isClientSide() || !entity.is(CAPTURABLE)) return;
+        if (level.isClientSide() || !isCaptureTypeSupported(entity.getType(), entity.is(CAPTURABLE), level)) return;
         ItemStack captured = createCapturedStack(entity);
         if (captured.isEmpty()) return;
 
@@ -71,6 +72,19 @@ public class NetTrapBlock extends Block {
             return;
         }
         entity.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    /**
+     * Datapack membership is only one half of the capture contract. The type must also be
+     * reconstructible through the same EntityType factory used by release. This preflight runs
+     * before the trap or original entity is consumed.
+     */
+    public static boolean isCaptureTypeSupported(EntityType<?> entityType, boolean tagged, Level level) {
+        if (!tagged) return false;
+        Entity probe = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        if (probe == null) return false;
+        probe.discard();
+        return true;
     }
 
     private static ItemStack createCapturedStack(Entity entity) {
