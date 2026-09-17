@@ -54,8 +54,8 @@ public class MobItem extends Item {
     }
 
     @Nullable
-    private Mob createMob(Level level) {
-        EntityType<? extends Mob> entityType = switch (type) {
+    public EntityType<? extends Mob> entityType() {
+        return switch (type) {
             case 1, 2 -> EntityType.COW;
             case 3, 4 -> EntityType.CHICKEN;
             case 5, 6 -> EntityType.PIG;
@@ -63,10 +63,19 @@ public class MobItem extends Item {
             case 9, 10 -> EntityType.RABBIT;
             default -> null;
         };
+    }
+
+    public boolean isBabyVariant() {
+        return type == 2 || type == 4 || type == 6 || type == 8 || type == 10;
+    }
+
+    @Nullable
+    private Mob createMob(Level level) {
+        EntityType<? extends Mob> entityType = entityType();
         if (entityType == null) return null;
         Mob mob = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
         if (mob == null) return null;
-        if (type == 2 || type == 4 || type == 6 || type == 8 || type == 10) mob.setBaby(true);
+        if (isBabyVariant()) mob.setBaby(true);
         return mob;
     }
 
