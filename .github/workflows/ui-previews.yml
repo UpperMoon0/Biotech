@@ -22,7 +22,7 @@ jobs:
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Resolve pinned providers
         id: providers
         shell: bash
@@ -32,12 +32,12 @@ jobs:
             [[ "$ref" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid $key" >&2; exit 1; }
             echo "$key=$ref" >> "$GITHUB_OUTPUT"
           done
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: UpperMoon0/NsTut-Lib
           ref: ${{ steps.providers.outputs.nstut_lib_ref }}
           path: .ci/nstut-lib
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: UpperMoon0/OpenUI-MC
           ref: ${{ steps.providers.outputs.openui_ref }}

@@ -27,7 +27,7 @@ jobs:
       version: ${{ steps.check.outputs.version }}
       changelog: ${{ steps.check.outputs.changelog }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Check whether this version is unpublished
@@ -104,7 +104,7 @@ jobs:
             java: '25'
             java_version_name: Java 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Resolve validated OpenUI revision
         id: openui-ref
         shell: bash
@@ -115,7 +115,7 @@ jobs:
             exit 1
           fi
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: UpperMoon0/OpenUI-MC
           ref: ${{ steps.openui-ref.outputs.ref }}
@@ -130,7 +130,7 @@ jobs:
             exit 1
           fi
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: UpperMoon0/NsTut-Lib
           ref: ${{ steps.nstut-ref.outputs.ref }}
@@ -190,7 +190,7 @@ jobs:
             loader_name: NeoForge
             java_version_name: Java 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           name: biotech-${{ matrix.loader }}-${{ matrix.minecraft }}
@@ -249,7 +249,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
