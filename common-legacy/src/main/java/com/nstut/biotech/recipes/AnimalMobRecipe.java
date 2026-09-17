@@ -1,5 +1,6 @@
 package com.nstut.biotech.recipes;
 
+import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.MobItem;
 import com.nstut.nstutlib.recipes.ModRecipe;
 import com.nstut.nstutlib.recipes.ModRecipeData;
@@ -24,6 +25,17 @@ public abstract class AnimalMobRecipe<T extends ModRecipe<T>> extends ModRecipe<
                 && required.is(present.getItem())) {
             return true;
         }
+
+        if (!required.isEmpty()
+                && !present.isEmpty()
+                && required.getItem() instanceof MobItem requiredMob
+                && present.getItem() instanceof CapturedAnimalItem
+                && requiredMob.entityType() != null
+                && CapturedAnimalItem.matchesLegacyVariant(
+                        present, requiredMob.entityType(), requiredMob.isBabyVariant())) {
+            return true;
+        }
+
         return super.itemIngredientsMatch(required, present);
     }
 }
