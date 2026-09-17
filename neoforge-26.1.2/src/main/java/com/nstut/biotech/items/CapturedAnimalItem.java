@@ -31,6 +31,23 @@ public class CapturedAnimalItem extends Item {
         super(properties.stacksTo(1));
     }
 
+    public static boolean matchesLegacyVariant(ItemStack stack, EntityType<?> expectedType, boolean expectedBaby) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        String entityTypeId = root.getString(ENTITY_TYPE_TAG).orElse("");
+        if (entityTypeId.isEmpty() || !root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+            return false;
+        }
+
+        EntityType<?> actualType = EntityType.byString(entityTypeId).orElse(null);
+        if (actualType != expectedType) {
+            return false;
+        }
+
+        CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
+        boolean actualBaby = captured.getInt("Age").orElse(0) < 0;
+        return actualBaby == expectedBaby;
+    }
+
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
