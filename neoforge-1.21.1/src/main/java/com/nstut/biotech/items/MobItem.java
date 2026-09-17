@@ -43,12 +43,10 @@ public class MobItem extends Item {
         }
 
         ItemStack stack = context.getItemInHand();
-        Mob mob = createMob(level);
+        Mob mob = createMob(level, stack);
         if (mob == null) {
             return InteractionResult.FAIL;
         }
-
-        restoreCapturedState(mob, stack);
 
         BlockPos clicked = context.getClickedPos();
         BlockPos spawnPos = clicked.relative(context.getClickedFace());
@@ -90,7 +88,7 @@ public class MobItem extends Item {
     }
 
     @Nullable
-    private Mob createMob(Level level) {
+    public Mob createMob(Level level, ItemStack stack) {
         EntityType<? extends Mob> entityType = entityType();
         if (entityType == null) {
             return null;
@@ -105,6 +103,7 @@ public class MobItem extends Item {
         if (isBabyVariant()) {
             mob.setBaby(true);
         }
+        restoreCapturedState(mob, stack);
         return mob;
     }
 

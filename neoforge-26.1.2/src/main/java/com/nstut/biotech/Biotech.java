@@ -3,6 +3,7 @@ package com.nstut.biotech;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.entites.BlockEntityRegistries;
 import com.nstut.biotech.client.ClientRecipeSync;
+import com.nstut.biotech.client.AnimalSpecialRenderer;
 import com.nstut.biotech.creative_tabs.CreativeTabRegistries;
 import com.nstut.biotech.gametest.BiotechGameTests;
 import com.nstut.biotech.items.ItemRegistries;
@@ -26,7 +27,9 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 
 import java.util.List;
@@ -66,6 +69,13 @@ public class Biotech {
     @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
     public static final class ClientModEvents {
         private ClientModEvents() {}
+
+        @SubscribeEvent
+        public static void registerAnimalSpecialRenderer(RegisterSpecialModelRendererEvent event) {
+            event.register(
+                    Identifier.fromNamespaceAndPath(MOD_ID, "animal"),
+                    AnimalSpecialRenderer.Unbaked.MAP_CODEC);
+        }
 
         @SubscribeEvent
         public static void registerMenuScreens(RegisterMenuScreensEvent event) {

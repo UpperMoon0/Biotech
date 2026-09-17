@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "biotech:item/baby_pig"
+    "type": "minecraft:special",
+    "base": "biotech:item/animal_model",
+    "model": {
+      "type": "biotech:animal"
+    }
   }
 }

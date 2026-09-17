@@ -1,6 +1,7 @@
 package com.nstut.biotech.items;
 
 import com.nstut.biotech.blocks.NetTrapBlock;
+import com.nstut.biotech.client.AnimalItemRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -14,9 +15,11 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Generic captured-entity carrier used for data-driven species that do not have a legacy Biotech item.
@@ -63,18 +66,9 @@ public class CapturedAnimalItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        EntityType<?> entityType = EntityType.byString(root.getString(ENTITY_TYPE_TAG)).orElse(null);
-        if (entityType == null) {
-            return InteractionResult.FAIL;
-        }
-
-        Entity entity = entityType.create(level);
+        Entity entity = createCapturedEntity(level, stack);
         if (entity == null) {
             return InteractionResult.FAIL;
-        }
-
-        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            entity.load(CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
         }
 
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
@@ -103,4 +97,29 @@ public class CapturedAnimalItem extends Item {
                         "tooltip.biotech.captured_animal",
                         Component.translatable(type.getDescriptionId()))));
     }
+    @Nullable
+    public Entity createCapturedEntity(Level level, ItemStack stack) {
+        CompoundTag root = stack.getTag();
+        if (root == null || !root.contains(ENTITY_TYPE_TAG)) {
+            return null;
+        }
+        EntityType<?> entityType = EntityType.byString(root.getString(ENTITY_TYPE_TAG)).orElse(null);
+        if (entityType == null) {
+            return null;
+        }
+        Entity entity = entityType.create(level);
+        if (entity == null) {
+            return null;
+        }
+        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+            entity.load(CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG)));
+        }
+        return entity;
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(AnimalItemRenderer.clientExtensions());
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.nstut.biotech.items;
 
 import com.nstut.biotech.blocks.NetTrapBlock;
+import com.nstut.biotech.client.AnimalItemRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -17,8 +18,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class MobItem extends Item {
     private final int type;
@@ -41,12 +44,10 @@ public class MobItem extends Item {
         }
 
         ItemStack stack = context.getItemInHand();
-        Mob mob = createMob(level);
+        Mob mob = createMob(level, stack);
         if (mob == null) {
             return InteractionResult.FAIL;
         }
-
-        restoreCapturedState(mob, stack);
 
         BlockPos clicked = context.getClickedPos();
         BlockPos spawnPos = clicked.relative(context.getClickedFace());
@@ -88,7 +89,7 @@ public class MobItem extends Item {
     }
 
     @Nullable
-    private Mob createMob(Level level) {
+    public Mob createMob(Level level, ItemStack stack) {
         EntityType<? extends Mob> entityType = entityType();
         if (entityType == null) {
             return null;
@@ -103,6 +104,7 @@ public class MobItem extends Item {
         if (isBabyVariant()) {
             mob.setBaby(true);
         }
+        restoreCapturedState(mob, stack);
         return mob;
     }
 
@@ -144,4 +146,9 @@ public class MobItem extends Item {
         String name = color.getName().replace('_', ' ');
         tooltip.add(Component.translatable("tooltip.biotech.sheep_color", name));
     }
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(AnimalItemRenderer.clientExtensions());
+    }
+
 }

@@ -8,7 +8,6 @@ import com.nstut.openui.minecraft.UiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -38,7 +37,7 @@ public final class UiPreviewRunner {
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         try {
-            if (previews == null && mc.screen instanceof TitleScreen && mc.getOverlay() == null) {
+            if (previews == null && mc.level != null && mc.player != null && mc.screen == null && mc.getOverlay() == null) {
                 output = Path.of(System.getProperty("biotech.uiPreview.output"));
                 Files.createDirectories(output);
                 previews = PreviewFixtures.all();

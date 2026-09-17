@@ -2,6 +2,7 @@ package com.nstut.biotech;
 
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.entites.BlockEntityRegistries;
+import com.nstut.biotech.client.AnimalItemRenderer;
 import com.nstut.biotech.creative_tabs.CreativeTabRegistries;
 import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.machines.MachineRegistries;
@@ -26,6 +27,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 
 @Mod(Biotech.MOD_ID)
 public class Biotech {
@@ -49,6 +51,18 @@ public class Biotech {
     @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
     public static final class ClientModEvents {
         private ClientModEvents() {
+        }
+
+        @SubscribeEvent
+        public static void registerAnimalItemRenderer(RegisterClientExtensionsEvent event) {
+            event.registerItem(
+                    AnimalItemRenderer.clientExtensions(),
+                    ItemRegistries.CAPTURED_ANIMAL.get(),
+                    ItemRegistries.COW.get(), ItemRegistries.BABY_COW.get(),
+                    ItemRegistries.CHICKEN.get(), ItemRegistries.BABY_CHICKEN.get(),
+                    ItemRegistries.PIG.get(), ItemRegistries.BABY_PIG.get(),
+                    ItemRegistries.SHEEP.get(), ItemRegistries.BABY_SHEEP.get(),
+                    ItemRegistries.RABBIT.get(), ItemRegistries.BABY_RABBIT.get());
         }
 
         @SubscribeEvent
