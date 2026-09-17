@@ -54,11 +54,13 @@ public final class AnimalItemRenderer extends BlockEntityWithoutLevelRenderer {
         poseStack.pushPose();
         poseStack.translate(0.5f, 0.2f, 0.5f);
         poseStack.scale(scale, scale, scale);
-        this.entityRenderer.setRenderShadow(false);
+        boolean previousShadow = this.entityRenderer.shouldRenderShadow;
         try {
-            this.entityRenderer.render(entity, 0.0, 0.0, 0.0, 0.0f, 1.0f, poseStack, buffer, packedLight);
+            AnimalItemRenderState.withoutShadow(
+                    previousShadow,
+                    this.entityRenderer::setRenderShadow,
+                    () -> this.entityRenderer.render(entity, 0.0, 0.0, 0.0, 0.0f, 1.0f, poseStack, buffer, packedLight));
         } finally {
-            this.entityRenderer.setRenderShadow(true);
             poseStack.popPose();
         }
     }

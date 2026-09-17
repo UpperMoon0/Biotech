@@ -38,7 +38,7 @@ class NetTrapCaptureContractTest {
                     ? "entity.is(CAPTURABLE)"
                     : "entity.getType().is(CAPTURABLE)";
             assertTrue(source.contains(membershipCall), target + " must gate capture through the entity tag");
-            assertTrue(source.contains("CapturedAnimalItem.ENTITY_TYPE_TAG"), target + " must persist the captured entity type");
+            assertTrue(source.contains("CapturedAnimalStackState.writeCapture"), target + " must route raw entity NBT through sanitized capture storage");
             assertTrue(source.contains("ItemRegistries.CAPTURED_ANIMAL"), target + " must fall back to the generic carrier");
 
             // The old five item identities intentionally remain as a migration bridge for existing recipes/worlds.

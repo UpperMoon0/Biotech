@@ -23,6 +23,17 @@ public final class CapturedAnimalStackState {
                 root.put(NetTrapBlock.CAPTURED_ENTITY_TAG, CapturedEntityState.sanitize(state)));
     }
 
+    public static void writeCapture(ItemStack stack, CompoundTag state, String entityTypeId, int sheepColor) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, root -> {
+            root.put(NetTrapBlock.CAPTURED_ENTITY_TAG, CapturedEntityState.sanitize(state));
+            root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, entityTypeId);
+            if (sheepColor >= 0) {
+                root.putInt("SheepColor", sheepColor);
+            } else {
+                root.remove("SheepColor");
+            }
+        });
+    }
     public static CompoundTag forAdult(ItemStack source) {
         return CapturedEntityState.asAdult(read(source));
     }

@@ -1,7 +1,7 @@
 package com.nstut.biotech.blocks;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.items.CapturedAnimalItem;
+import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -16,7 +16,6 @@ import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -59,16 +58,13 @@ public class NetTrapBlock extends Block {
             return;
         }
 
-        CompoundTag root = captured.getOrCreateTag();
         CompoundTag entityData = entity.saveWithoutId(new CompoundTag());
-        root.put(CAPTURED_ENTITY_TAG, entityData);
-        root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(entity.getType()).toString());
-
-        // Keep the legacy sheep-color key so old UI/tooltips and old saves remain compatible.
-        if (entity instanceof Sheep sheep) {
-            DyeColor color = sheep.getColor();
-            root.putInt("SheepColor", color.getId());
-        }
+        int sheepColor = entity instanceof Sheep sheep ? sheep.getColor().getId() : -1;
+        CapturedAnimalStackState.writeCapture(
+                captured,
+                entityData,
+                EntityType.getKey(entity.getType()).toString(),
+                sheepColor);
 
         // The trap and animal are only consumed once the captured-item entity is accepted.
         if (!level.destroyBlock(pos, false)) {

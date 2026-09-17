@@ -10,6 +10,8 @@ import com.nstut.biotech.blocks.entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
+import com.nstut.biotech.items.CapturedAnimalItem;
+import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.recipes.GreenhouseRecipe;
 import com.nstut.nstutlib.blocks.MachineBlock;
@@ -18,6 +20,7 @@ import com.nstut.nstutlib.models.MultiblockBlock;
 import com.nstut.nstutlib.models.MultiblockPattern;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
@@ -30,6 +33,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -62,6 +66,7 @@ public final class BiotechGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION = register("invalid_structure_and_reload_preserve_active_machine_transaction", BiotechGameTests::invalidStructureAndReloadPreserveActiveMachineTransaction);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> RECIPE_TYPES_ARE_REGISTRY_BACKED = register("recipe_types_are_registry_backed", BiotechGameTests::recipeTypesAreRegistryBacked);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES = register("greenhouse_beetroot_recipe_loads_and_processes", BiotechGameTests::greenhouseBeetrootRecipeLoadsAndProcesses);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING = register("captured_animal_storage_sanitizes_before_persisting", BiotechGameTests::capturedAnimalStorageSanitizesBeforePersisting);
 
     private BiotechGameTests() {}
 
@@ -76,7 +81,8 @@ public final class BiotechGameTests {
                 HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
                 INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION,
                 RECIPE_TYPES_ARE_REGISTRY_BACKED,
-                GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES)) {
+                GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES,
+                CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
         }
     }
@@ -164,6 +170,35 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
+    private static void capturedAnimalStorageSanitizesBeforePersisting(GameTestHelper helper) {
+        CompoundTag source = new CompoundTag();
+        source.putString("CustomName", "Bessie");
+        source.putInt("Age", -1200);
+        source.putInt("UUID", 1);
+        source.putInt("Pos", 1);
+        source.putInt("Motion", 1);
+        source.putInt("Rotation", 1);
+        source.putInt("Leash", 1);
+
+        ItemStack captured = new ItemStack(Items.PAPER);
+        CapturedAnimalStackState.writeCapture(captured, source, "minecraft:cow", -1);
+
+        CompoundTag root = captured.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag stored = root.getCompound(com.nstut.biotech.blocks.NetTrapBlock.CAPTURED_ENTITY_TAG).orElseThrow();
+        helper.assertTrue(stored.getString("CustomName").orElse("").equals("Bessie")
+                        && stored.getInt("Age").orElse(0) == -1200,
+                "Persistent entity state must survive capture storage");
+        helper.assertTrue(!stored.contains("UUID") && !stored.contains("Pos")
+                        && !stored.contains("Motion") && !stored.contains("Rotation") && !stored.contains("Leash"),
+                "Transient world identity must be removed before captured NBT is persisted");
+        helper.assertTrue(root.getString(CapturedAnimalItem.ENTITY_TYPE_TAG).orElse("").equals("minecraft:cow"),
+                "Captured entity type metadata must survive alongside sanitized state");
+        helper.assertTrue(stored.equals(CapturedAnimalStackState.read(captured)),
+                "Captured state must round-trip from raw item storage through the production reader");
+        helper.assertTrue(source.contains("UUID") && source.contains("Pos"),
+                "Capture storage must not mutate the source entity NBT");
+        helper.succeed();
+    }
     private static void recipeTypesAreRegistryBacked(GameTestHelper helper) {
         assertRecipeTypeRegistered(helper, MachineRegistries.BREEDING_CHAMBER.recipeType().get(), "breeding_chamber");
         assertRecipeTypeRegistered(helper, MachineRegistries.TERRESTRIAL_HABITAT.recipeType().get(), "terrestrial_habitat");

@@ -1,10 +1,9 @@
 package com.nstut.biotech.blocks;
 
 import com.nstut.biotech.Biotech;
-import com.nstut.biotech.items.CapturedAnimalItem;
+import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -19,9 +18,7 @@ import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.animal.rabbit.Rabbit;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -60,11 +57,12 @@ public class NetTrapBlock extends Block {
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
         entity.saveWithoutId(output);
         CompoundTag entityData = output.buildResult();
-        CustomData.update(DataComponents.CUSTOM_DATA, captured, root -> {
-            root.put(CAPTURED_ENTITY_TAG, entityData);
-            root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(entity.getType()).toString());
-            if (entity instanceof Sheep sheep) root.putInt("SheepColor", sheep.getColor().getId());
-        });
+        int sheepColor = entity instanceof Sheep sheep ? sheep.getColor().getId() : -1;
+        CapturedAnimalStackState.writeCapture(
+                captured,
+                entityData,
+                EntityType.getKey(entity.getType()).toString(),
+                sheepColor);
 
         if (!level.destroyBlock(pos, false)) return;
         ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.15, pos.getZ() + 0.5, captured);
