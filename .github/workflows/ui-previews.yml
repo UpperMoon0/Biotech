@@ -42,7 +42,7 @@ jobs:
           repository: UpperMoon0/OpenUI-MC
           ref: ${{ steps.providers.outputs.openui_ref }}
           path: .ci/openui
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
