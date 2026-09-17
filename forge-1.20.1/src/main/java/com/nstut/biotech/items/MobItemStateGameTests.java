@@ -2,17 +2,25 @@ package com.nstut.biotech.items;
 
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.NetTrapBlock;
+import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.nstutlib.recipes.IngredientItem;
+import com.nstut.nstutlib.recipes.ModRecipeData;
+import com.nstut.nstutlib.recipes.OutputItem;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Biotech.MOD_ID)
@@ -111,6 +119,50 @@ public final class MobItemStateGameTests {
         helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.COW, false, helper.getLevel()),
                 "A reconstructible animal still requires datapack tag membership");
         helper.succeed();
+    }
+
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void genericCapturedSpeciesRecipeMatchesByEntityType(GameTestHelper helper) {
+        ItemStack requirement = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        requirement.getOrCreateTag().putString(
+                CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(EntityType.HORSE).toString());
+        SlaughterhouseRecipe recipe = new SlaughterhouseRecipe(
+                new ResourceLocation(Biotech.MOD_ID, "gametest_generic_horse"),
+                genericSpeciesRecipeData(requirement));
+
+        ItemStack namedHorse = capturedGeneric(EntityType.HORSE, "First Horse", 0);
+        ItemStack babyHorse = capturedGeneric(EntityType.HORSE, "Second Horse", -1200);
+        ItemStack goat = capturedGeneric(EntityType.GOAT, "Wrong Species", 0);
+        ItemStackHandler inputs = new ItemStackHandler(1);
+
+        inputs.setStackInSlot(0, namedHorse);
+        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "A generic horse recipe must match a captured horse regardless of individual state");
+        inputs.setStackInSlot(0, babyHorse);
+        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "The same generic horse recipe must match a differently captured horse");
+        inputs.setStackInSlot(0, goat);
+        helper.assertTrue(!recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "A generic horse recipe must reject a captured goat");
+        helper.succeed();
+    }
+
+    private static ItemStack capturedGeneric(EntityType<?> type, String name, int age) {
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CompoundTag state = new CompoundTag();
+        state.putString("CustomName", name);
+        state.putInt("Age", age);
+        CapturedAnimalStackState.writeCapture(stack, state, EntityType.getKey(type).toString(), -1);
+        return stack;
+    }
+
+    private static ModRecipeData genericSpeciesRecipeData(ItemStack requirement) {
+        return new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(requirement, true)},
+                new OutputItem[0],
+                new FluidStack[0],
+                new FluidStack[0],
+                0);
     }
 
 }

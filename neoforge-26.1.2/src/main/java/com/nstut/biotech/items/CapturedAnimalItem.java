@@ -31,6 +31,26 @@ public class CapturedAnimalItem extends Item {
         super(properties.stacksTo(1));
     }
 
+    /** Matches pack-defined generic animal requirements by species, ignoring per-capture entity state. */
+    public static boolean matchesGenericSpecies(ItemStack required, ItemStack present) {
+        if (!(required.getItem() instanceof CapturedAnimalItem)
+                || !(present.getItem() instanceof CapturedAnimalItem)) {
+            return false;
+        }
+
+        CompoundTag requiredRoot = required.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag presentRoot = present.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        String requiredTypeId = requiredRoot.getString(ENTITY_TYPE_TAG).orElse("");
+        String presentTypeId = presentRoot.getString(ENTITY_TYPE_TAG).orElse("");
+        if (requiredTypeId.isEmpty() || presentTypeId.isEmpty()) {
+            return false;
+        }
+
+        EntityType<?> requiredType = EntityType.byString(requiredTypeId).orElse(null);
+        EntityType<?> presentType = EntityType.byString(presentTypeId).orElse(null);
+        return requiredType != null && requiredType == presentType;
+    }
+
     public static boolean matchesLegacyVariant(ItemStack stack, EntityType<?> expectedType, boolean expectedBaby) {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         String entityTypeId = root.getString(ENTITY_TYPE_TAG).orElse("");

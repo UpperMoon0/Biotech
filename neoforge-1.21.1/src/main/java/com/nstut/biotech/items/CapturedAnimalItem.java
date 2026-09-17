@@ -28,6 +28,24 @@ public class CapturedAnimalItem extends Item {
         super(new Item.Properties().stacksTo(1));
     }
 
+    /** Matches pack-defined generic animal requirements by species, ignoring per-capture entity state. */
+    public static boolean matchesGenericSpecies(ItemStack required, ItemStack present) {
+        if (!(required.getItem() instanceof CapturedAnimalItem)
+                || !(present.getItem() instanceof CapturedAnimalItem)) {
+            return false;
+        }
+
+        CompoundTag requiredRoot = required.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag presentRoot = present.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (!requiredRoot.contains(ENTITY_TYPE_TAG) || !presentRoot.contains(ENTITY_TYPE_TAG)) {
+            return false;
+        }
+
+        EntityType<?> requiredType = EntityType.byString(requiredRoot.getString(ENTITY_TYPE_TAG)).orElse(null);
+        EntityType<?> presentType = EntityType.byString(presentRoot.getString(ENTITY_TYPE_TAG)).orElse(null);
+        return requiredType != null && requiredType == presentType;
+    }
+
     public static boolean matchesLegacyVariant(ItemStack stack, EntityType<?> expectedType, boolean expectedBaby) {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (!root.contains(ENTITY_TYPE_TAG) || !root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {

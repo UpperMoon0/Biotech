@@ -36,6 +36,13 @@ public abstract class AnimalMobRecipe<T extends ModRecipe<T>> extends ModRecipe<
             return true;
         }
 
+        if (!required.isEmpty()
+                && !present.isEmpty()
+                && required.getItem() instanceof CapturedAnimalItem
+                && present.getItem() instanceof CapturedAnimalItem) {
+            return CapturedAnimalItem.matchesGenericSpecies(required, present);
+        }
+
         return super.itemIngredientsMatch(required, present);
     }
 }

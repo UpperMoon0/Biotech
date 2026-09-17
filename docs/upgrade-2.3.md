@@ -34,6 +34,8 @@ Use normal tag `values`/`replace` semantics. Because the tag ID is `biotech:capt
 
 **Capture support and machine recipe support are separate.** `#biotech:capturable` is an allow-list inside Biotech's safe capture baseline: the entity type must be constructible again through the same Minecraft `EntityType` factory used for release. Unsupported entries (for example `minecraft:player` and other create-nothing/non-constructible types) are ignored before the trap or original entity is consumed. A valid tagged animal can be captured and released through the generic carrier, but the tag does not invent Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes. Add explicit machine recipes if the new species should participate in those production chains.
 
+For those explicit machine recipes, a `biotech:captured_animal` input carrying an `EntityType` requirement is matched by species. Per-capture `CapturedEntity` state such as age, variant, or custom name is ignored for this generic-species match, so independently captured animals of the same species satisfy the same recipe while other species do not. A generic carrier without a valid `EntityType` is not a wildcard.
+
 ## Captured state behavior
 
 New captures sanitize the entity payload **before it is stored in the item**. Gameplay state such as age, variant data, custom name, and other persistent entity properties can survive capture, while transient world identity/placement data such as UUID, position, motion, rotation, fall distance, portal state, and leash state is removed.

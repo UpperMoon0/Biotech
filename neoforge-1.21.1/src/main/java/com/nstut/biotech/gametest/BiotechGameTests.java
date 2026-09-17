@@ -8,10 +8,18 @@ import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.nstutlib.recipes.IngredientItem;
+import com.nstut.nstutlib.recipes.ModRecipeData;
+import com.nstut.nstutlib.recipes.OutputItem;
 import com.nstut.biotech.items.AnimalItemPreviewPresentation;
+import com.nstut.biotech.items.CapturedAnimalItem;
+import com.nstut.biotech.items.CapturedAnimalStackState;
+import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -22,6 +30,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -32,9 +41,11 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
 
 @GameTestHolder(Biotech.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -193,6 +204,50 @@ public final class BiotechGameTests {
         helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.COW, false, helper.getLevel()),
                 "A reconstructible animal still requires datapack tag membership");
         helper.succeed();
+    }
+
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    public static void genericCapturedSpeciesRecipeMatchesByEntityType(GameTestHelper helper) {
+        ItemStack requirement = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CustomData.update(DataComponents.CUSTOM_DATA, requirement, root -> root.putString(
+                CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(EntityType.HORSE).toString()));
+        SlaughterhouseRecipe recipe = new SlaughterhouseRecipe(
+                ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_generic_horse"),
+                genericSpeciesRecipeData(requirement));
+
+        ItemStack namedHorse = capturedGeneric(EntityType.HORSE, "First Horse", 0);
+        ItemStack babyHorse = capturedGeneric(EntityType.HORSE, "Second Horse", -1200);
+        ItemStack goat = capturedGeneric(EntityType.GOAT, "Wrong Species", 0);
+        ItemStackHandler inputs = new ItemStackHandler(1);
+
+        inputs.setStackInSlot(0, namedHorse);
+        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "A generic horse recipe must match a captured horse regardless of individual state");
+        inputs.setStackInSlot(0, babyHorse);
+        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "The same generic horse recipe must match a differently captured horse");
+        inputs.setStackInSlot(0, goat);
+        helper.assertTrue(!recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "A generic horse recipe must reject a captured goat");
+        helper.succeed();
+    }
+
+    private static ItemStack capturedGeneric(EntityType<?> type, String name, int age) {
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CompoundTag state = new CompoundTag();
+        state.putString("CustomName", name);
+        state.putInt("Age", age);
+        CapturedAnimalStackState.writeCapture(stack, state, EntityType.getKey(type).toString(), -1);
+        return stack;
+    }
+
+    private static ModRecipeData genericSpeciesRecipeData(ItemStack requirement) {
+        return new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(requirement, true)},
+                new OutputItem[0],
+                new FluidStack[0],
+                new FluidStack[0],
+                0);
     }
 
     private static void assertRecipeTypeRegistered(GameTestHelper helper, RecipeType<?> type, String path) {

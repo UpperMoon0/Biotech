@@ -13,8 +13,13 @@ import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
 import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.CapturedAnimalStackState;
+import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.recipes.GreenhouseRecipe;
+import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.nstutlib.recipes.IngredientItem;
+import com.nstut.nstutlib.recipes.ModRecipeData;
+import com.nstut.nstutlib.recipes.OutputItem;
 import com.nstut.nstutlib.blocks.MachineBlock;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import com.nstut.nstutlib.models.MultiblockBlock;
@@ -49,6 +54,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -70,6 +76,7 @@ public final class BiotechGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES = register("greenhouse_beetroot_recipe_loads_and_processes", BiotechGameTests::greenhouseBeetrootRecipeLoadsAndProcesses);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING = register("captured_animal_storage_sanitizes_before_persisting", BiotechGameTests::capturedAnimalStorageSanitizesBeforePersisting);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES = register("capture_eligibility_rejects_tagged_non_creatable_types", BiotechGameTests::captureEligibilityRejectsTaggedNonCreatableTypes);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_BY_ENTITY_TYPE = register("generic_captured_species_recipe_matches_by_entity_type", BiotechGameTests::genericCapturedSpeciesRecipeMatchesByEntityType);
 
     private BiotechGameTests() {}
 
@@ -86,7 +93,8 @@ public final class BiotechGameTests {
                 RECIPE_TYPES_ARE_REGISTRY_BACKED,
                 GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES,
                 CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING,
-                CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES)) {
+                CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES,
+                GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_BY_ENTITY_TYPE)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
         }
     }
@@ -271,6 +279,49 @@ public final class BiotechGameTests {
         helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 4, "Greenhouse must produce four beetroot");
         helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) == 6, "Greenhouse must produce six beetroot seeds");
         helper.succeed();
+    }
+
+    private static void genericCapturedSpeciesRecipeMatchesByEntityType(GameTestHelper helper) {
+        ItemStack requirement = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CustomData.update(DataComponents.CUSTOM_DATA, requirement, root -> root.putString(
+                CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(EntityType.HORSE).toString()));
+        SlaughterhouseRecipe recipe = new SlaughterhouseRecipe(
+                Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_generic_horse"),
+                genericSpeciesRecipeData(requirement));
+
+        ItemStack namedHorse = capturedGeneric(EntityType.HORSE, "First Horse", 0);
+        ItemStack babyHorse = capturedGeneric(EntityType.HORSE, "Second Horse", -1200);
+        ItemStack goat = capturedGeneric(EntityType.GOAT, "Wrong Species", 0);
+        ItemStackHandler inputs = new ItemStackHandler(1);
+
+        inputs.setStackInSlot(0, namedHorse);
+        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "A generic horse recipe must match a captured horse regardless of individual state");
+        inputs.setStackInSlot(0, babyHorse);
+        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "The same generic horse recipe must match a differently captured horse");
+        inputs.setStackInSlot(0, goat);
+        helper.assertTrue(!recipe.recipeMatch(inputs, List.of(), null, List.of()),
+                "A generic horse recipe must reject a captured goat");
+        helper.succeed();
+    }
+
+    private static ItemStack capturedGeneric(EntityType<?> type, String name, int age) {
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CompoundTag state = new CompoundTag();
+        state.putString("CustomName", name);
+        state.putInt("Age", age);
+        CapturedAnimalStackState.writeCapture(stack, state, EntityType.getKey(type).toString(), -1);
+        return stack;
+    }
+
+    private static ModRecipeData genericSpeciesRecipeData(ItemStack requirement) {
+        return new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(requirement, true)},
+                new OutputItem[0],
+                new FluidStack[0],
+                new FluidStack[0],
+                0);
     }
 
     private static GreenhouseBlockEntity placeGreenhouseStructure(GameTestHelper helper, BlockPos controllerRelative) {
