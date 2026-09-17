@@ -25,10 +25,30 @@ class CapturedAnimalRecipeContractTest {
         }
     }
 
+    @Test
+    void genericCarrierBridgePreservesAdultAndBabyVariants() throws IOException {
+        Path root = findRepositoryRoot();
+        for (String target : new String[] {"forge-1.20.1", "neoforge-1.21.1", "neoforge-26.1.2"}) {
+            String mobItem = Files.readString(root.resolve(target + "/src/main/java/com/nstut/biotech/items/MobItem.java"));
+            String captured = Files.readString(root.resolve(target + "/src/main/java/com/nstut/biotech/items/CapturedAnimalItem.java"));
+
+            assertTrue(mobItem.contains("public EntityType<? extends Mob> entityType()"), target);
+            assertTrue(mobItem.contains("public boolean isBabyVariant()"), target);
+            assertTrue(captured.contains("matchesLegacyVariant"), target);
+            assertTrue(captured.contains("actualType != expectedType"), target);
+            assertTrue(captured.contains("actualBaby == expectedBaby"), target);
+            assertTrue(captured.contains("\"Age\""), target);
+        }
+    }
+
     private static void assertNarrowPolicy(String source, String target) {
         assertTrue(source.contains("required.getItem() instanceof MobItem"), target);
         assertTrue(source.contains("present.getItem() instanceof MobItem"), target);
         assertTrue(source.contains("required.is(present.getItem())"), target);
+        assertTrue(source.contains("present.getItem() instanceof CapturedAnimalItem"), target);
+        assertTrue(source.contains("requiredMob.entityType()"), target);
+        assertTrue(source.contains("requiredMob.isBabyVariant()"), target);
+        assertTrue(source.contains("CapturedAnimalItem.matchesLegacyVariant"), target);
         assertTrue(source.contains("return super.itemIngredientsMatch(required, present)"), target);
     }
 
