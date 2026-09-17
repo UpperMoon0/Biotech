@@ -7,6 +7,7 @@ import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.items.AnimalItemPreviewPresentation;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +15,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -156,6 +160,27 @@ public final class BiotechGameTests {
         helper.succeed();
     }
 
+
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
+    public static void previewPresentationSuppressesWorldEffects(GameTestHelper helper) {
+        Entity entity = EntityType.COW.create(helper.getLevel());
+        helper.assertTrue(entity != null, "Test setup must create a cow");
+        entity.setCustomName(Component.literal("Bessie"));
+        entity.setCustomNameVisible(true);
+        entity.setRemainingFireTicks(200);
+        entity.setGlowingTag(true);
+
+        helper.assertTrue(entity.isCustomNameVisible() && entity.getRemainingFireTicks() > 0 && entity.hasGlowingTag(),
+                "Test setup must enable world-only presentation state");
+        AnimalItemPreviewPresentation.suppressWorldPresentation(entity);
+
+        helper.assertTrue(!entity.isCustomNameVisible(), "Animal item preview must not render a world nametag");
+        helper.assertTrue(entity.getRemainingFireTicks() == 0, "Animal item preview must not render entity flames");
+        helper.assertTrue(!entity.hasGlowingTag(), "Animal item preview must not render a world glowing outline");
+        helper.assertTrue(entity.getCustomName() != null && "Bessie".equals(entity.getCustomName().getString()),
+                "Suppressing preview presentation must not erase the captured custom name itself");
+        helper.succeed();
+    }
     private static void assertRecipeTypeRegistered(GameTestHelper helper, RecipeType<?> type, String path) {
         ResourceLocation actualId = BuiltInRegistries.RECIPE_TYPE.getKey(type);
         ResourceLocation expectedId = ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, path);

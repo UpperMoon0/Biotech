@@ -5,6 +5,9 @@ import com.nstut.biotech.blocks.NetTrapBlock;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -76,4 +79,25 @@ public final class MobItemStateGameTests {
         helper.assertTrue(source.contains("UUID") && source.contains("Pos"),
                 "Writing a capture must not mutate the entity's source NBT");
         helper.succeed();
-    }}
+    }
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void previewPresentationSuppressesWorldEffects(GameTestHelper helper) {
+        Entity entity = EntityType.COW.create(helper.getLevel());
+        helper.assertTrue(entity != null, "Test setup must create a cow");
+        entity.setCustomName(Component.literal("Bessie"));
+        entity.setCustomNameVisible(true);
+        entity.setRemainingFireTicks(200);
+        entity.setGlowingTag(true);
+
+        helper.assertTrue(entity.isCustomNameVisible() && entity.getRemainingFireTicks() > 0 && entity.hasGlowingTag(),
+                "Test setup must enable world-only presentation state");
+        AnimalItemPreviewPresentation.suppressWorldPresentation(entity);
+
+        helper.assertTrue(!entity.isCustomNameVisible(), "Animal item preview must not render a world nametag");
+        helper.assertTrue(entity.getRemainingFireTicks() == 0, "Animal item preview must not render entity flames");
+        helper.assertTrue(!entity.hasGlowingTag(), "Animal item preview must not render a world glowing outline");
+        helper.assertTrue(entity.getCustomName() != null && "Bessie".equals(entity.getCustomName().getString()),
+                "Suppressing preview presentation must not erase the captured custom name itself");
+        helper.succeed();
+    }
+}

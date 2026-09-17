@@ -1,6 +1,7 @@
 package com.nstut.biotech.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.nstut.biotech.items.AnimalItemPreviewPresentation;
 import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.MobItem;
 import net.minecraft.client.Minecraft;
@@ -44,6 +45,7 @@ public final class AnimalItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
 
         stabilizePreviewEntity(entity);
+        AnimalItemPreviewPresentation.suppressWorldPresentation(entity);
 
         float scale = 0.53125f;
         float maxSize = Math.max(entity.getBbWidth(), entity.getBbHeight());
