@@ -59,17 +59,23 @@ Process organic materials into useful products.
 
 ## Capture animals with the Net Trap
 
-Place a **Net Trap** on the ground and let a supported animal step on it. The trap captures the animal into an item that can be transported, stored, released again, or fed into Biotech machinery.
+Place a **Net Trap** on the ground and let an entity in `#biotech:capturable` step on it. The trap captures the animal into an item that can be transported, stored, released again, or fed into Biotech machinery when a matching recipe exists.
 
-Supported animals:
+Biotech 2.3 includes these capturable entities by default:
 
 - Cows
 - Chickens
 - Pigs
 - Sheep
 - Rabbits
+- Horses
+- Goats
+- Llamas
+- Camels
 
-Adult and baby animals remain distinct, and captured gameplay state is preserved where relevant.
+The original five livestock species keep their existing Biotech item IDs for compatibility. Other tagged entities use the generic captured-animal carrier. Adult/baby state and other gameplay-relevant entity state are preserved where applicable.
+
+Packmakers can extend `#biotech:capturable` with datapacks. Adding a species to the tag enables capture and release; it does **not** automatically add Breeding Chamber, Terrestrial Habitat, or Slaughterhouse recipes for that species.
 
 ---
 
@@ -119,7 +125,7 @@ JEI and Jade are supported integrations and are highly useful in larger modpacks
 
 ## Supported versions
 
-Current Biotech 2.2 targets:
+Current Biotech 2.3 targets:
 
 - **Minecraft 1.20.1 — Forge — Java 17**
 - **Minecraft 1.21.1 — NeoForge — Java 21**
@@ -141,6 +147,8 @@ Biotech machine recipes are data-driven and can be extended with datapacks or Ku
 - `biotech:mixer`
 
 The GitHub README documents the exact JSON schema differences between 1.20.1 and 1.21.1+.
+
+Net Trap capture can also be extended with the `#biotech:capturable` entity-type tag. Tag folders are `entity_types` on Forge 1.20.1 and `entity_type` on NeoForge 1.21.1/26.1.2. Capture support is independent from machine recipes, so add explicit livestock-machine recipes for any newly tagged species that should be processed.
 
 ---
 
