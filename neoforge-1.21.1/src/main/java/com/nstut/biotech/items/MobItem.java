@@ -74,8 +74,8 @@ public class MobItem extends Item {
     }
 
     @Nullable
-    private Mob createMob(Level level) {
-        EntityType<? extends Mob> entityType = switch (type) {
+    public EntityType<? extends Mob> entityType() {
+        return switch (type) {
             case 1, 2 -> EntityType.COW;
             case 3, 4 -> EntityType.CHICKEN;
             case 5, 6 -> EntityType.PIG;
@@ -83,6 +83,15 @@ public class MobItem extends Item {
             case 9, 10 -> EntityType.RABBIT;
             default -> null;
         };
+    }
+
+    public boolean isBabyVariant() {
+        return type == 2 || type == 4 || type == 6 || type == 8 || type == 10;
+    }
+
+    @Nullable
+    private Mob createMob(Level level) {
+        EntityType<? extends Mob> entityType = entityType();
         if (entityType == null) {
             return null;
         }
@@ -93,7 +102,7 @@ public class MobItem extends Item {
         }
 
         // Backwards compatibility for legacy captured-animal items that predate full NBT capture.
-        if (type == 2 || type == 4 || type == 6 || type == 8 || type == 10) {
+        if (isBabyVariant()) {
             mob.setBaby(true);
         }
         return mob;
@@ -110,7 +119,6 @@ public class MobItem extends Item {
             sheep.setColor(DyeColor.byId(root.getInt("SheepColor")));
         }
     }
-
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack,
