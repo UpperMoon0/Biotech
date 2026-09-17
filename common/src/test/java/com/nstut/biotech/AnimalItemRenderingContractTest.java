@@ -42,6 +42,10 @@ class AnimalItemRenderingContractTest {
             assertTrue(renderer.contains("entityRenderer.render"), target);
             assertTrue(renderer.contains("createCapturedEntity"), target);
             assertTrue(renderer.contains("createMob"), target);
+            assertTrue(renderer.contains("stabilizePreviewEntity(entity)"), target);
+            assertTrue(renderer.contains("entity.setYRot(0.0f)"), target);
+            assertTrue(renderer.contains("entity.setYHeadRot(0.0f)"), target);
+            assertFalse(renderer.contains("rotationDegrees(210.0f)"), target);
         }
     }
 
@@ -60,6 +64,10 @@ class AnimalItemRenderingContractTest {
         assertTrue(renderer.contains("dispatcher.extractEntity"));
         assertTrue(renderer.contains("dispatcher.submit"));
         assertTrue(renderer.contains("CapturedEntityState.sanitize"));
+        assertTrue(renderer.contains("stabilizePreviewEntity(entity)"));
+        assertTrue(renderer.contains("entity.setYRot(0.0f)"));
+        assertTrue(renderer.contains("entity.setYHeadRot(0.0f)"));
+        assertFalse(renderer.contains("rotationDegrees(210.0f)"));
 
         String bootstrap = Files.readString(root.resolve(
                 "neoforge-26.1.2/src/main/java/com/nstut/biotech/Biotech.java"));

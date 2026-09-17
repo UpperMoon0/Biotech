@@ -1,7 +1,6 @@
 package com.nstut.biotech.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.MobItem;
 import net.minecraft.client.Minecraft;
@@ -44,6 +43,8 @@ public final class AnimalItemRenderer extends BlockEntityWithoutLevelRenderer {
             return;
         }
 
+        stabilizePreviewEntity(entity);
+
         float scale = 0.53125f;
         float maxSize = Math.max(entity.getBbWidth(), entity.getBbHeight());
         if (maxSize > 1.0f) {
@@ -52,8 +53,6 @@ public final class AnimalItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         poseStack.pushPose();
         poseStack.translate(0.5f, 0.2f, 0.5f);
-        poseStack.mulPose(Axis.YP.rotationDegrees(210.0f));
-        poseStack.mulPose(Axis.XP.rotationDegrees(-15.0f));
         poseStack.scale(scale, scale, scale);
         this.entityRenderer.setRenderShadow(false);
         try {
@@ -62,6 +61,16 @@ public final class AnimalItemRenderer extends BlockEntityWithoutLevelRenderer {
             this.entityRenderer.setRenderShadow(true);
             poseStack.popPose();
         }
+    }
+
+    private static void stabilizePreviewEntity(Entity entity) {
+        // Entity constructors choose an initial yaw. Recreating the preview every frame without
+        // normalizing it makes the held model visibly jitter as that random yaw changes.
+        entity.tickCount = 0;
+        entity.setYRot(0.0f);
+        entity.setXRot(0.0f);
+        entity.setYHeadRot(0.0f);
+        entity.setYBodyRot(0.0f);
     }
 
     private static Entity createEntity(Level level, ItemStack stack) {

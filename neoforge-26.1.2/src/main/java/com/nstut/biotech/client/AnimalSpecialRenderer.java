@@ -1,7 +1,6 @@
 package com.nstut.biotech.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import com.mojang.serialization.MapCodec;
 import com.nstut.biotech.blocks.NetTrapBlock;
 import com.nstut.biotech.items.CapturedAnimalItem;
@@ -66,6 +65,8 @@ public final class AnimalSpecialRenderer implements SpecialModelRenderer<AnimalS
             }
         }
 
+        stabilizePreviewEntity(entity);
+
         EntityRenderDispatcher dispatcher = minecraft.getEntityRenderDispatcher();
         EntityRenderState renderState = dispatcher.extractEntity(entity, 1.0f);
         renderState.shadowPieces.clear();
@@ -83,11 +84,19 @@ public final class AnimalSpecialRenderer implements SpecialModelRenderer<AnimalS
 
         poseStack.pushPose();
         poseStack.translate(0.5f, 0.2f, 0.5f);
-        poseStack.mulPose(Axis.YP.rotationDegrees(210.0f));
-        poseStack.mulPose(Axis.XP.rotationDegrees(-15.0f));
         poseStack.scale(scale, scale, scale);
         dispatcher.submit(renderState, new CameraRenderState(), 0.0, 0.0, 0.0, poseStack, submitNodeCollector);
         poseStack.popPose();
+    }
+
+    private static void stabilizePreviewEntity(Entity entity) {
+        // The preview entity is recreated for item rendering. Normalize constructor-randomized
+        // orientation so GUI and held renders stay deterministic and use only item transforms.
+        entity.tickCount = 0;
+        entity.setYRot(0.0f);
+        entity.setXRot(0.0f);
+        entity.setYHeadRot(0.0f);
+        entity.setYBodyRot(0.0f);
     }
 
     @Override
