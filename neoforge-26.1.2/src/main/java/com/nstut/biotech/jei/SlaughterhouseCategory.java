@@ -66,5 +66,6 @@ public class SlaughterhouseCategory implements IRecipeCategory<SlaughterhouseRec
         Minecraft minecraft = Minecraft.getInstance();
         graphics.text(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 60, 4210752, false);
         JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 88, 1, 3, 18, 18);
+        if (recipe.getItemOutputs().isEmpty()) graphics.text(minecraft.font, Component.translatable("jei.biotech.slaughterhouse.dynamic_loot"), 88, 5, 4210752, false);
     }
 }
