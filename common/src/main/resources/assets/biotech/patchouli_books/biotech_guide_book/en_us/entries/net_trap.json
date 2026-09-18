@@ -5,7 +5,11 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Biotech animal machines use captured mobs as items. The Net Trap is the simplest way to capture them.$(br)$(br)Place a Net Trap on the ground and let a capturable mob step on it. The trap is consumed and the mob becomes an item that can be used by Biotech machines. Not every mob can be captured."
+      "text": "Biotech animal machines use captured mobs as items. Place a Net Trap on the ground and let a capturable mob step on it. The trap is consumed and the mob becomes an item that preserves safe gameplay state and can later be released.$(br)$(br)By default, cows, chickens, pigs, sheep, rabbits, horses, goats, llamas, and camels are capturable."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Cows, chickens, pigs, sheep, and rabbits keep their legacy Biotech item forms for recipe/world compatibility. Other supported mobs use the generic Captured Animal item, whose tooltip identifies the stored entity type.$(br)$(br)Pack makers can extend capture support with the $(code)biotech:capturable$() entity-type tag. Only animal types that Minecraft can recreate are accepted; invalid entries are ignored safely. A captured mob still needs a matching machine recipe before a Biotech machine can process it."
     },
     {
       "type": "patchouli:crafting",

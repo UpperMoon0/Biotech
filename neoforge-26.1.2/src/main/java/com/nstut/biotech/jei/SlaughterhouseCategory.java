@@ -4,7 +4,6 @@ import com.nstut.biotech.Biotech;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
 import com.nstut.nstutlib.recipes.OutputItem;
-import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -25,20 +24,21 @@ import java.util.List;
 
 public class SlaughterhouseCategory implements IRecipeCategory<SlaughterhouseRecipe> {
     public static final Identifier UID = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, MachineRegistries.SLAUGHTERHOUSE.id());
-    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "textures/gui/jei/" + MachineRegistries.SLAUGHTERHOUSE.id() + ".png");
+    private static final int WIDTH = 146;
+    private static final int HEIGHT = 70;
     public static final RecipeType<SlaughterhouseRecipe> TYPE = new RecipeType<>(UID, SlaughterhouseRecipe.class);
-    private final IDrawable background;
+    private final IDrawable arrow;
     private final IDrawable icon;
 
     public SlaughterhouseCategory(IGuiHelper helper) {
-        background = helper.createDrawable(TEXTURE, 0, 0, 136, 70);
-        icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(MachineRegistries.SLAUGHTERHOUSE.blockItem().get()));
+        arrow = helper.getRecipeArrow();
+        icon = helper.createDrawableItemLike(MachineRegistries.SLAUGHTERHOUSE.blockItem().get());
     }
 
     @Override public @NotNull RecipeType<SlaughterhouseRecipe> getRecipeType() { return TYPE; }
     @Override public @NotNull Component getTitle() { return Component.translatable("block.biotech." + MachineRegistries.SLAUGHTERHOUSE.id()); }
-    @Override public int getWidth() { return background.getWidth(); }
-    @Override public int getHeight() { return background.getHeight(); }
+    @Override public int getWidth() { return WIDTH; }
+    @Override public int getHeight() { return HEIGHT; }
     @Override public @NotNull IDrawable getIcon() { return icon; }
 
     @Override
@@ -46,30 +46,30 @@ public class SlaughterhouseCategory implements IRecipeCategory<SlaughterhouseRec
         List<ItemStack> itemInputs = recipe.getItemIngredients().stream().map(v -> v.getItemStack()).toList();
         List<ItemStack> itemOutputs = recipe.getItemOutputs().stream().map(v -> v.getItemStack()).toList();
         for (int i = 0; i < itemInputs.size(); i++)
-            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 4 + (i / 2) * 18).addItemStack(itemInputs.get(i));
+            builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 4 + (i / 2) * 18).setStandardSlotBackground().addItemStack(itemInputs.get(i));
         for (int i = 0; i < recipe.getFluidIngredients().size(); i++) {
             FluidStack fluid = recipe.getFluidIngredients().get(i);
             builder.addSlot(RecipeIngredientRole.INPUT, 23 + (i % 2) * 18, 24 + (i / 2) * 18)
-                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
+                    .setStandardSlotBackground().addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
         }
         for (int i = 0; i < itemOutputs.size(); i++)
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 79 + (i % 3) * 18, 1 + (i / 3) * 18).addItemStack(itemOutputs.get(i));
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 88 + (i % 3) * 18, 1 + (i / 3) * 18).setStandardSlotBackground().addItemStack(itemOutputs.get(i));
         for (int i = 0; i < recipe.getFluidOutputs().size(); i++) {
             FluidStack fluid = recipe.getFluidOutputs().get(i);
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 79 + (i % 3) * 18, 37 + (i / 3) * 18)
-                    .addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 88 + (i % 3) * 18, 37 + (i / 3) * 18)
+                    .setStandardSlotBackground().addFluidStack(fluid.getFluid(), fluid.getAmount()).setFluidRenderer(fluid.getAmount(), false, 16, 16);
         }
     }
 
     @Override
     public void draw(SlaughterhouseRecipe recipe, @NotNull IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
-        background.draw(graphics);
+        arrow.draw(graphics, 62, 14);
         Minecraft minecraft = Minecraft.getInstance();
         graphics.text(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 60, 4210752, false);
         List<OutputItem> outputs = recipe.getItemOutputs();
         for (int i = 0; i < outputs.size(); i++) {
             String chance = outputs.get(i).getChance() < 1 ? (int) (outputs.get(i).getChance() * 100) + "%" : "";
-            graphics.text(minecraft.font, chance, 79 + (i % 3) * 18, 20 + (i / 3) * 18, 4210752, false);
+            graphics.text(minecraft.font, chance, 88 + (i % 3) * 18, 20 + (i / 3) * 18, 4210752, false);
         }
     }
 }

@@ -22,6 +22,8 @@ public final class ItemRegistries {
     public static final DeferredItem<Item> FLUID_OUTPUT_HATCH = ITEMS.register("fluid_output_hatch", () -> new BlockItem(BlockRegistries.FLUID_OUTPUT_HATCH.get(), new Item.Properties()));
     public static final DeferredItem<Item> ENERGY_INPUT_HATCH = ITEMS.register("energy_input_hatch", () -> new BlockItem(BlockRegistries.ENERGY_INPUT_HATCH.get(), new Item.Properties()));
 
+    public static final DeferredItem<CapturedAnimalItem> CAPTURED_ANIMAL = ITEMS.register("captured_animal", CapturedAnimalItem::new);
+
     public static final DeferredItem<Item> COW = ITEMS.register("cow", () -> new MobItem(1));
     public static final DeferredItem<Item> BABY_COW = ITEMS.register("baby_cow", () -> new MobItem(2));
     public static final DeferredItem<Item> CHICKEN = ITEMS.register("chicken", () -> new MobItem(3));

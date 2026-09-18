@@ -1,0 +1,93 @@
+package com.nstut.biotech.client;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.nstut.biotech.items.AnimalItemPreviewPresentation;
+import com.nstut.biotech.items.CapturedAnimalItem;
+import com.nstut.biotech.items.MobItem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+
+public final class AnimalItemRenderer extends BlockEntityWithoutLevelRenderer {
+    private final EntityRenderDispatcher entityRenderer;
+
+    private AnimalItemRenderer() {
+        super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
+        this.entityRenderer = Minecraft.getInstance().getEntityRenderDispatcher();
+    }
+
+    public static IClientItemExtensions clientExtensions() {
+        return new IClientItemExtensions() {
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return Holder.INSTANCE;
+            }
+        };
+    }
+
+    @Override
+    public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack,
+                             MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        Level level = Minecraft.getInstance().level;
+        if (level == null) {
+            return;
+        }
+
+        Entity entity = createEntity(level, stack);
+        if (entity == null) {
+            return;
+        }
+
+        stabilizePreviewEntity(entity);
+        AnimalItemPreviewPresentation.suppressWorldPresentation(entity);
+
+        float scale = 0.53125f;
+        float maxSize = Math.max(entity.getBbWidth(), entity.getBbHeight());
+        if (maxSize > 1.0f) {
+            scale /= maxSize;
+        }
+
+        poseStack.pushPose();
+        poseStack.translate(0.5f, 0.2f, 0.5f);
+        poseStack.scale(scale, scale, scale);
+        boolean previousShadow = this.entityRenderer.shouldRenderShadow;
+        try {
+            AnimalItemRenderState.withoutShadow(
+                    previousShadow,
+                    this.entityRenderer::setRenderShadow,
+                    () -> this.entityRenderer.render(entity, 0.0, 0.0, 0.0, 0.0f, 1.0f, poseStack, buffer, packedLight));
+        } finally {
+            poseStack.popPose();
+        }
+    }
+
+    private static void stabilizePreviewEntity(Entity entity) {
+        // Entity constructors choose an initial yaw. Recreating the preview every frame without
+        // normalizing it makes the held model visibly jitter as that random yaw changes.
+        entity.tickCount = 0;
+        entity.setYRot(0.0f);
+        entity.setXRot(0.0f);
+        entity.setYHeadRot(0.0f);
+        entity.setYBodyRot(0.0f);
+    }
+
+    private static Entity createEntity(Level level, ItemStack stack) {
+        if (stack.getItem() instanceof MobItem mobItem) {
+            return mobItem.createMob(level, stack);
+        }
+        if (stack.getItem() instanceof CapturedAnimalItem capturedAnimalItem) {
+            return capturedAnimalItem.createCapturedEntity(level, stack);
+        }
+        return null;
+    }
+
+    private static final class Holder {
+        private static final AnimalItemRenderer INSTANCE = new AnimalItemRenderer();
+    }
+}

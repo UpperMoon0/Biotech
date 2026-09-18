@@ -33,7 +33,7 @@ neoForge {
             sourceSet = sourceSets.uiPreview
             loadedMods = [mods.biotech, mods.biotech_ui_preview]
             gameDirectory = layout.buildDirectory.dir('ui-preview-run').get().asFile
-            programArguments.addAll '--width', '1024', '--height', '832'
+            programArguments.addAll '--width', '1024', '--height', '832', '--quickPlaySingleplayer', 'world'
             systemProperty 'biotech.uiPreview.output', layout.buildDirectory.dir('ui-previews').get().asFile.absolutePath
         }
         configureEach { logLevel = org.slf4j.event.Level.INFO }
@@ -70,7 +70,24 @@ tasks.register('renderUiPreviews') {
                 throw new GradleException("Missing or invalid PNG: ${entry.file}")
             }
         }
-        logger.lifecycle("Verified 56 UI previews in ${output}")
+
+        // These fixed slot cores contain an adult cow, baby cow, and rabbit respectively.
+        // A title-screen/no-level custom renderer produced only the 11-13 backdrop colors here,
+        // so require enough color detail to prove that the live entity model actually rendered.
+        def assertEntityDetail = { String fileName, int x, int y ->
+            def image = javax.imageio.ImageIO.read(new File(output, fileName))
+            def colors = new HashSet<Integer>()
+            for (int yy = y; yy < y + 24; yy++) {
+                for (int xx = x; xx < x + 24; xx++) colors.add(image.getRGB(xx, yy))
+            }
+            if (colors.size() < 30) {
+                throw new GradleException("Animal entity model appears blank in ${fileName}: only ${colors.size()} colors in verified slot core")
+            }
+        }
+        assertEntityDetail('breeding_chamber-active.png', 140, 238)
+        assertEntityDetail('breeding_chamber-active.png', 364, 238)
+        assertEntityDetail('slaughterhouse-active.png', 140, 238)
+        logger.lifecycle("Verified 56 UI previews, including live animal entity models, in ${output}")
     }
 }
 
@@ -86,11 +103,26 @@ tasks.named('prepareUiPreviewRun').configure {
 }
 
 tasks.named('runUiPreview').configure {
+    // The production animal item renderer needs a ClientLevel. Reuse the deterministic
+    // GameTest world so visual previews exercise the real in-game entity renderer rather
+    // than silently rendering blank items from the title screen.
+    dependsOn 'runGameTestServer'
     doFirst {
         // Stale screenshots must never satisfy verification.
         delete layout.buildDirectory.dir('ui-previews')
         def runDir = layout.buildDirectory.dir('ui-preview-run').get().asFile
         runDir.mkdirs()
+        def sourceWorld = file('run/world')
+        if (!new File(sourceWorld, 'level.dat').isFile()) {
+            throw new GradleException('UI preview world was not produced by runGameTestServer')
+        }
+        def previewWorld = new File(runDir, 'saves/world')
+        delete previewWorld
+        copy {
+            from sourceWorld
+            into previewWorld
+            exclude 'session.lock'
+        }
         new File(runDir, 'options.txt').text = 'guiScale:2\nmaxFps:60\nenableVsync:false\nlang:en_us\n'
     }
 }

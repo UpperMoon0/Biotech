@@ -1,8 +1,13 @@
 package com.nstut.biotech.blocks;
 
+import com.nstut.biotech.Biotech;
+import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.ItemRegistries;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Chicken;
@@ -11,7 +16,6 @@ import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -25,6 +29,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class NetTrapBlock extends Block {
     public static final String CAPTURED_ENTITY_TAG = "CapturedEntity";
+    private static final TagKey<EntityType<?>> CAPTURABLE = TagKey.create(
+            Registries.ENTITY_TYPE,
+            new ResourceLocation(Biotech.MOD_ID, "capturable"));
 
     public NetTrapBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).noOcclusion());
@@ -42,7 +49,7 @@ public class NetTrapBlock extends Block {
     @SuppressWarnings("deprecation")
     @Override
     public void entityInside(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
-        if (level.isClientSide) {
+        if (level.isClientSide || !isCaptureTypeSupported(entity.getType(), entity.getType().is(CAPTURABLE), level)) {
             return;
         }
 
@@ -52,13 +59,12 @@ public class NetTrapBlock extends Block {
         }
 
         CompoundTag entityData = entity.saveWithoutId(new CompoundTag());
-        captured.getOrCreateTag().put(CAPTURED_ENTITY_TAG, entityData);
-
-        // Keep the legacy sheep-color key so old UI/tooltips and old saves remain compatible.
-        if (entity instanceof Sheep sheep) {
-            DyeColor color = sheep.getColor();
-            captured.getOrCreateTag().putInt("SheepColor", color.getId());
-        }
+        int sheepColor = entity instanceof Sheep sheep ? sheep.getColor().getId() : -1;
+        CapturedAnimalStackState.writeCapture(
+                captured,
+                entityData,
+                EntityType.getKey(entity.getType()).toString(),
+                sheepColor);
 
         // The trap and animal are only consumed once the captured-item entity is accepted.
         if (!level.destroyBlock(pos, false)) {
@@ -80,7 +86,25 @@ public class NetTrapBlock extends Block {
         entity.remove(Entity.RemovalReason.DISCARDED);
     }
 
+    /**
+     * Datapack membership is only one half of the capture contract. The type must also be
+     * reconstructible through the same EntityType factory used by release. This preflight runs
+     * before the trap or original entity is consumed.
+     */
+    public static boolean isCaptureTypeSupported(EntityType<?> entityType, boolean tagged, Level level) {
+        if (!tagged) {
+            return false;
+        }
+        Entity probe = entityType.create(level);
+        if (probe == null) {
+            return false;
+        }
+        probe.discard();
+        return true;
+    }
+
     private static ItemStack createCapturedStack(Entity entity) {
+        // Preserve legacy item identities for the original five species so existing recipes/worlds remain compatible.
         if (entity.getType() == EntityType.COW && entity instanceof Cow cow) {
             return new ItemStack(cow.isBaby() ? ItemRegistries.BABY_COW.get() : ItemRegistries.COW.get());
         }
@@ -96,6 +120,6 @@ public class NetTrapBlock extends Block {
         if (entity.getType() == EntityType.RABBIT && entity instanceof Rabbit rabbit) {
             return new ItemStack(rabbit.isBaby() ? ItemRegistries.BABY_RABBIT.get() : ItemRegistries.RABBIT.get());
         }
-        return ItemStack.EMPTY;
+        return new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
     }
 }

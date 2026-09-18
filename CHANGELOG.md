@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.3
+
+Biotech 2.3 introduces Captured Animal v2: Net Trap capture is now data-driven, the default capturable set expands to nine species, and non-legacy species use a generic captured-animal carrier while existing five-species items and machine recipes remain compatible.
+
+- Adds the `#biotech:capturable` entity-type tag with cows, chickens, pigs, sheep, rabbits, horses, goats, llamas, and camels by default.
+- Preserves legacy cow/chicken/pig/sheep/rabbit item identities and lets equivalent generic captures satisfy their existing machine recipes.
+- Renders captured animal items with real entity models across all supported targets.
+- Sanitizes captured state before storage and adds runtime round-trip coverage.
+- Hardens item previews against renderer-state leaks and suppresses world-only nametag, fire, and glowing effects.
+- Replaces Biotech-owned JEI recipe backgrounds with JEI-native standard slots and arrows.
+- Rejects non-constructible `#biotech:capturable` entries before consuming the trap or original entity, preventing unreleasable captures.
+
+See [`CHANGELOG-2.3.md`](CHANGELOG-2.3.md) for the complete change list and [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) for upgrade and datapack notes.
+
 ## 2.2
 
 Biotech 2.2 migrates every machine and hatch screen to OpenUI 0.0.10 within the 0.0.x compatibility line, standardizes the green glass UI layout across all supported targets, and hardens visual regression coverage so hatch previews render the real production slot geometry.

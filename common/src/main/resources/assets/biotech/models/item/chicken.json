@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "biotech:item/chicken"
-  }
+  "parent": "biotech:item/animal_model"
 }

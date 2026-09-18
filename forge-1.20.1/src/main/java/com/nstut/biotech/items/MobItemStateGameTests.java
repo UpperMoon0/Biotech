@@ -2,12 +2,27 @@ package com.nstut.biotech.items;
 
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.blocks.NetTrapBlock;
+import com.nstut.biotech.recipes.BreedingChamberRecipe;
+import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
+import com.nstut.nstutlib.recipes.IngredientItem;
+import com.nstut.nstutlib.recipes.ModRecipeData;
+import com.nstut.nstutlib.recipes.OutputItem;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.items.ItemStackHandler;
 
+import java.util.List;
 import java.util.UUID;
 
 @GameTestHolder(Biotech.MOD_ID)
@@ -44,4 +59,135 @@ public final class MobItemStateGameTests {
 
         helper.succeed();
     }
+
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void captureStorageRoundTripsSanitizedState(GameTestHelper helper) {
+        CompoundTag source = new CompoundTag();
+        source.putString("CustomName", "Bessie");
+        source.putInt("Age", -1200);
+        source.putUUID("UUID", UUID.randomUUID());
+        source.putString("Pos", "old-pos");
+        source.putString("Motion", "old-motion");
+        source.putString("Leash", "old-leash");
+
+        ItemStack captured = new ItemStack(Items.PAPER);
+        CapturedAnimalStackState.writeCapture(captured, source, "minecraft:cow", -1);
+
+        CompoundTag root = captured.getTag();
+        helper.assertTrue(root != null && root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG),
+                "Capture must write an entity payload to the item");
+        CompoundTag stored = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG);
+        helper.assertTrue("Bessie".equals(stored.getString("CustomName")) && stored.getInt("Age") == -1200,
+                "Persistent entity state must survive capture storage");
+        helper.assertTrue(!stored.contains("UUID") && !stored.contains("Pos")
+                        && !stored.contains("Motion") && !stored.contains("Leash"),
+                "Transient world identity must be removed before the payload is stored");
+        helper.assertTrue("minecraft:cow".equals(root.getString(CapturedAnimalItem.ENTITY_TYPE_TAG)),
+                "Capture metadata must survive alongside the sanitized payload");
+        helper.assertTrue(stored.equals(CapturedAnimalStackState.read(captured)),
+                "Reading the captured stack must round-trip the already-sanitized stored state");
+        helper.assertTrue(source.contains("UUID") && source.contains("Pos"),
+                "Writing a capture must not mutate the entity's source NBT");
+        helper.succeed();
+    }
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void previewPresentationSuppressesWorldEffects(GameTestHelper helper) {
+        Entity entity = EntityType.COW.create(helper.getLevel());
+        helper.assertTrue(entity != null, "Test setup must create a cow");
+        entity.setCustomName(Component.literal("Bessie"));
+        entity.setCustomNameVisible(true);
+        entity.setRemainingFireTicks(200);
+        entity.setGlowingTag(true);
+
+        helper.assertTrue(entity.isCustomNameVisible() && entity.getRemainingFireTicks() > 0 && entity.hasGlowingTag(),
+                "Test setup must enable world-only presentation state");
+        AnimalItemPreviewPresentation.suppressWorldPresentation(entity);
+
+        helper.assertTrue(!entity.isCustomNameVisible(), "Animal item preview must not render a world nametag");
+        helper.assertTrue(entity.getRemainingFireTicks() == 0, "Animal item preview must not render entity flames");
+        helper.assertTrue(!entity.hasGlowingTag(), "Animal item preview must not render a world glowing outline");
+        helper.assertTrue(entity.getCustomName() != null && "Bessie".equals(entity.getCustomName().getString()),
+                "Suppressing preview presentation must not erase the captured custom name itself");
+        helper.succeed();
+    }
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void captureEligibilityRejectsTaggedNonCreatableTypes(GameTestHelper helper) {
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.PLAYER, true, helper.getLevel()),
+                "A datapack-tagged player must be rejected before capture because it cannot be reconstructed");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.ARMOR_STAND, true, helper.getLevel()),
+                "A tagged constructible non-animal must remain supported by the generic datapack contract");
+        helper.assertTrue(NetTrapBlock.isCaptureTypeSupported(EntityType.COW, true, helper.getLevel()),
+                "A tagged, reconstructible animal must remain capturable");
+        helper.assertTrue(!NetTrapBlock.isCaptureTypeSupported(EntityType.COW, false, helper.getLevel()),
+                "A reconstructible animal still requires datapack tag membership");
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "empty", timeoutTicks = 40)
+    public static void genericCapturedSpeciesRecipeMatchesLifecycleSelectors(GameTestHelper helper) {
+        BreedingChamberRecipe breeding = new BreedingChamberRecipe(
+                new ResourceLocation(Biotech.MOD_ID, "gametest_generic_horse_adult"),
+                genericSpeciesRecipeData(genericRequirement(EntityType.HORSE, CapturedAnimalItem.LIFECYCLE_ADULT)));
+        TerrestrialHabitatRecipe habitat = new TerrestrialHabitatRecipe(
+                new ResourceLocation(Biotech.MOD_ID, "gametest_generic_horse_baby"),
+                genericSpeciesRecipeData(genericRequirement(EntityType.HORSE, CapturedAnimalItem.LIFECYCLE_BABY)));
+        SlaughterhouseRecipe slaughter = new SlaughterhouseRecipe(
+                new ResourceLocation(Biotech.MOD_ID, "gametest_generic_horse_any"),
+                genericSpeciesRecipeData(genericRequirement(EntityType.HORSE, CapturedAnimalItem.LIFECYCLE_ANY)));
+
+        ItemStack adultHorse = capturedGeneric(EntityType.HORSE, "Adult Horse", 0);
+        ItemStack babyHorse = capturedGeneric(EntityType.HORSE, "Baby Horse", -1200);
+        ItemStack goat = capturedGeneric(EntityType.GOAT, "Wrong Species", 0);
+        ItemStackHandler inputs = new ItemStackHandler(1);
+
+        inputs.setStackInSlot(0, adultHorse);
+        helper.assertTrue(breeding.recipeMatch(inputs, List.of(), null, List.of()),
+                "Breeding Chamber generic adult selector must accept an adult horse");
+        inputs.setStackInSlot(0, babyHorse);
+        helper.assertTrue(!breeding.recipeMatch(inputs, List.of(), null, List.of()),
+                "Breeding Chamber generic adult selector must reject a baby horse");
+
+        helper.assertTrue(habitat.recipeMatch(inputs, List.of(), null, List.of()),
+                "Terrestrial Habitat generic baby selector must accept a baby horse");
+        inputs.setStackInSlot(0, adultHorse);
+        helper.assertTrue(!habitat.recipeMatch(inputs, List.of(), null, List.of()),
+                "Terrestrial Habitat generic baby selector must reject an adult horse");
+
+        helper.assertTrue(slaughter.recipeMatch(inputs, List.of(), null, List.of()),
+                "Slaughterhouse generic any selector must accept an adult horse");
+        inputs.setStackInSlot(0, babyHorse);
+        helper.assertTrue(slaughter.recipeMatch(inputs, List.of(), null, List.of()),
+                "Slaughterhouse generic any selector must also accept a baby horse");
+        inputs.setStackInSlot(0, goat);
+        helper.assertTrue(!slaughter.recipeMatch(inputs, List.of(), null, List.of()),
+                "Generic horse requirements must still reject another species");
+        helper.succeed();
+    }
+
+    private static ItemStack genericRequirement(EntityType<?> type, String lifecycle) {
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CompoundTag root = stack.getOrCreateTag();
+        root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(type).toString());
+        root.putString(CapturedAnimalItem.RECIPE_LIFECYCLE_TAG, lifecycle);
+        return stack;
+    }
+
+    private static ItemStack capturedGeneric(EntityType<?> type, String name, int age) {
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CompoundTag state = new CompoundTag();
+        state.putString("CustomName", name);
+        state.putInt("Age", age);
+        CapturedAnimalStackState.writeCapture(stack, state, EntityType.getKey(type).toString(), -1);
+        return stack;
+    }
+
+    private static ModRecipeData genericSpeciesRecipeData(ItemStack requirement) {
+        return new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(requirement, true)},
+                new OutputItem[0],
+                new FluidStack[0],
+                new FluidStack[0],
+                0);
+    }
+
 }

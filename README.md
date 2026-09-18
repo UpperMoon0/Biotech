@@ -38,17 +38,23 @@ Install the file matching both your Minecraft version and loader. A jar built fo
 
 ### Capture livestock instead of moving entities through your factory
 
-Place a **Net Trap** and let a supported animal step onto it. The animal becomes an item that preserves relevant gameplay state and can later be released again or processed by Biotech machines.
+Place a **Net Trap** and let an entity in `#biotech:capturable` step onto it. The animal becomes an item that preserves gameplay-relevant state and can later be released again or processed by Biotech machinery when a matching recipe exists.
 
-Current captured-animal support covers:
+Biotech 2.3 includes these capturable entities by default:
 
 - Cows
 - Chickens
 - Pigs
 - Sheep
 - Rabbits
+- Horses
+- Goats
+- Llamas
+- Camels
 
-Adult and baby forms are represented separately so breeding and growth can be automated as explicit production steps.
+The original five livestock species keep their legacy item IDs for world and recipe compatibility. Other valid tagged animals use the generic `biotech:captured_animal` carrier. Packmakers can extend `#biotech:capturable` with datapacks, but entries must be entity types that Minecraft can construct again for release; non-constructible entries are ignored without consuming the trap/entity. Capture eligibility alone does **not** create machine recipes for a new species.
+
+Adult/baby state, variants, custom names, and other persistent gameplay state are preserved where applicable. Animal items render the actual entity model in inventory, held-item, and JEI contexts rather than a separate flat animal texture.
 
 ### Six multiblock machines
 
@@ -75,7 +81,7 @@ External automation is directional: connect item pipes, fluid pipes, or energy c
 
 ### Transaction-safe machine processing
 
-The 2.2 line keeps NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid.
+Biotech 2.3 keeps NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid.
 
 ---
 
@@ -90,6 +96,10 @@ With **JEI**, each Biotech machine has a recipe category showing exact inputs, f
 ## Custom recipes / KubeJS
 
 Biotech machine recipes can be added with datapacks or `event.custom(...)` in KubeJS. Use the schema for the Minecraft version you target.
+
+Net Trap eligibility is separately data-driven through `#biotech:capturable`. Valid entries must be reconstructible entity types; unsupported tag entries are rejected before anything is consumed. For valid entries, the tag enables capture/release through the generic carrier; add explicit machine recipes if the new species should also work in the Breeding Chamber, Terrestrial Habitat, or Slaughterhouse. See [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) for version-specific tag paths and constraints.
+
+Generic machine-recipe inputs support lifecycle-aware matching. Put `EntityType` plus optional `BiotechRecipeLifecycle` in the required `biotech:captured_animal` stack's custom data. Valid lifecycle values are `adult`, `baby`, and `any`; omitting it means `any`. Breeding Chamber recipes should normally require `adult`, Terrestrial Habitat recipes `baby`, and Slaughterhouse recipes can use `any`. The matcher ignores unrelated captured state such as custom names/variants but rejects a different species. Adult/baby selectors require captured age state.
 
 ### Recipe types
 
@@ -160,12 +170,15 @@ NeoForge 1.21.1 and 26.1.2 use lowercase item counts and modern fluid fields:
 
 ## Release and migration documentation
 
-- [`CHANGELOG.md`](CHANGELOG.md) — canonical changelog
-- [`CHANGELOG-2.1.md`](CHANGELOG-2.1.md) — complete Biotech 2.1 changes
-- [`docs/upgrade-2.1.md`](docs/upgrade-2.1.md) — upgrade and compatibility notes
-- [`docs/recipes-2.1.md`](docs/recipes-2.1.md) — transactional recipe behavior
-- [`docs/networking-2.1.md`](docs/networking-2.1.md) — synchronization behavior
-- [`README_HARDENING.md`](README_HARDENING.md) — hardening and validation notes
+- [`CHANGELOG.md`](CHANGELOG.md) - canonical changelog
+- [`CHANGELOG-2.3.md`](CHANGELOG-2.3.md) - complete Biotech 2.3 release notes
+- [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) - Captured Animal v2 migration and datapack notes
+- [`CHANGELOG-2.2.md`](CHANGELOG-2.2.md) - Biotech 2.2 OpenUI changes
+- [`CHANGELOG-2.1.md`](CHANGELOG-2.1.md) - Biotech 2.1 hardening changes
+- [`docs/upgrade-2.1.md`](docs/upgrade-2.1.md) - historical 2.1 upgrade notes
+- [`docs/recipes-2.1.md`](docs/recipes-2.1.md) - transactional recipe behavior
+- [`docs/networking-2.1.md`](docs/networking-2.1.md) - synchronization behavior
+- [`README_HARDENING.md`](README_HARDENING.md) - hardening and validation notes
 
 ## Building and testing
 

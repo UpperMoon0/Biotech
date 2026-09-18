@@ -29,6 +29,7 @@
   "block.biotech.fluid_output_hatch": "Fluid Output Hatch",
   "block.biotech.energy_input_hatch": "Energy Input Hatch",
 
+  "item.biotech.captured_animal": "Captured Animal",
   "item.biotech.cow": "Cow",
   "item.biotech.baby_cow": "Baby Cow",
   "item.biotech.chicken": "Chicken",
@@ -48,6 +49,7 @@
   "item.biotech.paper_bag": "Paper Bag",
   "item.biotech.fertilizer": "Fertilizer",
   "tooltip.biotech.sheep_color": "Color: %s",
+  "tooltip.biotech.captured_animal": "Species: %s",
 
   "itemGroup.biotech": "Biotech",
 
