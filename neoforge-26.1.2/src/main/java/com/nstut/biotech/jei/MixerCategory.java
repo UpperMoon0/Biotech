@@ -71,5 +71,6 @@ public class MixerCategory implements IRecipeCategory<MixerRecipe> {
     public void draw(MixerRecipe recipe, @NotNull IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 82, 14);
         graphics.text(Minecraft.getInstance().font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 59, 4210752, false);
+        JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 130, 9, 1, 18, 18);
     }
 }
