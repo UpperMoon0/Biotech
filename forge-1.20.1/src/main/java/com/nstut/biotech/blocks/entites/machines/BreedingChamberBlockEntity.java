@@ -8,6 +8,7 @@ import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.BreedingChamberPacket;
 import com.nstut.biotech.network.PacketRegistries;
+import com.nstut.biotech.recipes.AnimalRecipeStatePreparation;
 import com.nstut.biotech.recipes.BreedingChamberRecipe;
 import com.nstut.biotech.views.machines.menu.BreedingChamberMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
@@ -72,7 +73,9 @@ public class BreedingChamberBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT);
+                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                null,
+                recipe -> AnimalRecipeStatePreparation.prepareBreeding(recipe, inputItems));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             FluidStack fluidStored = inputFluid.getFluidInTank(0).copy();
