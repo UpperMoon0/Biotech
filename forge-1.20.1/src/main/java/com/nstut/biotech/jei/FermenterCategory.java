@@ -100,5 +100,6 @@ public class FermenterCategory implements IRecipeCategory<FermenterRecipe> {
         Minecraft minecraft = Minecraft.getInstance();
         int energy = recipe.getTotalEnergy();
         guiGraphics.drawString(minecraft.font, "Energy: " + energy + " FE", 0, 42, 4210752, false);
+        JeiOutputChanceHelper.drawItemChances(guiGraphics, recipe.getItemOutputs(), 130, 2, 1, 18, 18);
     }
 }
