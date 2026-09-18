@@ -3,7 +3,6 @@ package com.nstut.biotech.jei;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
-import com.nstut.nstutlib.recipes.OutputItem;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -66,10 +65,7 @@ public class SlaughterhouseCategory implements IRecipeCategory<SlaughterhouseRec
         arrow.draw(graphics, 62, 14);
         Minecraft minecraft = Minecraft.getInstance();
         graphics.text(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 60, 4210752, false);
-        List<OutputItem> outputs = recipe.getItemOutputs();
-        for (int i = 0; i < outputs.size(); i++) {
-            String chance = outputs.get(i).getChance() < 1 ? (int) (outputs.get(i).getChance() * 100) + "%" : "";
-            graphics.text(minecraft.font, chance, 88 + (i % 3) * 18, 20 + (i / 3) * 18, 4210752, false);
-        }
+        JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 88, 1, 3, 18, 18);
+        if (recipe.getItemOutputs().isEmpty()) graphics.text(minecraft.font, Component.translatable("jei.biotech.slaughterhouse.dynamic_loot"), 88, 5, 4210752, false);
     }
 }

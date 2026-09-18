@@ -71,5 +71,6 @@ public class FermenterCategory implements IRecipeCategory<FermenterRecipe> {
     public void draw(FermenterRecipe recipe, @NotNull IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 102, 12);
         graphics.text(Minecraft.getInstance().font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
+        JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 130, 2, 1, 18, 18);
     }
 }

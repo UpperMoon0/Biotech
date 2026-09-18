@@ -3,11 +3,13 @@ package com.nstut.biotech.blocks.entites.machines;
 import com.nstut.biotech.blocks.BlockRegistries;
 import com.nstut.biotech.blocks.entites.hatches.EnergyInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.FluidInputHatchBlockEntity;
+import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemInputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.PacketRegistries;
 import com.nstut.biotech.network.TerrestrialHabitatPacket;
+import com.nstut.biotech.recipes.AnimalRecipeStatePreparation;
 import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
 import com.nstut.biotech.views.machines.menu.TerrestrialHabitatMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
@@ -44,6 +46,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
     private FluidInputHatchBlockEntity fluidInputHatch;
+    private FluidOutputHatchBlockEntity fluidOutputHatch;
 
     public TerrestrialHabitatBlockEntity(BlockPos pos, BlockState state) {
         super(MachineRegistries.TERRESTRIAL_HABITAT.blockEntity().get(), pos, state, 3, 1, 0);
@@ -62,6 +65,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 (IItemHandlerModifiable) itemInputHatch3.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new));
         IItemHandler outputItems = itemOutputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
         IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
+        IFluidHandler outputFluid = fluidOutputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
         IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
         processRecipeTransaction(
@@ -70,9 +74,11 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 inputItems,
                 List.of(inputFluid),
                 outputItems,
-                List.of(),
+                List.of(outputFluid),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT);
+                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                null,
+                recipe -> AnimalRecipeStatePreparation.prepareHabitat(recipe, inputItems));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new TerrestrialHabitatPacket(
@@ -98,7 +104,8 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 new Vec3i(-3, -1, -5),
                 new Vec3i(3, -1, -3),
                 new Vec3i(0, -1, -6),
-                new Vec3i(-2, -1, -6)
+                new Vec3i(-2, -1, -6),
+                new Vec3i(2, -1, -6)
         };
 
         for (int i = 0; i < southOffset.length; i++) {
@@ -111,6 +118,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 case 3 -> itemOutputHatch = (ItemOutputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 4 -> energyInputHatch = (EnergyInputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 case 5 -> fluidInputHatch = (FluidInputHatchBlockEntity) level.getBlockEntity(hatchPos);
+                case 6 -> fluidOutputHatch = (FluidOutputHatchBlockEntity) level.getBlockEntity(hatchPos);
                 default -> throw new IllegalStateException("Unexpected hatch index " + i);
             }
         }
@@ -127,7 +135,8 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 g = new MultiblockBlock(Blocks.YELLOW_CONCRETE, Map.of()),
                 h = new MultiblockBlock(Blocks.YELLOW_STAINED_GLASS, Map.of()),
                 i = new MultiblockBlock(Blocks.GLOWSTONE, Map.of()),
-                j = new MultiblockBlock(Blocks.GRASS_BLOCK, Map.of());
+                j = new MultiblockBlock(Blocks.GRASS_BLOCK, Map.of()),
+                k = new MultiblockBlock(BlockRegistries.FLUID_OUTPUT_HATCH.get(), Map.of("facing", "north"));
 
         MultiblockBlock[][][] blockArray = new MultiblockBlock[][][]{
                 {
@@ -176,7 +185,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                         {b, b, b, a, b, b, b}
                 },
                 {
-                        {b, e, b, f, b, b, b},
+                        {b, e, b, f, b, k, b},
                         {c, b, b, b, j, j, b},
                         {b, b, b, b, j, j, b},
                         {c, b, b, b, j, j, d},

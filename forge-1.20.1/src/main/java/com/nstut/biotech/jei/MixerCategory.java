@@ -102,5 +102,6 @@ public class MixerCategory implements IRecipeCategory<MixerRecipe> {
         Minecraft minecraft = Minecraft.getInstance();
         int energy = recipe.getTotalEnergy();
         guiGraphics.drawString(minecraft.font, "Energy: " + energy + " FE", 0, 59, 4210752, false);
+        JeiOutputChanceHelper.drawItemChances(guiGraphics, recipe.getItemOutputs(), 130, 9, 1, 18, 18);
     }
 }

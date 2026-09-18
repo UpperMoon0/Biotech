@@ -16,6 +16,10 @@ public abstract class AnimalMobRecipe<T extends ModRecipe<T>> extends ModRecipe<
         super(id, recipe, serializer, type);
     }
 
+    public boolean matchesAnimalInput(ItemStack required, ItemStack present) {
+        return itemIngredientsMatch(required, present);
+    }
+
     @Override
     protected boolean itemIngredientsMatch(ItemStack required, ItemStack present) {
         if (!required.isEmpty()

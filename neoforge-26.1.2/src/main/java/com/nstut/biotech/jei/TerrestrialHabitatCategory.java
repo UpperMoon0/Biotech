@@ -64,5 +64,6 @@ public class TerrestrialHabitatCategory implements IRecipeCategory<TerrestrialHa
     public void draw(TerrestrialHabitatRecipe recipe, @NotNull IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 68, 12);
         graphics.text(Minecraft.getInstance().font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
+        JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 101, 1, 2, 18, 18);
     }
 }

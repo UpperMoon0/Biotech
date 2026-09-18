@@ -102,6 +102,67 @@ public class RecipeGenerator extends DataGenerator {
                 generateRecipe(recipeName, recipeJson);
             }
         }
+        generateRenewableHabitatRecipes(type);
+    }
+
+    private void generateRenewableHabitatRecipes(String type) {
+        generateRenewableHabitatItemRecipes(type, CreatureData.CREATURE_CHICKEN, "eggs", "minecraft:egg");
+        generateRenewableHabitatItemRecipes(type, CreatureData.CREATURE_SHEEP, "wool", "minecraft:white_wool");
+        generateRenewableHabitatMilkRecipes(type, CreatureData.CREATURE_COW, net.minecraftforge.registries.ForgeRegistries.FLUIDS.getKey(net.minecraftforge.common.ForgeMod.MILK.get()).toString());
+    }
+
+    private void generateRenewableHabitatItemRecipes(String type, Creature creature, String productName, String productId) {
+        for (Food food : CreatureData.FOODS.get(creature)) {
+            int foodToConsume = food.tier() == 1 ? 2 : 4;
+            int waterToConsume = food.tier() == 1 ? 250 : 500;
+            int productCount = food.tier() == 1 ? 1 : 3;
+            int manureCount = food.tier() == 1 ? 1 : 3;
+            int energy = food.tier() == 1 ? 32000 : 64000;
+
+            IngredientItemJsonObj[] itemInputs = new IngredientItemJsonObj[]{
+                    new IngredientItemJsonObj(new ItemStackJsonObj(creature.id(), 1), false),
+                    new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), foodToConsume), true)
+            };
+            OutputItemJsonObj[] itemOutputs = new OutputItemJsonObj[]{
+                    new OutputItemJsonObj(new ItemStackJsonObj(productId, productCount)),
+                    new OutputItemJsonObj(new ItemStackJsonObj("biotech:manure", manureCount))
+            };
+            FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
+                    new FluidJsonObj(CreatureData.FLUID_WATER, waterToConsume)
+            };
+            String creatureName = creature.id().substring(creature.id().indexOf(":") + 1);
+            String foodName = food.id().substring(food.id().indexOf(":") + 1);
+            generateRecipe("terrestrial_habitat_" + creatureName + "_" + productName + "_t" + food.tier() + "_" + foodName,
+                    new RecipeJson(type, itemInputs, itemOutputs, fluidInputs, new FluidJsonObj[]{}, energy));
+        }
+    }
+
+    private void generateRenewableHabitatMilkRecipes(String type, Creature creature, String milkFluidId) {
+        for (Food food : CreatureData.FOODS.get(creature)) {
+            int foodToConsume = food.tier() == 1 ? 2 : 4;
+            int waterToConsume = food.tier() == 1 ? 250 : 500;
+            int milkAmount = food.tier() == 1 ? 1000 : 3000;
+            int manureCount = food.tier() == 1 ? 1 : 3;
+            int energy = food.tier() == 1 ? 32000 : 64000;
+
+            IngredientItemJsonObj[] itemInputs = new IngredientItemJsonObj[]{
+                    new IngredientItemJsonObj(new ItemStackJsonObj(creature.id(), 1), false),
+                    new IngredientItemJsonObj(new ItemStackJsonObj(food.id(), foodToConsume), true)
+            };
+            OutputItemJsonObj[] itemOutputs = new OutputItemJsonObj[]{
+                    new OutputItemJsonObj(new ItemStackJsonObj("biotech:manure", manureCount))
+            };
+            FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
+                    new FluidJsonObj(CreatureData.FLUID_WATER, waterToConsume)
+            };
+            FluidJsonObj[] fluidOutputs = new FluidJsonObj[]{
+                    new FluidJsonObj(milkFluidId, milkAmount)
+            };
+            String creatureName = creature.id().substring(creature.id().indexOf(":") + 1);
+            String foodName = food.id().substring(food.id().indexOf(":") + 1);
+            generateRecipe("terrestrial_habitat_" + creatureName + "_milk_t" + food.tier() + "_" + foodName,
+                    new RecipeJson(type, itemInputs, itemOutputs, fluidInputs, fluidOutputs, energy));
+        }
     }
 
     public void generateSlaughterhouseRecipes() {
@@ -117,8 +178,9 @@ public class RecipeGenerator extends DataGenerator {
             FluidJsonObj[] fluidInputs = new FluidJsonObj[]{
                     new FluidJsonObj(CreatureData.FLUID_WATER, 200)
             };
-            OutputItemJsonObj[] outputItems = CreatureData.DROPS.get(creature).stream()
-                    .map(d -> new OutputItemJsonObj(new ItemStackJsonObj(d.id(), d.count()), d.chance())).toArray(OutputItemJsonObj[]::new);
+            // Runtime preparation resolves the concrete captured entity's loot table exactly once.
+            // Static recipe outputs stay empty so datapack/variant loot remains authoritative.
+            OutputItemJsonObj[] outputItems = new OutputItemJsonObj[]{};
             FluidJsonObj[] fluidOutputs = new FluidJsonObj[]{};
             int energy = 16000;
 

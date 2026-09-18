@@ -24,7 +24,7 @@ class CompatibilityTest {
         assertEquals("[47.3.12,48)", properties.getProperty("forge_version_range_1_20_1"));
         assertEquals("[47,48)", properties.getProperty("forge_loader_range_1_20_1"));
         assertEquals("0.8.1", properties.getProperty("nstut_lib_version"));
-        assertEquals("4dd752727b001b94a0a5b982839d0389f57de4ec", properties.getProperty("nstut_lib_ref"));
+        assertEquals("f0bac6d3e2d97fc1042dac6aaf8786af5af7a797", properties.getProperty("nstut_lib_ref"));
 
         String modsToml = Files.readString(Path.of("src", "main", "resources", "META-INF", "mods.toml"));
         assertTrue(modsToml.contains("versionRange=\"[0.8.1,0.9)\""));

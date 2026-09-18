@@ -64,5 +64,6 @@ public class BreedingChamberCategory implements IRecipeCategory<BreedingChamberR
     public void draw(BreedingChamberRecipe recipe, @NotNull IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 60, 12);
         graphics.drawString(Minecraft.getInstance().font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
+        JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 85, 1, 2, 18, 18);
     }
 }

@@ -3,7 +3,6 @@ package com.nstut.biotech.jei;
 import com.nstut.biotech.Biotech;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.recipes.GreenhouseRecipe;
-import com.nstut.nstutlib.recipes.OutputItem;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -66,10 +65,6 @@ public class GreenhouseCategory implements IRecipeCategory<GreenhouseRecipe> {
         arrow.draw(graphics, 66, 12);
         Minecraft minecraft = Minecraft.getInstance();
         graphics.drawString(minecraft.font, "Energy: " + recipe.getTotalEnergy() + " FE", 0, 42, 4210752, false);
-        List<OutputItem> outputs = recipe.getItemOutputs();
-        for (int i = 0; i < outputs.size(); i++) {
-            String chance = outputs.get(i).getChance() < 1 ? (int) (outputs.get(i).getChance() * 100) + "%" : "";
-            graphics.drawString(minecraft.font, chance, 96 + (i % 3) * 18, 20 + (i / 3) * 18, 4210752, false);
-        }
+        JeiOutputChanceHelper.drawItemChances(graphics, recipe.getItemOutputs(), 96, 1, 3, 18, 18);
     }
 }

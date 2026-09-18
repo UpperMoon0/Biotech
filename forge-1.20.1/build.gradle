@@ -50,8 +50,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipes')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 59) {
-            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 70) {
+            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         if (file('src/generated/resources/data/biotech/recipe').exists()) {
             throw new GradleException('Forge 1.20.1 must keep the plural generated recipes/ directory')
