@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Terrestrial Habitat raises captured baby animals into adults.$(br)$(br)Supply a baby animal, its matching food, water, and energy. The baby animal and food are consumed; the machine outputs the adult animal and manure."
+      "text": "The Terrestrial Habitat raises captured baby animals into adults and can keep adults for renewable production.$(br)$(br)Growth recipes consume the baby animal and food, producing the same individual as an adult plus manure. Renewable recipes keep the adult animal in place: chickens produce eggs, cows produce milk through the Fluid Output Hatch, and sheep produce wool matching their captured color."
     },
     {
       "multiblock": {
@@ -19,7 +19,8 @@
           "h": "biotech:fluid_input_hatch[facing=west]",
           "i": "minecraft:grass_block[snowy=false]",
           "j": "biotech:item_input_hatch[facing=south]",
-          "k": "biotech:item_output_hatch[facing=north]"
+          "k": "biotech:item_output_hatch[facing=north]",
+          "l": "biotech:fluid_output_hatch[facing=west]"
         },
         "symmetrical": true,
         "pattern": [
@@ -69,7 +70,7 @@
             "eeefeee"
           ],
           [
-            "eeegehe",
+            "elegehe",
             "eiieeej",
             "eiieeee",
             "kiieeej",
