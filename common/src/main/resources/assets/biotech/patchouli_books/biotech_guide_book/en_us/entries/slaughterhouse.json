@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Slaughterhouse processes captured adult animals into drops, with larger yields than a normal kill.$(br)$(br)Supply an adult animal, water, and energy. The animal is consumed when the recipe completes."
+      "text": "The Slaughterhouse resolves the captured animal's current entity loot table, then doubles the rolled stack counts.$(br)$(br)Variant state and datapack/mod loot-table changes therefore apply automatically. Loot is rolled once when the transaction starts and the exact result survives reload/retry. The machine uses a non-player, non-looting kill context; player-only drops are not granted."
     },
     {
       "multiblock": {
