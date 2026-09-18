@@ -75,7 +75,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 energy,
                 EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
                 null,
-                recipe -> AnimalRecipeStatePreparation.prepareGrowth(recipe, inputItems));
+                recipe -> AnimalRecipeStatePreparation.prepareHabitat(recipe, inputItems));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new TerrestrialHabitatPacket(
