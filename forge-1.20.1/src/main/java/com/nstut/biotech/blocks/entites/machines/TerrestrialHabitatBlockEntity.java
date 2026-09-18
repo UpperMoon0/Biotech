@@ -8,6 +8,7 @@ import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.PacketRegistries;
 import com.nstut.biotech.network.TerrestrialHabitatPacket;
+import com.nstut.biotech.recipes.AnimalRecipeStatePreparation;
 import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
 import com.nstut.biotech.views.machines.menu.TerrestrialHabitatMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
@@ -72,7 +73,9 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT);
+                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                null,
+                recipe -> AnimalRecipeStatePreparation.prepareGrowth(recipe, inputItems));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new TerrestrialHabitatPacket(
