@@ -110,19 +110,9 @@ public class CapturedAnimalItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        EntityType<?> entityType = EntityType.byString(entityTypeId).orElse(null);
-        if (entityType == null) {
-            return InteractionResult.FAIL;
-        }
-
-        Entity entity = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        Entity entity = createCapturedEntity(level, stack);
         if (entity == null) {
             return InteractionResult.FAIL;
-        }
-
-        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
-            entity.load(TagValueInput.create(ProblemReporter.DISCARDING, entity.registryAccess(), CapturedEntityState.sanitize(captured)));
         }
 
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
@@ -135,6 +125,30 @@ public class CapturedAnimalItem extends Item {
             stack.shrink(1);
         }
         return InteractionResult.CONSUME;
+    }
+
+    public Entity createCapturedEntity(Level level, ItemStack stack) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        String entityTypeId = root.getString(ENTITY_TYPE_TAG).orElse("");
+        if (entityTypeId.isEmpty()) {
+            return null;
+        }
+        EntityType<?> entityType = EntityType.byString(entityTypeId).orElse(null);
+        if (entityType == null) {
+            return null;
+        }
+        Entity entity = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        if (entity == null) {
+            return null;
+        }
+        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+            CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
+            entity.load(TagValueInput.create(
+                    ProblemReporter.DISCARDING,
+                    entity.registryAccess(),
+                    CapturedEntityState.sanitize(captured)));
+        }
+        return entity;
     }
 
     @Override
