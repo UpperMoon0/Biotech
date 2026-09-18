@@ -6,7 +6,10 @@ import com.nstut.biotech.items.MobItem;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.nstutlib.recipes.OutputItem;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.items.IItemHandler;
 
 public final class AnimalRecipeStatePreparation {
@@ -18,21 +21,25 @@ public final class AnimalRecipeStatePreparation {
     }
 
     public static TerrestrialHabitatRecipe prepareGrowth(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
-        return prepare(recipe, inputs, false);
+        return prepareHabitat(recipe, inputs);
     }
 
-    private static BreedingChamberRecipe prepare(BreedingChamberRecipe recipe, IItemHandler inputs, boolean offspring) {
+    public static TerrestrialHabitatRecipe prepareHabitat(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
         ItemStack donor = findDonor(recipe, inputs);
-        if (donor.isEmpty() || CapturedAnimalStackState.read(donor).isEmpty()) {
+        if (donor.isEmpty()) {
             return recipe;
         }
 
         ModRecipeData prepared = recipe.getRecipe().copy();
-        applyState(prepared, donor, offspring ? CapturedAnimalStackState.forOffspring(donor) : CapturedAnimalStackState.forAdult(donor));
+        CompoundTag state = CapturedAnimalStackState.read(donor);
+        if (!state.isEmpty()) {
+            applyState(prepared, donor, CapturedAnimalStackState.forAdult(donor));
+        }
+        applySheepWoolColor(prepared, donor, state);
         return recipe.create(recipe.getId(), prepared);
     }
 
-    private static TerrestrialHabitatRecipe prepare(TerrestrialHabitatRecipe recipe, IItemHandler inputs, boolean offspring) {
+    private static BreedingChamberRecipe prepare(BreedingChamberRecipe recipe, IItemHandler inputs, boolean offspring) {
         ItemStack donor = findDonor(recipe, inputs);
         if (donor.isEmpty() || CapturedAnimalStackState.read(donor).isEmpty()) {
             return recipe;
@@ -69,6 +76,50 @@ public final class AnimalRecipeStatePreparation {
             CapturedAnimalStackState.writeDerived(stack, donor, derivedState);
             output.setItemStack(stack);
         }
+    }
+
+    private static void applySheepWoolColor(ModRecipeData prepared, ItemStack donor, CompoundTag state) {
+        if (!"minecraft:sheep".equals(CapturedAnimalStackState.entityTypeId(donor))) {
+            return;
+        }
+        int colorId = sheepColorId(donor, state);
+        Item wool = woolFor(DyeColor.byId(colorId));
+        for (OutputItem output : prepared.getOutputItems()) {
+            ItemStack stack = output.getItemStack();
+            if (!stack.is(Items.WHITE_WOOL)) {
+                continue;
+            }
+            output.setItemStack(new ItemStack(wool, stack.getCount()));
+        }
+    }
+
+    private static int sheepColorId(ItemStack donor, CompoundTag state) {
+        if (state.contains("Color")) {
+            return Byte.toUnsignedInt(state.getByte("Color"));
+        }
+        CompoundTag root = donor.getTag();
+        return root != null && root.contains("SheepColor") ? root.getInt("SheepColor") : 0;
+    }
+
+    private static Item woolFor(DyeColor color) {
+        return switch (color) {
+            case WHITE -> Items.WHITE_WOOL;
+            case ORANGE -> Items.ORANGE_WOOL;
+            case MAGENTA -> Items.MAGENTA_WOOL;
+            case LIGHT_BLUE -> Items.LIGHT_BLUE_WOOL;
+            case YELLOW -> Items.YELLOW_WOOL;
+            case LIME -> Items.LIME_WOOL;
+            case PINK -> Items.PINK_WOOL;
+            case GRAY -> Items.GRAY_WOOL;
+            case LIGHT_GRAY -> Items.LIGHT_GRAY_WOOL;
+            case CYAN -> Items.CYAN_WOOL;
+            case PURPLE -> Items.PURPLE_WOOL;
+            case BLUE -> Items.BLUE_WOOL;
+            case BROWN -> Items.BROWN_WOOL;
+            case GREEN -> Items.GREEN_WOOL;
+            case RED -> Items.RED_WOOL;
+            case BLACK -> Items.BLACK_WOOL;
+        };
     }
 
     private static boolean isAnimalOutputFor(ItemStack stack, String donorType) {
