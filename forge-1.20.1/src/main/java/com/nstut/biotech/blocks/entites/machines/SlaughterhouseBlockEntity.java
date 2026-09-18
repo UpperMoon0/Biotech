@@ -9,6 +9,7 @@ import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.PacketRegistries;
 import com.nstut.biotech.network.SlaughterhousePacket;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.biotech.recipes.SlaughterhouseLootPreparation;
 import com.nstut.biotech.views.machines.menu.SlaughterhouseMenu;
 import com.nstut.nstutlib.blocks.MachineBlockEntity;
 import com.nstut.nstutlib.models.MultiblockBlock;
@@ -69,7 +70,11 @@ public class SlaughterhouseBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT);
+                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                null,
+                recipe -> level instanceof ServerLevel serverLevel
+                        ? SlaughterhouseLootPreparation.prepare(recipe, inputItems, serverLevel, blockPos)
+                        : recipe);
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new SlaughterhousePacket(
