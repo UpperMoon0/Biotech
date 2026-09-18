@@ -75,4 +75,6 @@
   "jade.biotech.machine.fluid.input": "Input %s: %s / %s mB",
   "jade.biotech.machine.fluid.output": "Output %s: %s / %s mB",
   "jade.biotech.machine.progress": "Progress: %s%%"
+,
+  "jei.biotech.slaughterhouse.dynamic_loot": "Entity loot ×2"
 }
