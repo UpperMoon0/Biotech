@@ -15,6 +15,7 @@ import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.recipes.AnimalRecipeStatePreparation;
 import com.nstut.biotech.recipes.BreedingChamberRecipe;
 import com.nstut.biotech.recipes.GreenhouseRecipe;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
@@ -79,6 +80,7 @@ public final class BiotechGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING = register("captured_animal_storage_sanitizes_before_persisting", BiotechGameTests::capturedAnimalStorageSanitizesBeforePersisting);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES = register("capture_eligibility_rejects_tagged_non_creatable_types", BiotechGameTests::captureEligibilityRejectsTaggedNonCreatableTypes);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_LIFECYCLE_SELECTORS = register("generic_captured_species_recipe_matches_lifecycle_selectors", BiotechGameTests::genericCapturedSpeciesRecipeMatchesLifecycleSelectors);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ANIMAL_MACHINE_PREPARATION_PRESERVES_AND_INHERITS_STATE = register("animal_machine_preparation_preserves_and_inherits_state", BiotechGameTests::animalMachinePreparationPreservesAndInheritsState);
 
     private BiotechGameTests() {}
 
@@ -96,7 +98,8 @@ public final class BiotechGameTests {
                 GREENHOUSE_BEETROOT_RECIPE_LOADS_AND_PROCESSES,
                 CAPTURED_ANIMAL_STORAGE_SANITIZES_BEFORE_PERSISTING,
                 CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES,
-                GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_LIFECYCLE_SELECTORS)) {
+                GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_LIFECYCLE_SELECTORS,
+                ANIMAL_MACHINE_PREPARATION_PRESERVES_AND_INHERITS_STATE)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
         }
     }
@@ -280,6 +283,75 @@ public final class BiotechGameTests {
         helper.assertTrue(energyInput.getInternalEnergyStorage().getEnergyStored() == 0, "Greenhouse must consume the configured 128000 FE");
         helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 4, "Greenhouse must produce four beetroot");
         helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) == 6, "Greenhouse must produce six beetroot seeds");
+        helper.succeed();
+    }
+
+    private static void animalMachinePreparationPreservesAndInheritsState(GameTestHelper helper) {
+        ItemStack adultParent = new ItemStack(ItemRegistries.SHEEP.get());
+        CompoundTag parentState = new CompoundTag();
+        parentState.putInt("Age", 0);
+        parentState.putByte("Color", (byte) 14);
+        parentState.putString("CustomName", "Parent A");
+        CapturedAnimalStackState.writeCapture(adultParent, parentState, "minecraft:sheep", 14);
+
+        ItemStack otherParent = new ItemStack(ItemRegistries.SHEEP.get());
+        CompoundTag otherState = new CompoundTag();
+        otherState.putInt("Age", 0);
+        otherState.putByte("Color", (byte) 3);
+        otherState.putString("CustomName", "Parent B");
+        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 3);
+
+        ItemStackHandler breedingInputs = new ItemStackHandler(2);
+        breedingInputs.setStackInSlot(0, adultParent.copy());
+        breedingInputs.setStackInSlot(1, otherParent.copy());
+        BreedingChamberRecipe breeding = new BreedingChamberRecipe(
+                Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_stateful_breeding"),
+                new ModRecipeData(
+                        new IngredientItem[] {new IngredientItem(new ItemStack(ItemRegistries.SHEEP.get(), 2), false)},
+                        new OutputItem[] {new OutputItem(new ItemStack(ItemRegistries.BABY_SHEEP.get()), 1.0f)},
+                        new FluidStack[0],
+                        new FluidStack[0],
+                        0));
+
+        BreedingChamberRecipe preparedBreeding =
+                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs);
+        ItemStack newborn = preparedBreeding.getItemOutputs().get(0).getItemStack();
+        CompoundTag newbornState = CapturedAnimalStackState.read(newborn);
+        helper.assertTrue(newbornState.getInt("Age").orElse(0) == -24000,
+                "Prepared breeding output must be a newborn");
+        helper.assertTrue(newbornState.getByte("Color").orElse((byte) 0) == 14,
+                "Offspring inheritance must deterministically use the first matching parent");
+        helper.assertTrue(!newbornState.contains("CustomName"),
+                "A newborn must not inherit individual identity such as the parent's custom name");
+        helper.assertTrue("Parent A".equals(CapturedAnimalStackState.read(breedingInputs.getStackInSlot(0)).getString("CustomName").orElse("")),
+                "Preparing a breeding transaction must not mutate its parent input");
+
+        ItemStack baby = new ItemStack(ItemRegistries.BABY_SHEEP.get());
+        CompoundTag babyState = new CompoundTag();
+        babyState.putInt("Age", -1200);
+        babyState.putByte("Color", (byte) 11);
+        babyState.putString("CustomName", "Lamb");
+        CapturedAnimalStackState.writeCapture(baby, babyState, "minecraft:sheep", 11);
+        ItemStackHandler growthInputs = new ItemStackHandler(1);
+        growthInputs.setStackInSlot(0, baby);
+
+        TerrestrialHabitatRecipe growth = new TerrestrialHabitatRecipe(
+                Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_stateful_growth"),
+                new ModRecipeData(
+                        new IngredientItem[] {new IngredientItem(new ItemStack(ItemRegistries.BABY_SHEEP.get()), true)},
+                        new OutputItem[] {new OutputItem(new ItemStack(ItemRegistries.SHEEP.get()), 1.0f)},
+                        new FluidStack[0],
+                        new FluidStack[0],
+                        0));
+        TerrestrialHabitatRecipe preparedGrowth =
+                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs);
+        ItemStack adult = preparedGrowth.getItemOutputs().get(0).getItemStack();
+        CompoundTag adultState = CapturedAnimalStackState.read(adult);
+        helper.assertTrue(adultState.getInt("Age").orElse(-1) == 0 && adultState.getInt("ForcedAge").orElse(-1) == 0,
+                "Habitat growth must finish ageing the same captured individual");
+        helper.assertTrue(adultState.getByte("Color").orElse((byte) 0) == 11
+                        && "Lamb".equals(adultState.getString("CustomName").orElse("")),
+                "Habitat growth must preserve variant and individual gameplay state");
         helper.succeed();
     }
 
