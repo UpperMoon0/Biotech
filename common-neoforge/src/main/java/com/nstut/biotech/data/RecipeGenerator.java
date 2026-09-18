@@ -91,9 +91,9 @@ public class RecipeGenerator extends DataGenerator {
                     new IngredientItemJsonObj(new ItemStackJsonObj(creature.id(), 1), true)
             };
             FluidJsonObj[] fluidInputs = new FluidJsonObj[]{new FluidJsonObj(CreatureData.FLUID_WATER, 200)};
-            OutputItemJsonObj[] outputItems = CreatureData.DROPS.get(creature).stream()
-                    .map(d -> new OutputItemJsonObj(new ItemStackJsonObj(d.id(), d.count()), d.chance()))
-                    .toArray(OutputItemJsonObj[]::new);
+            // Runtime preparation resolves the concrete captured entity's loot table exactly once.
+            // Static recipe outputs stay empty so datapack/variant loot remains authoritative.
+            OutputItemJsonObj[] outputItems = new OutputItemJsonObj[]{};
             String creatureName = creature.id().substring(creature.id().indexOf(":") + 1);
             generateRecipe(machineId + "_" + creatureName,
                     new RecipeJson(type, ingredientItems, outputItems, fluidInputs, new FluidJsonObj[]{}, 16000));
