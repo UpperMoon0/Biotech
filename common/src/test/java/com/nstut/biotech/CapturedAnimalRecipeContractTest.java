@@ -36,7 +36,11 @@ class CapturedAnimalRecipeContractTest {
             assertTrue(mobItem.contains("public boolean isBabyVariant()"), target);
             assertTrue(captured.contains("matchesLegacyVariant"), target);
             assertTrue(captured.contains("matchesGenericSpecies"), target);
-            assertTrue(captured.contains("requiredType == presentType"), target);
+            assertTrue(captured.contains("RECIPE_LIFECYCLE_TAG"), target);
+            assertTrue(captured.contains("LIFECYCLE_ANY"), target);
+            assertTrue(captured.contains("LIFECYCLE_ADULT"), target);
+            assertTrue(captured.contains("LIFECYCLE_BABY"), target);
+            assertTrue(captured.contains("requiredType != presentType"), target);
             assertTrue(captured.contains("actualType != expectedType"), target);
             assertTrue(captured.contains("actualBaby == expectedBaby"), target);
             assertTrue(captured.contains("\"Age\""), target);

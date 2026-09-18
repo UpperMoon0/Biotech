@@ -99,6 +99,8 @@ Biotech machine recipes can be added with datapacks or `event.custom(...)` in Ku
 
 Net Trap eligibility is separately data-driven through `#biotech:capturable`. Valid entries must be reconstructible entity types; unsupported tag entries are rejected before anything is consumed. For valid entries, the tag enables capture/release through the generic carrier; add explicit machine recipes if the new species should also work in the Breeding Chamber, Terrestrial Habitat, or Slaughterhouse. See [`docs/upgrade-2.3.md`](docs/upgrade-2.3.md) for version-specific tag paths and constraints.
 
+Generic machine-recipe inputs support lifecycle-aware matching. Put `EntityType` plus optional `BiotechRecipeLifecycle` in the required `biotech:captured_animal` stack's custom data. Valid lifecycle values are `adult`, `baby`, and `any`; omitting it means `any`. Breeding Chamber recipes should normally require `adult`, Terrestrial Habitat recipes `baby`, and Slaughterhouse recipes can use `any`. The matcher ignores unrelated captured state such as custom names/variants but rejects a different species. Adult/baby selectors require captured age state.
+
 ### Recipe types
 
 - `biotech:breeding_chamber`

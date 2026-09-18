@@ -15,6 +15,7 @@ Biotech 2.3 expands captured animals from a fixed five-species implementation in
 - Keep the existing cow, chicken, pig, sheep, and rabbit item identities as a compatibility bridge. Generic captures of those same species can satisfy existing animal-machine recipe requirements when the stored entity type and adult/baby state match.
 - Store sanitized captured entity state before it enters the item payload, while preserving gameplay-relevant data needed when the animal is released again.
 - Replace Biotech-owned JEI recipe background sprites with JEI-native standard slot backgrounds and recipe arrows.
+- Let generic captured-animal machine requirements select species plus optional dult, aby, or ny lifecycle semantics while ignoring unrelated per-individual state.
 
 ## Fixed
 

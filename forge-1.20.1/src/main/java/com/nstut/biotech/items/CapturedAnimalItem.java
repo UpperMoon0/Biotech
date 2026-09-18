@@ -27,12 +27,19 @@ import java.util.function.Consumer;
  */
 public class CapturedAnimalItem extends Item {
     public static final String ENTITY_TYPE_TAG = "EntityType";
+    public static final String RECIPE_LIFECYCLE_TAG = "BiotechRecipeLifecycle";
+    public static final String LIFECYCLE_ANY = "any";
+    public static final String LIFECYCLE_ADULT = "adult";
+    public static final String LIFECYCLE_BABY = "baby";
 
     public CapturedAnimalItem() {
         super(new Item.Properties().stacksTo(1));
     }
 
-    /** Matches pack-defined generic animal requirements by species, ignoring per-capture entity state. */
+    /**
+     * Matches pack-defined generic animal requirements by species plus an optional lifecycle selector.
+     * Missing lifecycle metadata defaults to {@code any}; adult/baby selectors require captured age state.
+     */
     public static boolean matchesGenericSpecies(ItemStack required, ItemStack present) {
         if (!(required.getItem() instanceof CapturedAnimalItem)
                 || !(present.getItem() instanceof CapturedAnimalItem)) {
@@ -48,7 +55,28 @@ public class CapturedAnimalItem extends Item {
 
         EntityType<?> requiredType = EntityType.byString(requiredRoot.getString(ENTITY_TYPE_TAG)).orElse(null);
         EntityType<?> presentType = EntityType.byString(presentRoot.getString(ENTITY_TYPE_TAG)).orElse(null);
-        return requiredType != null && requiredType == presentType;
+        if (requiredType == null || requiredType != presentType) {
+            return false;
+        }
+
+        String lifecycle = requiredRoot.contains(RECIPE_LIFECYCLE_TAG)
+                ? requiredRoot.getString(RECIPE_LIFECYCLE_TAG)
+                : LIFECYCLE_ANY;
+        if (LIFECYCLE_ANY.equals(lifecycle)) {
+            return true;
+        }
+        if (!presentRoot.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+            return false;
+        }
+
+        CompoundTag captured = presentRoot.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG);
+        if (!captured.contains("Age")) {
+            return false;
+        }
+        boolean baby = captured.getInt("Age") < 0;
+        return LIFECYCLE_BABY.equals(lifecycle)
+                ? baby
+                : LIFECYCLE_ADULT.equals(lifecycle) && !baby;
     }
 
     public static boolean matchesLegacyVariant(ItemStack stack, EntityType<?> expectedType, boolean expectedBaby) {

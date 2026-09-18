@@ -8,7 +8,9 @@ import com.nstut.biotech.blocks.entites.hatches.FluidOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.hatches.ItemOutputHatchBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.FermenterBlockEntity;
 import com.nstut.biotech.machines.MachineRegistries;
+import com.nstut.biotech.recipes.BreedingChamberRecipe;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
+import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
 import com.nstut.nstutlib.recipes.IngredientItem;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.nstutlib.recipes.OutputItem;
@@ -207,29 +209,53 @@ public final class BiotechGameTests {
     }
 
     @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = EMPTY_TEMPLATE, timeoutTicks = 100)
-    public static void genericCapturedSpeciesRecipeMatchesByEntityType(GameTestHelper helper) {
-        ItemStack requirement = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
-        CustomData.update(DataComponents.CUSTOM_DATA, requirement, root -> root.putString(
-                CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(EntityType.HORSE).toString()));
-        SlaughterhouseRecipe recipe = new SlaughterhouseRecipe(
-                ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_generic_horse"),
-                genericSpeciesRecipeData(requirement));
+    public static void genericCapturedSpeciesRecipeMatchesLifecycleSelectors(GameTestHelper helper) {
+        BreedingChamberRecipe breeding = new BreedingChamberRecipe(
+                ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_generic_horse_adult"),
+                genericSpeciesRecipeData(genericRequirement(EntityType.HORSE, CapturedAnimalItem.LIFECYCLE_ADULT)));
+        TerrestrialHabitatRecipe habitat = new TerrestrialHabitatRecipe(
+                ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_generic_horse_baby"),
+                genericSpeciesRecipeData(genericRequirement(EntityType.HORSE, CapturedAnimalItem.LIFECYCLE_BABY)));
+        SlaughterhouseRecipe slaughter = new SlaughterhouseRecipe(
+                ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "gametest_generic_horse_any"),
+                genericSpeciesRecipeData(genericRequirement(EntityType.HORSE, CapturedAnimalItem.LIFECYCLE_ANY)));
 
-        ItemStack namedHorse = capturedGeneric(EntityType.HORSE, "First Horse", 0);
-        ItemStack babyHorse = capturedGeneric(EntityType.HORSE, "Second Horse", -1200);
+        ItemStack adultHorse = capturedGeneric(EntityType.HORSE, "Adult Horse", 0);
+        ItemStack babyHorse = capturedGeneric(EntityType.HORSE, "Baby Horse", -1200);
         ItemStack goat = capturedGeneric(EntityType.GOAT, "Wrong Species", 0);
         ItemStackHandler inputs = new ItemStackHandler(1);
 
-        inputs.setStackInSlot(0, namedHorse);
-        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
-                "A generic horse recipe must match a captured horse regardless of individual state");
+        inputs.setStackInSlot(0, adultHorse);
+        helper.assertTrue(breeding.recipeMatch(inputs, List.of(), null, List.of()),
+                "Breeding Chamber generic adult selector must accept an adult horse");
         inputs.setStackInSlot(0, babyHorse);
-        helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()),
-                "The same generic horse recipe must match a differently captured horse");
+        helper.assertTrue(!breeding.recipeMatch(inputs, List.of(), null, List.of()),
+                "Breeding Chamber generic adult selector must reject a baby horse");
+
+        helper.assertTrue(habitat.recipeMatch(inputs, List.of(), null, List.of()),
+                "Terrestrial Habitat generic baby selector must accept a baby horse");
+        inputs.setStackInSlot(0, adultHorse);
+        helper.assertTrue(!habitat.recipeMatch(inputs, List.of(), null, List.of()),
+                "Terrestrial Habitat generic baby selector must reject an adult horse");
+
+        helper.assertTrue(slaughter.recipeMatch(inputs, List.of(), null, List.of()),
+                "Slaughterhouse generic any selector must accept an adult horse");
+        inputs.setStackInSlot(0, babyHorse);
+        helper.assertTrue(slaughter.recipeMatch(inputs, List.of(), null, List.of()),
+                "Slaughterhouse generic any selector must also accept a baby horse");
         inputs.setStackInSlot(0, goat);
-        helper.assertTrue(!recipe.recipeMatch(inputs, List.of(), null, List.of()),
-                "A generic horse recipe must reject a captured goat");
+        helper.assertTrue(!slaughter.recipeMatch(inputs, List.of(), null, List.of()),
+                "Generic horse requirements must still reject another species");
         helper.succeed();
+    }
+
+    private static ItemStack genericRequirement(EntityType<?> type, String lifecycle) {
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, root -> {
+            root.putString(CapturedAnimalItem.ENTITY_TYPE_TAG, EntityType.getKey(type).toString());
+            root.putString(CapturedAnimalItem.RECIPE_LIFECYCLE_TAG, lifecycle);
+        });
+        return stack;
     }
 
     private static ItemStack capturedGeneric(EntityType<?> type, String name, int age) {
