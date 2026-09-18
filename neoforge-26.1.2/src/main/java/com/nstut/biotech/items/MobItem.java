@@ -41,10 +41,8 @@ public class MobItem extends Item {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.FAIL;
         ItemStack stack = context.getItemInHand();
-        Mob mob = createMob(level);
+        Mob mob = createMob(level, stack);
         if (mob == null) return InteractionResult.FAIL;
-
-        restoreCapturedState(mob, stack);
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
         mob.snapTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, player.getYRot(), 0.0f);
         if (!level.noCollision(mob, mob.getBoundingBox())) return InteractionResult.FAIL;
@@ -70,12 +68,13 @@ public class MobItem extends Item {
     }
 
     @Nullable
-    private Mob createMob(Level level) {
+    public Mob createMob(Level level, ItemStack stack) {
         EntityType<? extends Mob> entityType = entityType();
         if (entityType == null) return null;
         Mob mob = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
         if (mob == null) return null;
         if (isBabyVariant()) mob.setBaby(true);
+        restoreCapturedState(mob, stack);
         return mob;
     }
 
