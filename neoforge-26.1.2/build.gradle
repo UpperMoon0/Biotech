@@ -49,8 +49,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipe')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 59) {
-            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 70) {
+            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         recipeFiles.each { recipe ->
             def text = recipe.getText('UTF-8')
