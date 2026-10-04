@@ -260,20 +260,25 @@ public final class CaptureReleaseGameTests {
     }
 
     private static Player mockPlayer(GameTestHelper helper) {
-        // The 1.20.1 helper's default mock overrides isCreative() to true; changing abilities
-        // cannot turn it into a survival player. Exercise the real survival consumption branch.
-        return new Player(helper.getLevel(), BlockPos.ZERO, 0.0f,
-                new GameProfile(UUID.randomUUID(), "biotech-survival-test")) {
-            @Override
-            public boolean isSpectator() {
-                return false;
-            }
+        return new SurvivalTestPlayer(helper.getLevel());
+    }
 
-            @Override
-            public boolean isCreative() {
-                return false;
-            }
-        };
+    /** A named subclass also avoids Forge 1.20.1's remapped anonymous-constructor metadata bug. */
+    private static final class SurvivalTestPlayer extends Player {
+        private SurvivalTestPlayer(net.minecraft.world.level.Level survivalLevel) {
+            super(survivalLevel, BlockPos.ZERO, 0.0f,
+                    new GameProfile(UUID.randomUUID(), "biotech-test"));
+        }
+
+        @Override
+        public boolean isSpectator() {
+            return false;
+        }
+
+        @Override
+        public boolean isCreative() {
+            return false;
+        }
     }
 
     private static CompoundTag save(Entity entity) {
