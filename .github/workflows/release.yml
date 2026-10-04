@@ -191,7 +191,7 @@ jobs:
             java_version_name: Java 25
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: biotech-${{ matrix.loader }}-${{ matrix.minecraft }}
           path: curseforge-artifact
@@ -250,10 +250,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.release-gate.outputs.version }}
           name: Biotech v${{ needs.release-gate.outputs.version }}
