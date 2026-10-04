@@ -9,29 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "minecraft:beef",
-        "count": 4
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "minecraft:bone",
-        "count": 2
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "minecraft:leather",
-        "count": 3
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "id": "minecraft:water",

@@ -217,8 +217,14 @@ tasks.named('check').configure { dependsOn verifyGeneratedRecipes }
 
 repositories {
     mavenLocal()
-    maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
-    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    exclusiveContent {
+        forRepository { maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' } }
+        filter { includeGroup 'mezz.jei' }
+    }
+    exclusiveContent {
+        forRepository { maven { name = 'Curse Maven'; url = 'https://www.cursemaven.com' } }
+        filter { includeGroup 'curse.maven' }
+    }
     exclusiveContent {
         forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
         filter { includeGroup 'maven.modrinth' }

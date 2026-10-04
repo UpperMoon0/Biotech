@@ -192,6 +192,8 @@ public final class LivestockProductionGameTests {
         tick(helper, rig.machine, 1);
         helper.assertTrue(rig.animals.getStackInSlot(0).getCount() == 1 && rig.water.getInternalTank().getFluidInTank(0).getAmount() == 200 && rig.energy.getInternalEnergyStorage().getEnergyStored() == 16000, "More than 256 output stacks must be safely rejected by the real machine before any resources are consumed");
         helper.assertTrue(counts(rig.outputs).isEmpty(), "Rejected oversize loot must not leak partial output");
+        // Stop the deliberately invalid fixture from retrying during subsequent GameTests.
+        rig.animals.setStackInSlot(0, ItemStack.EMPTY);
         helper.succeed();
     }
 

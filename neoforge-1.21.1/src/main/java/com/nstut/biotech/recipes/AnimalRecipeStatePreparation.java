@@ -87,7 +87,10 @@ public final class AnimalRecipeStatePreparation {
             ItemStack existing = output.getItemStack();
             if (!ItemStack.isSameItemSameComponents(existing, remaining)) continue;
             int moved = Math.min(remaining.getCount(), Math.max(0, limit - existing.getCount()));
-            existing.grow(moved);
+            ItemStack merged = existing.copy();
+            merged.grow(moved);
+            // 26.1 RecipeItem also caches a serialization template; always refresh via its setter.
+            output.setItemStack(merged);
             remaining.shrink(moved);
             if (remaining.isEmpty()) return;
         }

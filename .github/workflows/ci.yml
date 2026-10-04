@@ -155,7 +155,11 @@ jobs:
         if: matrix.target == 'neoforge-26.1.2'
         run: ./gradlew verifyPatchouliDocs verifyHandAuthoredMachineRecipeParity --no-daemon --stacktrace
       - name: Forge/NeoForge GameTests
-        run: ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace 2>&1 | tee "${{ matrix.target }}-gametest.log"
+          python3 scripts/verify_gametest_log.py "${{ matrix.target }}" "${{ matrix.target }}-gametest.log"
       - name: Upload unit and GameTest evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -164,8 +168,10 @@ jobs:
           path: |
             ${{ matrix.target }}/build/test-results/
             ${{ matrix.target }}/build/reports/tests/
+            ${{ matrix.target }}/build/reports/gametest/
             ${{ matrix.target }}/run/logs/
             ${{ matrix.target }}/runGameTestServer/logs/
             ${{ matrix.target }}-build.log
+            ${{ matrix.target }}-gametest.log
           if-no-files-found: warn
           retention-days: 14

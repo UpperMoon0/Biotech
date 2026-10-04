@@ -195,9 +195,15 @@ public final class AnimalTransactionGameTests {
                 new ModRecipeData(ingredients, outputs, new FluidStack[0], new FluidStack[0], 0));
         ModRecipeData prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs).getRecipe();
         helper.assertTrue(prepared.getOutputItems().length == 5, "320 identical adult outputs must aggregate to five legal stacks, not exceed the 256-entry snapshot limit");
+        helper.assertTrue(java.util.Arrays.stream(prepared.getOutputItems()).mapToInt(output -> output.getItemStack().getCount()).sum() == 320,
+                "Runtime aggregation must retain all 320 output individuals before encoding");
         var ops = NbtOps.INSTANCE;
         var encoded = ModRecipeData.CODEC.encodeStart(ops, prepared).result().orElseThrow();
         ModRecipeData restored = ModRecipeData.CODEC.parse(ops, encoded).result().orElseThrow();
+        helper.assertTrue(java.util.Arrays.stream(restored.getOutputItems()).mapToInt(output -> output.getItemStack().getCount()).sum() == 320,
+                "Snapshot serialization templates must preserve the runtime aggregated output counts");
+        helper.assertTrue(java.util.Arrays.stream(restored.getIngredientItems()).mapToInt(input -> input.getItemStack().getCount()).sum() == 320,
+                "Snapshot serialization templates must preserve the runtime bound input counts");
         TerrestrialHabitatRecipe reloaded = recipe.create(recipe.getId(), restored);
         ItemStackHandler destination = new ItemStackHandler(5);
         helper.assertTrue(reloaded.tryConsumeIngredients(inputs, List.of()), "Large round-tripped transaction must consume its bound inputs");
@@ -219,6 +225,8 @@ public final class AnimalTransactionGameTests {
         helper.assertTrue(compact.getIngredientItems().length == 12, "264 allocation fragments must coalesce into twelve legal same-state bindings");
         var compactTag = ModRecipeData.CODEC.encodeStart(ops, compact).result().orElseThrow();
         ModRecipeData compactReload = ModRecipeData.CODEC.parse(ops, compactTag).result().orElseThrow();
+        helper.assertTrue(java.util.Arrays.stream(compactReload.getIngredientItems()).mapToInt(input -> input.getItemStack().getCount()).sum() == 768,
+                "Coalesced input templates must encode all 768 individuals, including fragments merged after construction");
         helper.assertTrue(recipe.create(recipe.getId(), compactReload).tryConsumeIngredients(fragmentedInputs, List.of())
                         && count(fragmentedInputs, ItemRegistries.BABY_SHEEP.get()) == 0,
                 "Bound input coalescing must preserve all 768 required individuals through serialization and consumption");

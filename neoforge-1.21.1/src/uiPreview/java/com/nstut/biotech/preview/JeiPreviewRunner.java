@@ -52,14 +52,16 @@ public final class JeiPreviewRunner implements IModPlugin {
     private static Path output;
     private static int index;
     private static boolean advance;
+    private static boolean stopping;
 
     @Override public ResourceLocation getPluginUid() {
         return ResourceLocation.fromNamespaceAndPath("biotech", "jei_preview");
     }
     @Override public void onRuntimeAvailable(IJeiRuntime value) { runtime = value; }
+    @Override public void onRuntimeUnavailable() { runtime = null; }
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
-        if (!Boolean.getBoolean("biotech.jeiPreview.enabled")) return;
+        if (!Boolean.getBoolean("biotech.jeiPreview.enabled") || stopping) return;
         Minecraft mc = Minecraft.getInstance();
         try {
             if (cases == null && runtime != null && mc.level != null && mc.player != null
@@ -73,7 +75,12 @@ public final class JeiPreviewRunner implements IModPlugin {
                 advance = false;
                 if (++index < cases.size()) mc.setScreen(new PreviewScreen(cases.get(index)));
                 else {
+                    require(images.size() == cases.size(), "Cannot finish an incomplete JEI preview run");
                     Files.writeString(output.resolve("manifest.json"), new GsonBuilder().setPrettyPrinting().create().toJson(images));
+                    // Minecraft can render one final frame after stop() tears down JEI. Detach
+                    // its screen first, and guard an already-captured screen reference as well.
+                    stopping = true;
+                    mc.setScreen(null);
                     mc.stop();
                 }
             }
@@ -176,6 +183,8 @@ public final class JeiPreviewRunner implements IModPlugin {
         }
         @Override public void renderBackground(GuiGraphics graphics, int x, int y, float partialTick) { }
         @Override public void render(GuiGraphics graphics, int x, int y, float partialTick) {
+            if (stopping) return;
+            require(runtime != null, "JEI runtime disappeared before all preview assertions completed");
             graphics.fill(0, 0, width, height, 0xFF202820);
             graphics.drawCenteredString(font, test.name(), width / 2, top - 20, 0xFFFFFFFF);
             int mouseX = -1, mouseY = -1;

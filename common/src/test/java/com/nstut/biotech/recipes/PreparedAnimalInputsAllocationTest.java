@@ -2,7 +2,6 @@ package com.nstut.biotech.recipes;
 
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -12,10 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Independent small exhaustive oracle for the production capacitated animal allocation step. */
 class PreparedAnimalInputsAllocationTest {
     @Test
-    void allocationMatchesExhaustiveOracleAndPreservesEveryCapacity() throws ReflectiveOperationException {
-        Method allocate = PreparedAnimalInputs.class.getDeclaredMethod("allocateUnit", int.class,
-                boolean[][].class, int[][].class, int[].class, boolean[].class, boolean[].class);
-        allocate.setAccessible(true);
+    void allocationMatchesExhaustiveOracleAndPreservesEveryCapacity() {
         Random random = new Random(42);
         for (int trial = 0; trial < 20_000; trial++) {
             int animals = 1 + random.nextInt(4);
@@ -35,7 +31,7 @@ class PreparedAnimalInputsAllocationTest {
             outer:
             for (int animal = 0; animal < animals; animal++) {
                 for (int unit = 0; unit < required[animal]; unit++) {
-                    if (!(boolean) allocate.invoke(null, animal, matches, allocated, free,
+                    if (!AnimalInputAllocation.allocateUnit(animal, matches, allocated, free,
                             new boolean[animals], new boolean[slots])) {
                         actual = false;
                         break outer;

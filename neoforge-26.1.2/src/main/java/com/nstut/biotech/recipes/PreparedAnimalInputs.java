@@ -67,7 +67,7 @@ public final class PreparedAnimalInputs {
         }
         for (int animal = 0; animal < requirements.size(); animal++) {
             for (int unit = 0; unit < requirements.get(animal).getItemStack().getCount(); unit++) {
-                if (!allocateUnit(animal, matches, allocated, available,
+                if (!AnimalInputAllocation.allocateUnit(animal, matches, allocated, available,
                         new boolean[requirements.size()], new boolean[slots])) {
                     // The provider's semantic aggregation can overaccept overlapping selectors.
                     // Its controller catches this safely before installing/consuming a transaction.
@@ -102,34 +102,6 @@ public final class PreparedAnimalInputs {
         return stack.getItem() instanceof MobItem || stack.getItem() instanceof CapturedAnimalItem;
     }
 
-    private static boolean allocateUnit(int animal, boolean[][] matches, int[][] allocated, int[] available,
-                                        boolean[] visitedAnimals, boolean[] visitedSlots) {
-        if (visitedAnimals[animal]) return false;
-        visitedAnimals[animal] = true;
-        // Prefer a free matching unit before relocating earlier donors. This keeps first-parent
-        // inheritance unchanged whenever the authored greedy ordering already has a valid solution.
-        for (int slot = 0; slot < available.length; slot++) {
-            if (matches[animal][slot] && !visitedSlots[slot] && available[slot] > 0) {
-                allocated[animal][slot]++;
-                available[slot]--;
-                return true;
-            }
-        }
-        for (int slot = 0; slot < available.length; slot++) {
-            if (!matches[animal][slot] || visitedSlots[slot]) continue;
-            visitedSlots[slot] = true;
-            for (int previous = 0; previous < allocated.length; previous++) {
-                if (previous == animal || allocated[previous][slot] == 0) continue;
-                if (allocateUnit(previous, matches, allocated, available, visitedAnimals, visitedSlots)) {
-                    allocated[previous][slot]--;
-                    allocated[animal][slot]++;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private static void appendBoundInput(List<IngredientItem> bound, ItemStack stack, boolean consumable) {
         ItemStack remaining = stack.copy();
         int limit = Math.min(99, remaining.getMaxStackSize());
@@ -140,7 +112,10 @@ public final class PreparedAnimalInputs {
             if (ingredient.isConsumable() != consumable || !isBound(existing)
                     || !matchesBound(existing, remaining)) continue;
             int moved = Math.min(remaining.getCount(), Math.max(0, limit - existing.getCount()));
-            existing.grow(moved);
+            ItemStack merged = existing.copy();
+            merged.grow(moved);
+            // Keep the modern RecipeItem's persisted ItemStackTemplate in sync with runtime count.
+            ingredient.setItemStack(merged);
             remaining.shrink(moved);
             if (remaining.isEmpty()) return;
         }
