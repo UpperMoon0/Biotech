@@ -9,7 +9,7 @@ Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Exi
 - Habitat growth preserves each consumed baby's sanitized gameplay state and finishes ageing it. Batch recipes preserve each individual independently; they do not copy one baby's name/color over an entire batch.
 - Legacy sheep items storing only `SheepColor` are normalized before processing.
 - Captures strip transient world identity, transform, vehicle/passenger, and leash data. Both legacy and modern serialized field names are sanitized.
-- Generic captured-animal tooltips distinguish adult and baby state; datapack requirements can select `adult`, `baby`, or `any` lifecycle semantics.
+- Generic captured-animal recipe tooltips distinguish adult and baby requirements; datapack requirements can select `adult`, `baby`, or `any` lifecycle semantics.
 
 Prepared livestock recipes carry exact animal-input bindings in their transaction snapshot. These markers exist only in recipe ingredient copies, never on the player's captured item. A same-species animal with different state cannot replace the bound donor while an output hatch is blocked. If inputs no longer match before consumption, that transaction is cancelled without consuming them; a later cycle selects the current inputs normally.
 

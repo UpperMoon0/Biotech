@@ -200,12 +200,15 @@ public final class CaptureReleaseGameTests {
         helper.setBlock(RELEASE_SUPPORT, Blocks.STONE);
         BlockPos clicked = helper.absolutePos(RELEASE_SUPPORT);
         Player player = mockPlayer(helper);
+        helper.assertTrue(!player.isCreative() && !player.isSpectator(), "Release fixture must use a survival player");
         player.setItemInHand(InteractionHand.MAIN_HAND, captured);
         UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND,
                 new BlockHitResult(Vec3.atCenterOf(clicked), Direction.UP, clicked, false));
         InteractionResult result = captured.getItem().useOn(context);
         helper.assertTrue(result.consumesAction(), "The captured item's useOn must release into the server world");
         helper.assertTrue(captured.isEmpty(), "Survival release must consume exactly the captured item");
+        helper.assertTrue(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty(),
+                "Survival release must remove the captured item from the player's actual hand");
         BlockPos releasePos = clicked.above();
         List<Animal> animals = helper.getLevel().getEntitiesOfClass(Animal.class,
                 new AABB(releasePos).inflate(0.5), animal -> animal.isAlive() && animal.getType() == original.getType());
