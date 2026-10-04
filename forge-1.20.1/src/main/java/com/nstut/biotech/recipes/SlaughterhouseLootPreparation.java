@@ -10,7 +10,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -58,8 +57,7 @@ public final class SlaughterhouseLootPreparation {
             }
             hasConsumedAnimal = true;
             entity.moveTo(Vec3.atCenterOf(machinePos));
-            ResourceLocation lootTableId = entity instanceof Mob mob
-                    ? mob.getLootTable() : entity.getType().getDefaultLootTable();
+            ResourceLocation lootTableId = entity.getLootTable();
             LootTable lootTable = level.getServer().getLootData().getLootTable(lootTableId);
             LootParams params = new LootParams.Builder(level)
                     .withParameter(LootContextParams.THIS_ENTITY, entity)
