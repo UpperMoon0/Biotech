@@ -24,7 +24,7 @@ final class JeiMachineRecipeLayout {
             if (planned.kind() == JeiRecipeLayout.Kind.ITEM) {
                 var ingredient = recipe.getItemIngredients().get(i);
                 var stack = ingredient.getItemStack();
-                var slot = builder.addSlot(ingredient.isConsumable() ? RecipeIngredientRole.INPUT : RecipeIngredientRole.CATALYST)
+                var slot = builder.addSlot(JeiIngredientRoles.input(ingredient.isConsumable()))
                         .setSlotName("input-item-" + i).setStandardSlotBackground().addItemStack(stack);
                 slot.addRichTooltipCallback((view, tooltip) -> {
                     tooltip.add(Component.translatable(ingredient.isConsumable()

@@ -14,7 +14,6 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
@@ -117,7 +116,7 @@ public final class JeiPreviewRunner implements IModPlugin {
         int expected = recipe.getItemIngredients().size() + recipe.getFluidIngredients().size()
                 + recipe.getItemOutputs().size() + recipe.getFluidOutputs().size();
         require(layout.getRecipeSlotsView().getSlotViews().size() == expected, name + ": missing actual JEI slots");
-        require(slot(layout, "input-item-0").getRole() == RecipeIngredientRole.CATALYST, name + ": lost catalyst role");
+        require(slot(layout, "input-item-0").getRole() == JeiIngredientRoles.input(false), name + ": lost catalyst role");
         require(tooltip(layout, "input-item-0").contains("Requires an adult"), name + ": missing adult requirement");
         require(tooltip(layout, "input-item-0").contains("not consumed"), name + ": missing reusable disclosure");
         if (!milk) {
