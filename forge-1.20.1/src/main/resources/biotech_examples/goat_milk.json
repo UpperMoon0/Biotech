@@ -1,0 +1,45 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:goat",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:wheat",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "Count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 250
+    }
+  ],
+  "fluidOutputs": [
+    {
+      "FluidName": "minecraft:milk",
+      "Amount": 1000
+    }
+  ],
+  "energy": 32000
+}

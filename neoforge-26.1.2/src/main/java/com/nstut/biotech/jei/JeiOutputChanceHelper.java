@@ -1,45 +1,35 @@
 package com.nstut.biotech.jei;
 
-import com.nstut.nstutlib.recipes.OutputItem;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.drawable.IDrawable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.List;
-
+/** Slot-owned overlays move with JEI's scroll grids; their tooltips retain full precision. */
 final class JeiOutputChanceHelper {
-    private JeiOutputChanceHelper() {
+    private JeiOutputChanceHelper() { }
+
+    static void addChance(IRecipeSlotBuilder slot, float chance) {
+        if (!JeiChancePresentation.needsLabel(chance)) return;
+        slot.setOverlay(label(JeiChancePresentation.compactPercent(chance), 0xFFFFFFFF), 0, 0);
+        slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(
+                "jei.biotech.chance.exact", JeiChancePresentation.exactPercent(chance), Float.toString(chance))));
     }
 
-    static void drawItemChances(GuiGraphicsExtractor graphics,
-                                List<OutputItem> outputs,
-                                int startX,
-                                int startY,
-                                int columns,
-                                int xStep,
-                                int yStep) {
-        for (int i = 0; i < outputs.size(); i++) {
-            float chance = outputs.get(i).getChance();
-            if (chance >= 1.0f) {
-                continue;
+    static IDrawable label(String text, int color) {
+        return new IDrawable() {
+            @Override public int getWidth() { return 16; }
+            @Override public int getHeight() { return 5; }
+            @Override public void draw(GuiGraphicsExtractor graphics, int x, int y) {
+                var font = Minecraft.getInstance().font;
+                float scale = Math.min(0.5f, 16.0f / Math.max(1, font.width(text)));
+                graphics.pose().pushMatrix();
+                graphics.pose().translate((float) x, (float) y);
+                graphics.pose().scale(scale, scale);
+                graphics.text(font, text, 0, 0, color, true);
+                graphics.pose().popMatrix();
             }
-            int x = startX + (i % columns) * xStep;
-            int y = startY + (i / columns) * yStep;
-            String label = format(chance);
-            graphics.pose().pushMatrix();
-            graphics.pose().translate((float) x + 1.0f, (float) y + 11.0f);
-            graphics.pose().scale(0.5f, 0.5f);
-            graphics.text(Minecraft.getInstance().font, label, 0, 0, 0xFFFFFFFF, true);
-            graphics.pose().popMatrix();
-        }
-    }
-
-    static String format(float chance) {
-        return BigDecimal.valueOf((double) chance)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(2, RoundingMode.HALF_UP)
-                .stripTrailingZeros()
-                .toPlainString() + "%";
+        };
     }
 }

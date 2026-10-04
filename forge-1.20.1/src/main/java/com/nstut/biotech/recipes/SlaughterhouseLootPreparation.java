@@ -1,5 +1,6 @@
 package com.nstut.biotech.recipes;
 
+import com.nstut.biotech.Config;
 import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.MobItem;
 import com.nstut.nstutlib.recipes.ModRecipeData;
@@ -9,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -18,10 +19,16 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class SlaughterhouseLootPreparation {
+    /** Default retained for source compatibility. Use getYieldMultiplier() for the active setting. */
     public static final int YIELD_MULTIPLIER = 2;
+
+    public static int getYieldMultiplier() {
+        return Config.slaughterhouseYieldMultiplier;
+    }
 
     private SlaughterhouseLootPreparation() {
     }
@@ -30,57 +37,47 @@ public final class SlaughterhouseLootPreparation {
                                                IItemHandler inputs,
                                                ServerLevel level,
                                                BlockPos machinePos) {
-        ItemStack donor = findAnimalInput(recipe, inputs);
-        LivingEntity entity = createEntity(level, donor);
-        if (entity == null) {
+        if (!recipe.usesEntityLoot()) {
             return recipe;
         }
-
-        entity.moveTo(Vec3.atCenterOf(machinePos));
-        ResourceLocation lootTableId = entity instanceof Sheep sheep
-                ? sheep.getLootTable()
-                : entity.getType().getDefaultLootTable();
-        LootTable lootTable = level.getServer().getLootData().getLootTable(lootTableId);
-        LootParams params = new LootParams.Builder(level)
-                .withParameter(LootContextParams.THIS_ENTITY, entity)
-                .withParameter(LootContextParams.ORIGIN, entity.position())
-                .withParameter(LootContextParams.DAMAGE_SOURCE, level.damageSources().generic())
-                .create(LootContextParamSets.ENTITY);
-
-        List<ItemStack> rolled = lootTable.getRandomItems(params);
-        OutputItem[] outputs = rolled.stream()
-                .filter(stack -> !stack.isEmpty())
-                .map(stack -> {
-                    ItemStack amplified = stack.copy();
-                    amplified.setCount(Math.multiplyExact(stack.getCount(), YIELD_MULTIPLIER));
-                    return new OutputItem(amplified, 1.0f);
-                })
-                .toArray(OutputItem[]::new);
-
+        // Bind before resolving loot, so every consumed individual contributes its own state.
+        // Retained animal catalysts never yield death loot.
+        PreparedAnimalInputs.Selection selection = PreparedAnimalInputs.select(recipe, inputs);
         ModRecipeData source = recipe.getRecipe();
-        ModRecipeData prepared = new ModRecipeData(
-                source.getIngredientItems(),
-                outputs,
-                source.getFluidIngredients(),
-                source.getFluidOutputs(),
-                source.getTotalEnergy());
-        return recipe.create(recipe.getId(), prepared);
-    }
-
-    private static ItemStack findAnimalInput(AnimalMobRecipe<?> recipe, IItemHandler inputs) {
-        for (var ingredient : recipe.getItemIngredients()) {
-            ItemStack required = ingredient.getItemStack();
-            if (!(required.getItem() instanceof MobItem) && !(required.getItem() instanceof CapturedAnimalItem)) {
+        List<ItemStack> rolled = new ArrayList<>();
+        boolean hasConsumedAnimal = false;
+        for (var ingredient : selection.animals()) {
+            ItemStack donor = ingredient.getItemStack();
+            if (!ingredient.isConsumable()
+                    || (!(donor.getItem() instanceof MobItem) && !(donor.getItem() instanceof CapturedAnimalItem))) {
                 continue;
             }
-            for (int slot = 0; slot < inputs.getSlots(); slot++) {
-                ItemStack present = inputs.getStackInSlot(slot);
-                if (recipe.matchesAnimalInput(required, present)) {
-                    return present.copy();
-                }
+            LivingEntity entity = createEntity(level, donor);
+            if (entity == null) {
+                throw new IllegalStateException("Dynamic slaughter requires reconstructible living animal inputs");
+            }
+            hasConsumedAnimal = true;
+            entity.moveTo(Vec3.atCenterOf(machinePos));
+            ResourceLocation lootTableId = entity instanceof Mob mob
+                    ? mob.getLootTable() : entity.getType().getDefaultLootTable();
+            LootTable lootTable = level.getServer().getLootData().getLootTable(lootTableId);
+            LootParams params = new LootParams.Builder(level)
+                    .withParameter(LootContextParams.THIS_ENTITY, entity)
+                    .withParameter(LootContextParams.ORIGIN, entity.position())
+                    .withParameter(LootContextParams.DAMAGE_SOURCE, level.damageSources().generic())
+                    .create(LootContextParamSets.ENTITY);
+            for (int individual = 0; individual < donor.getCount(); individual++) {
+                lootTable.getRandomItems(params, entity.getLootTableSeed(), rolled::add);
             }
         }
-        return ItemStack.EMPTY;
+        if (!hasConsumedAnimal) {
+            throw new IllegalStateException("Dynamic slaughter requires at least one consumed animal");
+        }
+        OutputItem[] outputs = AmplifiedLootOutputs.split(rolled, getYieldMultiplier());
+        ModRecipeData prepared = new ModRecipeData(
+                source.getIngredientItems(), outputs, source.getFluidIngredients(),
+                source.getFluidOutputs(), source.getTotalEnergy());
+        return recipe.create(recipe.getId(), selection.applyTo(prepared));
     }
 
     private static LivingEntity createEntity(ServerLevel level, ItemStack stack) {

@@ -38,12 +38,13 @@ class JeiFlexibleRecipeLayoutContractTest {
         assertFalse(source.contains("ingredients.get(0)"), target + " " + category + " must not assume an item input exists");
         assertFalse(source.contains("itemOutputs.get(0)"), target + " " + category + " must render every item output");
         assertFalse(source.contains("outputs.get(0)"), target + " " + category + " must render every item output");
-        assertTrue(source.contains("for (int i = 0; i < recipe.getFluidIngredients().size(); i++)"), target + " " + category);
-        assertTrue(source.contains("for (int i = 0; i < recipe.getFluidOutputs().size(); i++)"), target + " " + category);
-        assertTrue(source.contains("for (int i = 0; i < itemOutputs.size(); i++)"), target + " " + category);
-        if (requireItemInputLoop) {
-            assertTrue(source.contains("for (int i = 0; i < itemInputs.size(); i++)"), target + " " + category);
-        }
+        assertTrue(source.contains("JeiMachineRecipeLayout.addSlots(builder, recipe)"), target + " " + category);
+        assertTrue(source.contains("JeiMachineRecipeLayout.addExtras(builder, recipe)"), target + " " + category);
+        String shared = Files.readString(root.resolve("common/src/main/java/com/nstut/biotech/jei/JeiMachineRecipeLayout.java"));
+        assertTrue(shared.contains("JeiRecipeLayout.slots(recipe.getItemIngredients().size(), recipe.getFluidIngredients().size())"));
+        assertTrue(shared.contains("JeiRecipeLayout.slots(recipe.getItemOutputs().size(), recipe.getFluidOutputs().size())"));
+        assertTrue(shared.contains("addScrollGridWidget(inputs"));
+        assertTrue(shared.contains("addScrollGridWidget(outputs"));
     }
 
     private static Path findRepositoryRoot() {

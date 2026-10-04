@@ -4,6 +4,7 @@ import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.MobItem;
 import com.nstut.nstutlib.recipes.ModRecipeData;
+import com.nstut.nstutlib.recipes.IngredientItem;
 import com.nstut.nstutlib.recipes.OutputItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.DyeColor;
@@ -12,12 +13,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.items.IItemHandler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class AnimalRecipeStatePreparation {
     private AnimalRecipeStatePreparation() {
     }
 
     public static BreedingChamberRecipe prepareBreeding(BreedingChamberRecipe recipe, IItemHandler inputs) {
-        return prepare(recipe, inputs, true);
+        PreparedAnimalInputs.Selection selection = PreparedAnimalInputs.select(recipe, inputs);
+        if (selection.animals().isEmpty()) return recipe;
+        ItemStack donor = selection.animals().get(0).getItemStack();
+        ModRecipeData prepared = selection.applyTo(recipe.getRecipe());
+        applyState(prepared, donor, CapturedAnimalStackState.forOffspring(donor));
+        return recipe.create(recipe.getId(), prepared);
     }
 
     public static TerrestrialHabitatRecipe prepareGrowth(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
@@ -25,45 +34,74 @@ public final class AnimalRecipeStatePreparation {
     }
 
     public static TerrestrialHabitatRecipe prepareHabitat(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
-        ItemStack donor = findDonor(recipe, inputs);
-        if (donor.isEmpty()) {
-            return recipe;
+        PreparedAnimalInputs.Selection selection = PreparedAnimalInputs.select(recipe, inputs);
+        if (selection.animals().isEmpty()) return recipe;
+        ModRecipeData prepared = selection.applyTo(recipe.getRecipe());
+        List<ItemStack> individuals = new ArrayList<>();
+        for (IngredientItem selected : selection.animals()) {
+            if (!selected.isConsumable()) continue;
+            for (int count = 0; count < selected.getItemStack().getCount(); count++) {
+                ItemStack individual = selected.getItemStack().copy();
+                individual.setCount(1);
+                individuals.add(individual);
+            }
         }
-
-        ModRecipeData prepared = recipe.getRecipe().copy();
-        CompoundTag state = CapturedAnimalStackState.read(donor);
-        if (!state.isEmpty()) {
-            applyState(prepared, donor, CapturedAnimalStackState.forAdult(donor));
-        }
-        applySheepWoolColor(prepared, donor, state);
-        return recipe.create(recipe.getId(), prepared);
-    }
-
-    private static BreedingChamberRecipe prepare(BreedingChamberRecipe recipe, IItemHandler inputs, boolean offspring) {
-        ItemStack donor = findDonor(recipe, inputs);
-        if (donor.isEmpty() || CapturedAnimalStackState.read(donor).isEmpty()) {
-            return recipe;
-        }
-
-        ModRecipeData prepared = recipe.getRecipe().copy();
-        applyState(prepared, donor, offspring ? CapturedAnimalStackState.forOffspring(donor) : CapturedAnimalStackState.forAdult(donor));
-        return recipe.create(recipe.getId(), prepared);
-    }
-
-    private static ItemStack findDonor(AnimalMobRecipe<?> recipe, IItemHandler inputs) {
-        for (var ingredient : recipe.getItemIngredients()) {
-            ItemStack required = ingredient.getItemStack();
-            if (!(required.getItem() instanceof MobItem) && !(required.getItem() instanceof CapturedAnimalItem)) {
+        // Each consumed individual can donate its full payload once. In particular a count-three
+        // output must not clone the first lamb's name, variant, or inventory over all three adults.
+        List<OutputItem> outputs = new ArrayList<>();
+        // Resolve the original output groups once, before splitting their distinct state payloads.
+        // All members of a probabilistic batch therefore still succeed or fail together, and the
+        // snapshot contains the decision so blocked ticks and reloads cannot reroll it.
+        for (int outputIndex : recipe.rollItemOutputIndexes()) {
+            OutputItem output = prepared.getOutputItems()[outputIndex];
+            ItemStack template = output.getItemStack();
+            if (!(template.getItem() instanceof MobItem) && !(template.getItem() instanceof CapturedAnimalItem)) {
+                appendResolvedOutput(outputs, template);
                 continue;
             }
-            for (int slot = 0; slot < inputs.getSlots(); slot++) {
-                ItemStack present = inputs.getStackInSlot(slot);
-                if (recipe.matchesAnimalInput(required, present)) {
-                    return present.copy();
+            for (int count = 0; count < template.getCount(); count++) {
+                ItemStack grown = template.copy();
+                grown.setCount(1);
+                for (int index = 0; index < individuals.size(); index++) {
+                    ItemStack source = individuals.get(index);
+                    if (!isAnimalOutputFor(grown, CapturedAnimalStackState.entityTypeId(source))) continue;
+                    CapturedAnimalStackState.writeDerived(grown, source, CapturedAnimalStackState.forAdult(source));
+                    individuals.remove(index);
+                    break;
                 }
+                appendResolvedOutput(outputs, grown);
             }
         }
-        return ItemStack.EMPTY;
+        prepared = new ModRecipeData(prepared.getIngredientItems(), outputs.toArray(OutputItem[]::new),
+                prepared.getFluidIngredients(), prepared.getFluidOutputs(), prepared.getTotalEnergy());
+        ItemStack donor = selection.animals().get(0).getItemStack();
+        applySheepWoolColor(prepared, donor, CapturedAnimalStackState.read(donor));
+        return recipe.create(recipe.getId(), prepared);
+    }
+
+    /** Merge only identical complete payloads after resolving their original chance groups. */
+    private static void appendResolvedOutput(List<OutputItem> outputs, ItemStack stack) {
+        ItemStack remaining = stack.copy();
+        int limit = Math.min(99, remaining.getMaxStackSize());
+        for (OutputItem output : outputs) {
+            ItemStack existing = output.getItemStack();
+            if (!ItemStack.isSameItemSameComponents(existing, remaining)) continue;
+            int moved = Math.min(remaining.getCount(), Math.max(0, limit - existing.getCount()));
+            existing.grow(moved);
+            remaining.shrink(moved);
+            if (remaining.isEmpty()) return;
+        }
+        while (!remaining.isEmpty()) {
+            if (outputs.size() >= 256) {
+                // The provider persists at most 256 entries. Abort before startRecipe/consumption
+                // rather than create an in-flight transaction that cannot survive a save/reload.
+                throw new IllegalStateException("Prepared animal outputs exceed the snapshot entry limit");
+            }
+            ItemStack part = remaining.copy();
+            part.setCount(Math.min(limit, remaining.getCount()));
+            outputs.add(new OutputItem(part, 1.0f));
+            remaining.shrink(part.getCount());
+        }
     }
 
     private static void applyState(ModRecipeData prepared, ItemStack donor, CompoundTag derivedState) {

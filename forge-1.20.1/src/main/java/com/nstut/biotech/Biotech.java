@@ -34,6 +34,8 @@ public class Biotech {
     public static boolean IS_DEV_ENV;
 
     public Biotech(FMLJavaModLoadingContext context) {
+        // Milk recipes must also work when no other mod enables the loader milk fluid.
+        net.minecraftforge.common.ForgeMod.enableMilkFluid();
         IEventBus modEventBus = context.getModEventBus();
         modEventBus.addListener(this::commonSetup);
 
@@ -45,6 +47,7 @@ public class Biotech {
         MenuRegistries.MENUS.register(modEventBus);
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        context.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

@@ -17,6 +17,7 @@ sourceSets {
 configurations {
     uiPreviewImplementation.extendsFrom implementation
     uiPreviewRuntimeOnly.extendsFrom runtimeOnly
+    uiPreviewCompileOnly.extendsFrom compileOnly
 }
 neoForge {
     version = rootProject.neoforge_version_1_21_1
@@ -35,6 +36,15 @@ neoForge {
             gameDirectory = layout.buildDirectory.dir('ui-preview-run').get().asFile
             programArguments.addAll '--width', '1024', '--height', '832', '--quickPlaySingleplayer', 'world'
             systemProperty 'biotech.uiPreview.output', layout.buildDirectory.dir('ui-previews').get().asFile.absolutePath
+        }
+        jeiPreview {
+            client()
+            sourceSet = sourceSets.uiPreview
+            loadedMods = [mods.biotech, mods.biotech_ui_preview]
+            gameDirectory = layout.buildDirectory.dir('jei-preview-run').get().asFile
+            programArguments.addAll '--width', '1024', '--height', '832', '--quickPlaySingleplayer', 'world'
+            systemProperty 'biotech.jeiPreview.enabled', 'true'
+            systemProperty 'biotech.jeiPreview.output', layout.buildDirectory.dir('jei-previews').get().asFile.absolutePath
         }
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
@@ -251,3 +261,48 @@ sourceSets.main.resources.srcDir(generateModMetadata)
 neoForge.ideSyncTask(generateModMetadata)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 publishing { publications { mavenJava(MavenPublication) { from components.java; artifactId = base.archivesName.get() } } }
+
+// Real JEI integration gate: all categories, precise chance tooltips, catalysts, and scrolling.
+tasks.register('renderJeiPreviews') {
+    group = 'verification'
+    description = 'Runs real JEI slot/tooltip/scroll assertions and verifies 14 client screenshots.'
+    dependsOn 'runJeiPreview'
+    doLast {
+        def output = layout.buildDirectory.dir('jei-previews').get().asFile
+        def manifest = new File(output, 'manifest.json')
+        if (!manifest.isFile()) throw new GradleException('JEI renderer did not finish: manifest.json is missing')
+        def images = new groovy.json.JsonSlurper().parse(manifest)
+        if (images.size() != 14 || images.collect { it.file }.toSet().size() != 14) {
+            throw new GradleException('Expected 14 unique real JEI previews')
+        }
+        images.each { entry ->
+            def image = javax.imageio.ImageIO.read(new File(output, entry.file))
+            if (image == null || image.width != 1024 || image.height != 832) {
+                throw new GradleException("Missing/invalid JEI screenshot: ${entry.file}")
+            }
+        }
+        logger.lifecycle("Verified actual JEI layouts, tooltips, scrolling, and 14 screenshots in ${output}")
+    }
+}
+
+def cleanJeiPreviewRun = tasks.register('cleanJeiPreviewRun') {
+    outputs.upToDateWhen { false }
+    doLast { delete layout.buildDirectory.dir('jei-preview-run') }
+}
+tasks.named('prepareJeiPreviewRun').configure { dependsOn cleanJeiPreviewRun }
+tasks.named('runJeiPreview').configure {
+    dependsOn 'runGameTestServer'
+    doFirst {
+        delete layout.buildDirectory.dir('jei-previews')
+        def runDir = layout.buildDirectory.dir('jei-preview-run').get().asFile
+        runDir.mkdirs()
+        def sourceWorld = file('run/world')
+        if (!new File(sourceWorld, 'level.dat').isFile()) throw new GradleException('JEI preview requires the GameTest world')
+        copy {
+            from sourceWorld
+            into new File(runDir, 'saves/world')
+            exclude 'session.lock'
+        }
+        new File(runDir, 'options.txt').text = 'guiScale:2\nmaxFps:60\nenableVsync:false\nlang:en_us\n'
+    }
+}

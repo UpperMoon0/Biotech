@@ -10,7 +10,18 @@ public final class Config {
             .comment("Toggle development environment")
             .define("isDevEnv", false);
 
+    private static final ModConfigSpec.Builder SERVER_BUILDER = new ModConfigSpec.Builder();
+
+    public static final ModConfigSpec.IntValue SLAUGHTERHOUSE_YIELD_MULTIPLIER = SERVER_BUILDER
+            .comment("Post-roll item-count multiplier for dynamic Slaughterhouse entity loot. New transactions only.",
+                    "Explicit itemOutputs in datapack recipes are static and are not multiplied.")
+            .defineInRange("slaughterhouseYieldMultiplier", 2, 1, 64);
+
+    /** Cached config value; initialized for tests and callers before the config load event. */
+    public static int slaughterhouseYieldMultiplier = 2;
+
     static final ModConfigSpec SPEC = BUILDER.build();
+    static final ModConfigSpec SERVER_SPEC = SERVER_BUILDER.build();
 
     public static boolean isDevEnv;
 
@@ -18,6 +29,11 @@ public final class Config {
     }
 
     static void onLoad(final ModConfigEvent event) {
+        if (event.getConfig().getSpec() == SERVER_SPEC) {
+            slaughterhouseYieldMultiplier = SLAUGHTERHOUSE_YIELD_MULTIPLIER.get();
+            return;
+        }
+        if (event.getConfig().getSpec() != SPEC) return;
         isDevEnv = IS_DEV_ENV.get();
         Biotech.IS_DEV_ENV = isDevEnv;
     }

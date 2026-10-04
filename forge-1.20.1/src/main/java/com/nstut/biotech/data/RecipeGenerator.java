@@ -108,7 +108,7 @@ public class RecipeGenerator extends DataGenerator {
     private void generateRenewableHabitatRecipes(String type) {
         generateRenewableHabitatItemRecipes(type, CreatureData.CREATURE_CHICKEN, "eggs", "minecraft:egg");
         generateRenewableHabitatItemRecipes(type, CreatureData.CREATURE_SHEEP, "wool", "minecraft:white_wool");
-        generateRenewableHabitatMilkRecipes(type, CreatureData.CREATURE_COW, net.minecraftforge.registries.ForgeRegistries.FLUIDS.getKey(net.minecraftforge.common.ForgeMod.MILK.get()).toString());
+        generateRenewableHabitatMilkRecipes(type, CreatureData.CREATURE_COW, "minecraft:milk");
     }
 
     private void generateRenewableHabitatItemRecipes(String type, Creature creature, String productName, String productId) {

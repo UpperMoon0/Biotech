@@ -22,6 +22,9 @@ public abstract class AnimalMobRecipe<T extends ModRecipe<T>> extends ModRecipe<
 
     @Override
     protected boolean itemIngredientsMatch(ItemStack required, ItemStack present) {
+        if (PreparedAnimalInputs.isBound(required) || PreparedAnimalInputs.isBound(present)) {
+            return PreparedAnimalInputs.matchesBound(required, present);
+        }
         if (!required.isEmpty()
                 && !present.isEmpty()
                 && required.getItem() instanceof MobItem

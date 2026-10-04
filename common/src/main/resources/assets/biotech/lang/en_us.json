@@ -13,22 +13,18 @@
   "ui.biotech.waiting": "Waiting for a recipe",
   "ui.biotech.check_structure": "Check multiblock structure",
   "block.biotech.net_trap": "Net Trap",
-
   "block.biotech.biotech_machine_casing": "Biotech Machine Casing",
-
   "block.biotech.breeding_chamber": "Breeding Chamber",
   "block.biotech.terrestrial_habitat": "Terrestrial Habitat",
   "block.biotech.slaughterhouse": "Slaughterhouse",
   "block.biotech.greenhouse": "Greenhouse",
   "block.biotech.fermenter": "Fermenter",
   "block.biotech.mixer": "Mixer",
-
   "block.biotech.item_input_hatch": "Item Input Hatch",
   "block.biotech.item_output_hatch": "Item Output Hatch",
   "block.biotech.fluid_input_hatch": "Fluid Input Hatch",
   "block.biotech.fluid_output_hatch": "Fluid Output Hatch",
   "block.biotech.energy_input_hatch": "Energy Input Hatch",
-
   "item.biotech.captured_animal": "Captured Animal",
   "item.biotech.cow": "Cow",
   "item.biotech.baby_cow": "Baby Cow",
@@ -50,22 +46,18 @@
   "item.biotech.fertilizer": "Fertilizer",
   "tooltip.biotech.sheep_color": "Color: %s",
   "tooltip.biotech.captured_animal": "Species: %s",
-
   "itemGroup.biotech": "Biotech",
-
   "menu.title.biotech.breeding_chamber": "Breeding Chamber",
   "menu.title.biotech.terrestrial_habitat": "Terrestrial Habitat",
   "menu.title.biotech.slaughterhouse": "Slaughterhouse",
   "menu.title.biotech.greenhouse": "Greenhouse",
   "menu.title.biotech.fermenter": "Fermenter",
   "menu.title.biotech.mixer": "Mixer",
-
   "menu.title.biotech.item_input_hatch": "Item Input Hatch",
   "menu.title.biotech.item_output_hatch": "Item Output Hatch",
   "menu.title.biotech.fluid_input_hatch": "Fluid Input Hatch",
   "menu.title.biotech.fluid_output_hatch": "Fluid Output Hatch",
   "menu.title.biotech.energy_input_hatch": "Energy Input Hatch",
-
   "config.jade.plugin_biotech.machine_status": "Machine Status",
   "jade.biotech.machine.status": "Status: %s",
   "jade.biotech.machine.operating": "Operating",
@@ -74,7 +66,22 @@
   "jade.biotech.machine.energy": "Energy: %s / %s FE",
   "jade.biotech.machine.fluid.input": "Input %s: %s / %s mB",
   "jade.biotech.machine.fluid.output": "Output %s: %s / %s mB",
-  "jade.biotech.machine.progress": "Progress: %s%%"
-,
-  "jei.biotech.slaughterhouse.dynamic_loot": "Entity loot ×2"
+  "jade.biotech.machine.progress": "Progress: %s%%",
+  "jei.biotech.slaughterhouse.dynamic_loot": "Entity loot ×%s. Random, variant- and datapack-dependent; no fixed drops.",
+  "tooltip.biotech.captured_animal.baby": "Requires a baby",
+  "tooltip.biotech.captured_animal.adult": "Requires an adult",
+  "jei.biotech.chance.exact": "Chance: %s (recipe value: %s)",
+  "jei.biotech.input.consumed": "Consumed each cycle",
+  "jei.biotech.input.catalyst": "Reusable catalyst: not consumed",
+  "jei.biotech.inputs": "Inputs",
+  "jei.biotech.outputs": "Outputs",
+  "jei.biotech.energy": "Energy: %s FE / cycle",
+  "jei.biotech.cycle": "Min cycle: %s s at %s FE/t",
+  "jei.biotech.catalyst.legend": "R = reusable, not consumed",
+  "jei.biotech.habitat.production": "Outputs per cycle; hover for rates. Wool follows the captured sheep color.",
+  "jei.biotech.output.per_cycle": "%s items per successful roll",
+  "jei.biotech.output.fluid_per_cycle": "%s mB per cycle",
+  "jei.biotech.output.rate": "Expected rate: ~%s items/min",
+  "jei.biotech.output.fluid_rate": "Production rate: ~%s mB/min",
+  "jei.biotech.rate.conditions": "At 20 TPS with continuous power, inputs and free outputs."
 }

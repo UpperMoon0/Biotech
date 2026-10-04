@@ -27,14 +27,14 @@ class LivestockProcessingContractTest {
         for (String target : TARGETS) {
             String helper = Files.readString(root.resolve(target +
                     "/src/main/java/com/nstut/biotech/jei/JeiOutputChanceHelper.java"));
-            assertTrue(helper.contains("chance >= 1.0f"), target + " must keep guaranteed outputs uncluttered");
-            assertTrue(helper.contains("setScale(2, RoundingMode.HALF_UP)"),
-                    target + " must render a stable exact percentage");
+            assertTrue(helper.contains("JeiChancePresentation.needsLabel(chance)"), target + " must keep guaranteed outputs uncluttered");
+            assertTrue(helper.contains("addRichTooltipCallback"), target + " must attach chance tooltips");
+            assertTrue(helper.contains("JeiChancePresentation.exactPercent(chance)"), target + " must expose unrounded recipe precision");
 
             for (String category : CATEGORIES) {
                 String source = Files.readString(root.resolve(target +
                         "/src/main/java/com/nstut/biotech/jei/" + category));
-                assertTrue(source.contains("JeiOutputChanceHelper.drawItemChances"),
+                assertTrue(source.contains("JeiMachineRecipeLayout.addSlots(builder, recipe)"),
                         target + " " + category + " must use the shared chance renderer");
             }
         }

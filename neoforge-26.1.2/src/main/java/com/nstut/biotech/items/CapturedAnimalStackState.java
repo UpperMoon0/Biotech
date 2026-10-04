@@ -15,8 +15,15 @@ public final class CapturedAnimalStackState {
 
     public static CompoundTag read(ItemStack stack) {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElse(null);
-        return captured == null ? new CompoundTag() : CapturedEntityState.sanitize(captured);
+        if (root == null) return new CompoundTag();
+        CompoundTag state = CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new));
+        // Old Biotech stacks stored sheep colour outside CapturedEntity. Normalize that supported
+        // release format before breeding/growth, without mutating the player's original stack.
+        if (!state.contains("Color") && root.contains("SheepColor")
+                && "minecraft:sheep".equals(entityTypeId(stack))) {
+            state.putByte("Color", root.getInt("SheepColor").orElse(0).byteValue());
+        }
+        return state;
     }
 
     public static void write(ItemStack stack, CompoundTag state) {
