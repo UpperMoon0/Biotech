@@ -130,7 +130,10 @@ public final class AnimalRecipeStatePreparation {
             if (!stack.is(Items.WHITE_WOOL)) {
                 continue;
             }
-            output.setItemStack(new ItemStack(wool, stack.getCount()));
+            // Change only the item identity; preserve authored NBT and Forge capabilities.
+            CompoundTag recolored = stack.save(new CompoundTag());
+            recolored.putString("id", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(wool).toString());
+            output.setItemStack(ItemStack.of(recolored));
         }
     }
 

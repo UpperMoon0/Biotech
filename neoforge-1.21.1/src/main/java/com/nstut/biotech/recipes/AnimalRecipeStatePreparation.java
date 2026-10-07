@@ -130,7 +130,10 @@ public final class AnimalRecipeStatePreparation {
             if (!stack.is(Items.WHITE_WOOL)) {
                 continue;
             }
-            output.setItemStack(new ItemStack(wool, stack.getCount()));
+            ItemStack recolored = new ItemStack(wool, stack.getCount());
+            // Keep recipe-authored values and removals while using the new wool item's defaults.
+            recolored.applyComponents(stack.getComponentsPatch());
+            output.setItemStack(recolored);
         }
     }
 

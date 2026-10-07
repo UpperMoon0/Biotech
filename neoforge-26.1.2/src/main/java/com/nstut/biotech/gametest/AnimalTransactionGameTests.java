@@ -58,6 +58,7 @@ public final class AnimalTransactionGameTests {
     private AnimalTransactionGameTests() {}
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
     private static final List<DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>>> TESTS = List.of(
+        TEST_FUNCTIONS.register("animal_transaction_habitat_wool_preserves_authored_metadata_across_snapshot", () -> AnimalTransactionGameTests::habitatWoolPreservesAuthoredMetadataAcrossSnapshot),
         TEST_FUNCTIONS.register("animal_transaction_tier_two_growth_preserves_three_individuals_across_reload", () -> AnimalTransactionGameTests::tierTwoGrowthPreservesThreeIndividualsAcrossReload),
         TEST_FUNCTIONS.register("animal_transaction_blocked_output_rejects_replacement_donor", () -> AnimalTransactionGameTests::blockedOutputRejectsReplacementDonor),
         TEST_FUNCTIONS.register("animal_transaction_blocked_output_rejects_replacement_donor_after_reload", () -> AnimalTransactionGameTests::blockedOutputRejectsReplacementDonorAfterReload),
@@ -72,6 +73,62 @@ public final class AnimalTransactionGameTests {
         var environment = event.registerEnvironment(Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "animal_transactions"));
         for (var test : TESTS) event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(),
                 new TestData<>(environment, Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "livestock"), 100, 0, true)));
+    }
+
+    public static void habitatWoolPreservesAuthoredMetadataAcrossSnapshot(GameTestHelper helper) {
+        for (int color : new int[]{0, 14}) {
+            ItemStack authored = new ItemStack(Items.WHITE_WOOL, 3);
+            authored.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Fine wool"));
+            authored.set(DataComponents.MAX_STACK_SIZE, 16);
+            authored.remove(DataComponents.RARITY);
+            CustomData.update(DataComponents.CUSTOM_DATA, authored, root -> {
+                root.putString("Grade", "fine");
+                CompoundTag provenance = new CompoundTag();
+                provenance.putString("source", "datapack");
+                root.put("Provenance", provenance);
+            });
+            ItemStack original = authored.copy();
+            ItemStack donor = sheep(false, color, "Wool donor");
+            ItemStackHandler inputs = new ItemStackHandler(1);
+            inputs.setStackInSlot(0, donor.copy());
+            TerrestrialHabitatRecipe recipe = new TerrestrialHabitatRecipe(
+                    Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "test_tagged_wool_" + color),
+                    new ModRecipeData(new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.SHEEP.get()), false)},
+                            new OutputItem[]{new OutputItem(authored, 1.0f)},
+                            new FluidStack[0], new FluidStack[0], 0));
+
+            ModRecipeData prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs).getRecipe();
+            var ops = helper.getLevel().registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            var encoded = ModRecipeData.CODEC.encodeStart(ops, prepared).result().orElseThrow();
+            ModRecipeData restored = ModRecipeData.CODEC.parse(ops, encoded).result().orElseThrow();
+            TerrestrialHabitatRecipe reloaded = recipe.create(recipe.getId(), restored);
+            ItemStackHandler destination = new ItemStackHandler(1);
+            helper.assertTrue(reloaded.tryConsumeIngredients(inputs, List.of()), "Saved wool recipe must accept its retained donor");
+            reloaded.assemble(destination, List.of(), reloaded.rollItemOutputIndexes());
+
+            ItemStack actual = destination.getStackInSlot(0);
+            Item expectedItem = color == 0 ? Items.WHITE_WOOL : Items.RED_WOOL;
+            helper.assertTrue(actual.is(expectedItem) && actual.getCount() == 3,
+                    "Wool recoloring and snapshot reload must preserve the authored count for white and red sheep");
+            helper.assertTrue("Fine wool".equals(actual.getHoverName().getString())
+                            && original.getComponentsPatch().equals(actual.getComponentsPatch()),
+                    "Wool output must retain the complete authored name, Grade marker and nested custom data");
+            helper.assertTrue(actual.getMaxStackSize() == 16 && !actual.has(DataComponents.RARITY),
+                    "Wool output must preserve component overrides and removals, not just custom data");
+            helper.assertTrue(same(original, authored) && same(donor, inputs.getStackInSlot(0)),
+                    "Preparation must not mutate the authored output or retained sheep");
+
+            ItemStack required = new ItemStack(expectedItem, 3);
+            required.applyComponents(original.getComponentsPatch());
+            TerrestrialHabitatRecipe downstream = recipe.create(Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "test_wool_consumer"),
+                    new ModRecipeData(new IngredientItem[]{new IngredientItem(required, true)},
+                            new OutputItem[0], new FluidStack[0], new FluidStack[0], 0));
+            helper.assertTrue(!downstream.matchesAnimalInput(required, new ItemStack(expectedItem, 3)),
+                    "Downstream fixture must require authored metadata, not merely wool color");
+            helper.assertTrue(downstream.tryConsumeIngredients(destination, List.of()) && destination.getStackInSlot(0).isEmpty(),
+                    "Reloaded wool must still satisfy the exact tagged downstream ingredient");
+        }
+        helper.succeed();
     }
 
     public static void tierTwoGrowthPreservesThreeIndividualsAcrossReload(GameTestHelper helper) {
