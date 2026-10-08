@@ -323,13 +323,92 @@ public final class AnimalTransactionGameTests {
         boolean failedSafely = false;
         try {
             AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs);
-        } catch (IllegalStateException expected) {
+        } catch (com.nstut.nstutlib.recipes.RecipeTransactionException expected) {
             failedSafely = true;
         }
         helper.assertTrue(failedSafely, "Unsatisfiable preparation must throw only the controller's safely handled failure type");
         helper.assertTrue(same(inputs.getStackInSlot(0), first) && same(inputs.getStackInSlot(1), second),
                 "Failed allocation must not mutate or consume any donor");
+        sustainedPreparationRejections(helper);
         helper.succeed();
+    }
+
+    private static void sustainedPreparationRejections(GameTestHelper helper) {
+        Fixture f = place(helper, false);
+        for (boolean bindingLimit : new boolean[]{false, true}) {
+            for (int slot = 0; slot < f.inputs.getSlots(); slot++) f.inputs.setStackInSlot(slot, ItemStack.EMPTY);
+            f.inputs.setStackInSlot(0, capturedHorse(0, "Adult One"));
+            f.inputs.setStackInSlot(1, capturedHorse(0, "Adult Two"));
+            IngredientItem[] requirements = overlapRecipe().getRecipe().getIngredientItems();
+            if (bindingLimit) {
+                f.inputs.setStackInSlot(2, capturedHorse(0, "Adult Three"));
+                requirements = new IngredientItem[256];
+                ItemStack any = horseRequirement(CapturedAnimalItem.LIFECYCLE_ANY);
+                any.setCount(3);
+                requirements[0] = new IngredientItem(any, true);
+                for (int i = 1; i < requirements.length; i++) requirements[i] = new IngredientItem(new ItemStack(Items.WHEAT), true);
+                for (int slot = 3; slot < 7; slot++) f.inputs.setStackInSlot(slot, new ItemStack(Items.WHEAT, slot == 6 ? 63 : 64));
+            }
+            TerrestrialHabitatRecipe rejected = overlapRecipe().create(overlapRecipe().getId(),
+                    new ModRecipeData(requirements, new OutputItem[0],
+                            new FluidStack[]{new FluidStack(Fluids.WATER, 250)}, new FluidStack[0], 32000));
+            f.water.setFluid(new FluidStack(Fluids.WATER, 250));
+            f.energy.setEnergy(32000);
+            helper.assertTrue(rejected.recipeMatch(f.inputs, List.of(f.water.getInternalTank()), null, List.of()),
+                    "Native rejection fixture must pass actual provider input preflight");
+            List<ItemStack> original = new ArrayList<>();
+            for (int slot = 0; slot < f.inputs.getSlots(); slot++) original.add(f.inputs.getStackInSlot(slot).copy());
+            withTestRecipe(helper, rejected, () -> {
+                tick(helper, f);
+                for (int attempt = 0; attempt < 3; attempt++) {
+                    helper.assertTrue((int) machineField(f.machine, "processingFailureCooldown") == 20,
+                            "Every allocation/binding rejection must enter the provider cooldown");
+                    helper.assertTrue((boolean) machineField(f.machine, "isStructureValid")
+                            && !save(helper, f.machine).contains("activeRecipeSnapshot"),
+                            "Rejected preparation must preserve structure without installing a transaction");
+                    for (int slot = 0; slot < original.size(); slot++) helper.assertTrue(same(original.get(slot), f.inputs.getStackInSlot(slot)),
+                            "Sustained rejection must retain every original input");
+                    helper.assertTrue(f.water.getInternalTank().getFluidInTank(0).getAmount() == 250
+                            && f.energy.getInternalEnergyStorage().getEnergyStored() == 32000,
+                            "Rejected preparation must not consume water or energy");
+                    for (int remaining = 19; remaining >= 0; remaining--) {
+                        tick(helper, f);
+                        helper.assertTrue((int) machineField(f.machine, "processingFailureCooldown") == remaining,
+                                "Unchanged invalid allocation/binding must not retry before cooldown expiration");
+                    }
+                    tick(helper, f);
+                }
+            });
+            // Prove recovery through the real controller after a valid recipe replacement.
+            ItemStack any = horseRequirement(CapturedAnimalItem.LIFECYCLE_ANY);
+            TerrestrialHabitatRecipe recovery = rejected.create(rejected.getId(),
+                    new ModRecipeData(new IngredientItem[]{new IngredientItem(any, true)}, new OutputItem[0],
+                            new FluidStack[]{new FluidStack(Fluids.WATER, 250)}, new FluidStack[0], 32000));
+            withTestRecipe(helper, recovery, () -> {
+                for (int tick = 0; tick < 100; tick++) tick(helper, f);
+                helper.assertTrue(f.inputs.getStackInSlot(0).isEmpty()
+                        && f.water.getInternalTank().getFluidInTank(0).isEmpty()
+                        && f.energy.getInternalEnergyStorage().getEnergyStored() == 0,
+                        "A valid replacement must recover after bounded cooldown and charge resources once");
+            });
+        }
+    }
+
+    private static Object machineField(MachineBlockEntity machine, String name) {
+        try {
+            var field = MachineBlockEntity.class.getDeclaredField(name);
+            field.setAccessible(true);
+            return field.get(machine);
+        } catch (ReflectiveOperationException exception) { throw new AssertionError(exception); }
+    }
+
+    private static void withTestRecipe(GameTestHelper helper, TerrestrialHabitatRecipe recipe, Runnable test) {
+        var manager = helper.getLevel().getServer().getRecipeManager();
+        var original = List.copyOf(manager.getRecipes());
+        try {
+            manager.replaceRecipes(List.of(recipe));
+            test.run();
+        } finally { manager.replaceRecipes(original); }
     }
 
     private static TerrestrialHabitatRecipe overlapRecipe() {

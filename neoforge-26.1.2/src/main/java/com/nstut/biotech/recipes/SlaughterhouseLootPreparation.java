@@ -53,7 +53,7 @@ public final class SlaughterhouseLootPreparation {
             }
             LivingEntity entity = createEntity(level, donor);
             if (entity == null) {
-                throw new IllegalStateException("Dynamic slaughter requires reconstructible living animal inputs");
+                throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Dynamic slaughter requires reconstructible living animal inputs");
             }
             hasConsumedAnimal = true;
             entity.snapTo(machinePos.getX() + 0.5, machinePos.getY() + 0.5, machinePos.getZ() + 0.5, 0.0f, 0.0f);
@@ -70,7 +70,7 @@ public final class SlaughterhouseLootPreparation {
             }
         }
         if (!hasConsumedAnimal) {
-            throw new IllegalStateException("Dynamic slaughter requires at least one consumed animal");
+            throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Dynamic slaughter requires at least one consumed animal");
         }
         OutputItem[] outputs = AmplifiedLootOutputs.split(rolled, getYieldMultiplier());
         ModRecipeData prepared = new ModRecipeData(

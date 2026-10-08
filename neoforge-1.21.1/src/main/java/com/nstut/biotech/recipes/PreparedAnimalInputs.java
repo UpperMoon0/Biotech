@@ -3,6 +3,7 @@ package com.nstut.biotech.recipes;
 import com.nstut.biotech.items.CapturedAnimalItem;
 import com.nstut.biotech.items.MobItem;
 import com.nstut.nstutlib.recipes.IngredientItem;
+import com.nstut.nstutlib.recipes.RecipeTransactionException;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.component.DataComponents;
@@ -71,7 +72,7 @@ public final class PreparedAnimalInputs {
                         new boolean[requirements.size()], new boolean[slots])) {
                     // The provider's semantic aggregation can overaccept overlapping selectors.
                     // Its controller catches this safely before installing/consuming a transaction.
-                    throw new IllegalStateException("No complete allocation for prepared animal inputs");
+                    throw new RecipeTransactionException("No complete allocation for prepared animal inputs");
                 }
             }
         }
@@ -130,7 +131,7 @@ public final class PreparedAnimalInputs {
     record Selection(List<IngredientItem> ingredients, List<IngredientItem> animals) {
         ModRecipeData applyTo(ModRecipeData prepared) {
             if (ingredients.size() > 256 || prepared.getOutputItems().length > 256) {
-                throw new IllegalStateException("Prepared animal transaction exceeds the snapshot entry limit");
+                throw new RecipeTransactionException("Prepared animal transaction exceeds the snapshot entry limit");
             }
             ModRecipeData copy = prepared.copy();
             return new ModRecipeData(ingredients.toArray(IngredientItem[]::new), copy.getOutputItems(),

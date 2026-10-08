@@ -42,8 +42,8 @@ public final class UiPreviewRunner {
                 output = Path.of(System.getProperty("biotech.uiPreview.output"));
                 Files.createDirectories(output);
                 previews = PreviewFixtures.all();
-                if (previews.size() != 56 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 56) {
-                    throw new IllegalStateException("Expected 56 unique preview cases");
+                if (previews.size() != 60 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 60) {
+                    throw new IllegalStateException("Expected 60 unique preview cases");
                 }
                 mc.setScreen(new PreviewScreen(previews.get(0)));
             } else if (advance) {
@@ -103,12 +103,48 @@ public final class UiPreviewRunner {
                     new com.nstut.openui.graphics.UiCanvas(g, font), uiLeft(), uiTop(), uiWidth(), uiHeight());
             // A neutral pointer and partial tick keep hover effects and animations out of baseline previews.
             super.render(g, -1, -1, 0);
-            if (!captured && ++frames >= 8) {
+            frames++;
+            if (preview.name().startsWith("controller-") && preview.name().endsWith("-scrolled") && frames == 2) {
+                if (!mouseScrolled(uiLeft() + 156, uiTop() + 114, 0, -100))
+                    throw new IllegalStateException("Mixed controller products must accept native scrolling");
+            }
+            if (!captured && frames >= 8) {
+                if (preview.name().startsWith("controller-")) verifyMixedProducts();
                 g.flush();
                 capture();
                 captured = true;
                 advance = true;
             }
+        }
+
+        private void verifyMixedProducts() {
+            var products = findProducts(uiRuntime().root());
+            if (products == null) throw new IllegalStateException("Controller preview must use the production combined output component");
+            var viewport = products.parent();
+            if (viewport.getY() != uiTop() + com.nstut.biotech.views.openui.ControllerOutputLayout.VIEWPORT_Y
+                    || viewport.getHeight() != com.nstut.biotech.views.openui.ControllerOutputLayout.VIEWPORT_HEIGHT)
+                throw new IllegalStateException("Controller output viewport drifted into the footer");
+            if (products.productAt(viewport.getX() + 8, viewport.getY() + viewport.getHeight() + 2) != null)
+                throw new IllegalStateException("Clipped controller outputs must not expose off-viewport hover targets");
+            if (preview.name().endsWith("-scrolled")) {
+                String product = products.productAt(viewport.getX() + 8, viewport.getY() + viewport.getHeight() - 20);
+                String expected = preview.name().contains("long") ? "500 mB per cycle" : "1000 mB per cycle";
+                if (product == null || !product.contains(expected))
+                    throw new IllegalStateException("Final fluid product must be reachable after native scrolling: " + product);
+            } else {
+                String product = products.productAt(viewport.getX() + 8, viewport.getY() + 40);
+                if (product == null || !product.contains("13%"))
+                    throw new IllegalStateException("Third item and its chance must stay in the item lane: " + product);
+            }
+        }
+
+        private com.nstut.biotech.views.openui.RecipeOutputs findProducts(UIComponent root) {
+            if (root instanceof com.nstut.biotech.views.openui.RecipeOutputs products) return products;
+            for (int i = 0; i < root.childCount(); i++) {
+                var found = findProducts(root.child(i));
+                if (found != null) return found;
+            }
+            return null;
         }
 
         private void capture() {

@@ -13,6 +13,8 @@ Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Exi
 
 Prepared livestock recipes carry exact animal-input bindings in their transaction snapshot. These markers exist only in recipe ingredient copies, never on the player's captured item. A same-species animal with different state cannot replace the bound donor while an output hatch is blocked. If inputs no longer match before consumption, that transaction is cancelled without consuming them; a later cycle selects the current inputs normally.
 
+Rejected animal allocation, oversized bindings/outputs, and invalid dynamic-loot preparation leave inputs and resources unchanged and use a 20-tick retry cooldown. Correct the input or datapack recipe to resume processing after that cooldown.
+
 Already-started transactions retain their persisted recipe snapshot. New recipes, configuration changes, and loot datapack changes apply to newly started transactions.
 
 ## Slaughterhouse: dynamic and static recipes
@@ -41,6 +43,8 @@ Chicken produces eggs, sheep produces its captured color of wool, and cow produc
 These are ordinary data-driven recipes. Food, water, energy, products, and the non-consumable flag can be changed by a datapack. Generic captured-animal species/lifecycle selectors support goat milk and future/modded products; adding a species to the capture tag alone still does not create machine recipes.
 
 JEI identifies non-consumable inputs, displays production timing based on the machine's processing rate, and separates scrollable item/fluid contents without overlapping the energy/timing area. Chance labels are compact; hover the output for its precise recipe probability.
+
+Machine controllers keep item products, chance labels, and fluid products in one clipped output panel. Scroll over the products to reach longer datapack output lists; fluid rows follow the item rows.
 
 ## Verification
 

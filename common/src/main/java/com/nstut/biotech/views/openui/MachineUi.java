@@ -16,8 +16,6 @@ public final class MachineUi {
     // Shared content grid. Every machine places semantically equivalent content on these anchors.
     private static final int INPUT_X = 28;
     private static final int INPUT_W = 72;
-    private static final int OUTPUT_X = 146;
-    private static final int OUTPUT_W = 60;
     private static final int PRIMARY_Y = 104;
     private static final int SECONDARY_Y = 151;
     private static final int PROGRESS_X = 109;
@@ -75,9 +73,6 @@ public final class MachineUi {
         };
         root.addChild(at(items(() -> inputs(data, 0, primaryInputCount), 3, 24, true),
                 INPUT_X, PRIMARY_Y, INPUT_W, 40));
-        root.addChild(at(items(() -> outputs(data), 2, 30, true),
-                OUTPUT_X, PRIMARY_Y, OUTPUT_W, 40));
-        root.addChild(at(new RecipeFluidOutputs(data), OUTPUT_X, SECONDARY_Y, OUTPUT_W, 40));
         progress(root, data, PROGRESS_X, PROGRESS_Y, PROGRESS_W, PROGRESS_H);
 
         // Optional recipe requirements occupy one shared secondary baseline.
@@ -105,6 +100,10 @@ public final class MachineUi {
         root.addChild(at(text(() -> data.active() ? inputName(data) :
                 Component.translatable(data.valid().getAsBoolean() ? "ui.biotech.waiting" : "ui.biotech.check_structure").getString(),
                 BiotechStyle.MUTED), 24, 192, 180, 10));
+        // Positioned layers span the stack for hit testing. Keep the interactive output
+        // viewport above read-only diagram layers so wheel events reach its ScrollView.
+        root.addChild(at(Ui.scroll(new RecipeOutputs(data)), ControllerOutputLayout.VIEWPORT_X,
+                ControllerOutputLayout.VIEWPORT_Y, ControllerOutputLayout.VIEWPORT_WIDTH, ControllerOutputLayout.VIEWPORT_HEIGHT));
         return root;
     }
 
@@ -141,13 +140,4 @@ public final class MachineUi {
         return result;
     }
 
-    private static List<Entry> outputs(MachineDisplay data) {
-        if (!data.active()) return List.of();
-        List<Entry> result = new ArrayList<>();
-        for (var output : data.recipe().get().getOutputItems()) {
-            result.add(new Entry(output.getItemStack(), output.getChance() < 1
-                    ? (int) (output.getChance() * 100) + "%" : ""));
-        }
-        return result;
-    }
 }

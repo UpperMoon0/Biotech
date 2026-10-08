@@ -20,9 +20,9 @@ Biotech 2.4 completes the stateful captured-animal processing pipeline across Fo
 - Honor concrete entity loot tables, including Forge custom death-loot overrides, and split amplified loot before snapshot serialization.
 - Keep explicit custom Slaughterhouse output lists static and consistent with their JEI presentation.
 
-- Throttle rejected oversized animal/loot preparation through the safe transaction failure path, preserving structure and resources across retries.
+- Throttle every animal allocation, snapshot-limit, and dynamic-loot preparation rejection through the safe transaction failure path, preserving structure and resources across retries.
 - Index all sheep wool colors in JEI output searches, including focused tier-1 and tier-2 production lookups.
-- Display recipe fluid products and their quantities in controller output lanes, including Habitat milk.
+- Display item and fluid products, quantities, and chance labels together in a clipped scrolling controller output lane, including mixed datapack recipes and Habitat milk.
 - Explain deterministic first-selected-parent inheritance in the in-game Breeding Chamber guide.
 
 ## Compatibility
