@@ -106,7 +106,7 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
     private <R extends ModRecipe<R>> MachineStatus throttledDiagnosis(Level level, RecipeType<R> type,
             IItemHandler inputs, List<? extends IFluidHandler> fluids) {
         long tick = level.getGameTime();
-        if (tick < lastDiagnosisTick || tick - lastDiagnosisTick >= 20) {
+        if (lastDiagnosisTick == Long.MIN_VALUE || tick < lastDiagnosisTick || tick - lastDiagnosisTick >= 20) {
             cachedDiagnosis = diagnoseInputs(level, type, inputs, fluids);
             lastDiagnosisTick = tick;
         }
