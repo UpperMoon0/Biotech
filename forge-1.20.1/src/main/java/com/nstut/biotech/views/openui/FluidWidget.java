@@ -30,7 +30,9 @@ public final class FluidWidget extends LiveTooltipComponent {
         if (capacity.getAsInt() <= 0) return null;
         if (!valid.getAsBoolean()) return Component.translatable("ui.biotech.status.invalid_structure").getString();
         FluidStack value = fluid.get();
-        return "Fluid:\n" + (value.isEmpty() ? "Empty" : value.getDisplayName().getString())
+        return Component.translatable("ui.biotech.fluid.contents", value.isEmpty()
+                ? Component.translatable("ui.biotech.fluid.empty").getString()
+                : value.getDisplayName().getString()).getString()
             + "\n" + value.getAmount() + " / " + capacity.getAsInt() + " mB";
     }
     @Override public void render(GuiGraphics g, Font f, int mx, int my, float pt) {
