@@ -1,6 +1,7 @@
 package com.nstut.biotech.recipes;
 
 import com.nstut.nstutlib.recipes.OutputItem;
+import com.nstut.nstutlib.recipes.RecipeTransactionException;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -25,8 +26,8 @@ public final class AmplifiedLootOutputs {
             int stackLimit = Math.min(99, stack.getMaxStackSize());
             while (remaining > 0) {
                 if (outputs.size() >= MAX_OUTPUTS) {
-                    // Fail before consumption rather than creating an unsavable transaction.
-                    throw new IllegalStateException("Amplified loot exceeds the 256-stack transaction limit");
+                    // Reject before consumption through the provider's throttled, structure-preserving failure path.
+                    throw new RecipeTransactionException("Amplified loot exceeds the 256-stack transaction limit");
                 }
                 int count = (int) Math.min(remaining, stackLimit);
                 ItemStack output = stack.copy();

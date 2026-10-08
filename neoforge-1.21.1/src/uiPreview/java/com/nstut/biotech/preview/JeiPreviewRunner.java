@@ -10,6 +10,8 @@ import com.nstut.nstutlib.recipes.ModRecipe;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.nstutlib.recipes.OutputItem;
 import mezz.jei.api.IModPlugin;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
@@ -69,7 +71,7 @@ public final class JeiPreviewRunner implements IModPlugin {
                 output = Path.of(System.getProperty("biotech.jeiPreview.output"));
                 Files.createDirectories(output);
                 cases = createCases();
-                require(cases.size() == 14, "Expected 14 distinct JEI cases");
+                require(cases.size() == 15, "Expected 15 distinct JEI cases");
                 mc.setScreen(new PreviewScreen(cases.get(0)));
             } else if (advance) {
                 advance = false;
@@ -110,7 +112,35 @@ public final class JeiPreviewRunner implements IModPlugin {
                 new OutputItem[0], new FluidStack[0], new FluidStack[0], 32000));
         require(dynamic.usesEntityLoot(), "Empty authored item outputs must advertise dynamic loot");
         result.add(new Case("slaughterhouse-dynamic", create(new SlaughterhouseCategory(gui), dynamic), Mode.CARD));
+        result.add(focusedWoolCase());
         return result;
+    }
+
+    private static Case focusedWoolCase() {
+        var manager = runtime.getRecipeManager();
+        var factory = runtime.getJeiHelpers().getFocusFactory();
+        List<net.minecraft.world.item.Item> colors = List.of(Items.WHITE_WOOL, Items.ORANGE_WOOL,
+                Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL,
+                Items.PINK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL,
+                Items.PURPLE_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL,
+                Items.RED_WOOL, Items.BLACK_WOOL);
+        for (var color : colors) {
+            var focus = factory.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(color));
+            var found = manager.createRecipeLookup(TerrestrialHabitatCategory.TYPE).limitFocus(List.of(focus)).get().toList();
+            require(found.stream().anyMatch(r -> r.getId().getPath().equals("terrestrial_habitat_sheep_wool_t1_wheat")),
+                    "Focused JEI output search lost tier-1 production of " + color);
+            require(found.stream().anyMatch(r -> r.getId().getPath().equals("terrestrial_habitat_sheep_wool_t2_sheep_feed")),
+                    "Focused JEI output search lost tier-2 production of " + color);
+        }
+        var red = factory.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(Items.RED_WOOL));
+        var recipe = manager.createRecipeLookup(TerrestrialHabitatCategory.TYPE).limitFocus(List.of(red)).get()
+                .filter(r -> r.getId().getPath().equals("terrestrial_habitat_sheep_wool_t1_wheat")).findFirst().orElseThrow();
+        var layout = manager.createRecipeLayoutDrawable(new TerrestrialHabitatCategory(runtime.getJeiHelpers().getGuiHelper()),
+                recipe, factory.createFocusGroup(List.of(red))).orElseThrow();
+        require(slot(layout, "output-item-0").getItemStacks().allMatch(stack -> stack.is(Items.RED_WOOL)),
+                "Red-wool focus must display the selected variant");
+        require(slot(layout, "output-item-0").getItemStacks().count() == 1, "Focused wool slot must contain one red variant");
+        return new Case("habitat-focused-red-wool", layout, Mode.CARD);
     }
 
     private static ResourceLocation id(String path) { return ResourceLocation.fromNamespaceAndPath("biotech", "jei_preview/" + path); }

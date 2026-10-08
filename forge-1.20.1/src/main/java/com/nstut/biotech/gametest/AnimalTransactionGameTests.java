@@ -70,6 +70,13 @@ public final class AnimalTransactionGameTests {
                             new OutputItem[]{new OutputItem(authored, 1.0f)},
                             new FluidStack[0], new FluidStack[0], 0));
 
+            var variants = AnimalRecipeStatePreparation.habitatOutputVariants(recipe, authored);
+            helper.assertTrue(variants.size() == 16, "Sheep wool presentation must expose every dye color");
+            helper.assertTrue(variants.stream().allMatch(v -> v.getCount() == original.getCount()),
+                    "Wool alternatives must retain the authored quantity");
+            helper.assertTrue(variants.stream().anyMatch(v -> v.is(Items.RED_WOOL)), "Red wool must be discoverable");
+            helper.assertTrue(AnimalRecipeStatePreparation.habitatOutputVariants(recipe, new ItemStack(Items.EGG)).size() == 1,
+                    "Non-wool outputs must not gain wool alternatives");
             ModRecipeData prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs).getRecipe();
             var encoded = ModRecipeData.CODEC.encodeStart(NbtOps.INSTANCE, prepared).result().orElseThrow();
             ModRecipeData restored = ModRecipeData.CODEC.parse(NbtOps.INSTANCE, encoded).result().orElseThrow();
@@ -80,6 +87,8 @@ public final class AnimalTransactionGameTests {
 
             ItemStack actual = destination.getStackInSlot(0);
             Item expectedItem = color == 0 ? Items.WHITE_WOOL : Items.RED_WOOL;
+            helper.assertTrue(variants.stream().anyMatch(v -> same(v, actual)),
+                    "Indexed wool alternatives must match the complete runtime product metadata");
             helper.assertTrue(actual.is(expectedItem) && actual.getCount() == 3,
                     "Wool recoloring and snapshot reload must preserve the authored count for white and red sheep");
             helper.assertTrue("Fine wool".equals(actual.getHoverName().getString())

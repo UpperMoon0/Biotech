@@ -192,8 +192,28 @@ public final class LivestockProductionGameTests {
         tick(helper, rig.machine, 1);
         helper.assertTrue(rig.animals.getStackInSlot(0).getCount() == 1 && rig.water.getInternalTank().getFluidInTank(0).getAmount() == 200 && rig.energy.getInternalEnergyStorage().getEnergyStored() == 16000, "More than 256 output stacks must be safely rejected by the real machine before any resources are consumed");
         helper.assertTrue(counts(rig.outputs).isEmpty(), "Rejected oversize loot must not leak partial output");
-        // Stop the deliberately invalid fixture from retrying during subsequent GameTests.
-        rig.animals.setStackInSlot(0, ItemStack.EMPTY);
+        helper.assertTrue((boolean) field(rig.machine, "isStructureValid"), "Preparation rejection must preserve the valid structure");
+        helper.assertTrue((int) field(rig.machine, "processingFailureCooldown") == 20, "Rejected preparation must enter the provider retry cooldown");
+        for (int retry = 0; retry < 3; retry++) {
+            for (int remaining = 19; remaining >= 0; remaining--) {
+                tick(helper, rig.machine, 1);
+                helper.assertTrue((int) field(rig.machine, "processingFailureCooldown") == remaining,
+                        "Unchanged oversized input must not regenerate loot or reset cooldown each tick");
+            }
+            tick(helper, rig.machine, 1);
+            helper.assertTrue((int) field(rig.machine, "processingFailureCooldown") == 20,
+                    "Only an expired cooldown may retry unchanged rejected input");
+            helper.assertTrue((boolean) field(rig.machine, "isStructureValid") && snapshot(rig.machine) == null,
+                    "Repeated rejection must preserve structure without starting a transaction");
+            helper.assertTrue(rig.animals.getStackInSlot(0).getCount() == 1
+                    && rig.water.getInternalTank().getFluidInTank(0).getAmount() == 200
+                    && rig.energy.getInternalEnergyStorage().getEnergyStored() == 16000
+                    && counts(rig.outputs).isEmpty(), "Sustained rejection must preserve all resources and outputs");
+        }
+        rig.animals.setStackInSlot(0, animal(ItemRegistries.COW.get(), "cow", -1, "controlled_slaughter"));
+        tick(helper, rig.machine, 100);
+        helper.assertTrue(rig.animals.getStackInSlot(0).isEmpty() && !counts(rig.outputs).isEmpty(),
+                "Replacing rejected input must recover after the bounded cooldown");
         helper.succeed();
     }
 

@@ -77,16 +77,22 @@ public final class MachineUi {
                 INPUT_X, PRIMARY_Y, INPUT_W, 40));
         root.addChild(at(items(() -> outputs(data), 2, 30, true),
                 OUTPUT_X, PRIMARY_Y, OUTPUT_W, 40));
+        root.addChild(at(new RecipeFluidOutputs(data), OUTPUT_X, SECONDARY_Y, OUTPUT_W, 40));
         progress(root, data, PROGRESS_X, PROGRESS_Y, PROGRESS_W, PROGRESS_H);
 
         // Optional recipe requirements occupy one shared secondary baseline.
         switch (kind) {
             case MIXER -> { }
             case FERMENTER -> recipeFluid(root, data, fluids, 31, SECONDARY_Y);
-            case BREEDINGCHAMBER, TERRESTRIALHABITAT -> {
+            case BREEDINGCHAMBER -> {
                 root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 3, 24, true),
                         INPUT_X, SECONDARY_Y, INPUT_W, 30));
                 recipeFluid(root, data, fluids, 128, SECONDARY_Y);
+            }
+            case TERRESTRIALHABITAT -> {
+                root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 3, 24, true),
+                        INPUT_X, SECONDARY_Y, INPUT_W, 22));
+                recipeFluid(root, data, fluids, INPUT_X, SECONDARY_Y + 22);
             }
             case GREENHOUSE -> {
                 root.addChild(at(items(() -> inputs(data, 1, Integer.MAX_VALUE), 3, 24, true),

@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
@@ -79,6 +80,13 @@ final class PreviewFixtures {
         MachineDisplay data = new MachineDisplay(() -> valid, () -> active, () -> 307200,
                 () -> 614400, () -> recipe.getTotalEnergy() / 2, recipe::getTotalEnergy,
                 () -> 64, () -> active ? recipe : null);
+        if (kind == MachineUi.Kind.TERRESTRIALHABITAT) {
+            String products = new RecipeFluidOutputs(data).productDescription();
+            if (active && (!products.contains("Milk") || !products.contains("1000 mB per cycle"))) {
+                throw new IllegalStateException("Habitat controller must display the milk product and exact amount");
+            }
+            if (!active && !products.isEmpty()) throw new IllegalStateException("Inactive controller leaked fluid products");
+        }
         if (kind == MachineUi.Kind.MIXER) return MachineUi.build(kind, title(machineId(kind)), data);
         return MachineUi.build(kind, title(machineId(kind)), data,
                 new FluidWidget(() -> water(16000), () -> 32000, () -> valid),
@@ -108,8 +116,9 @@ final class PreviewFixtures {
                 outputs = new OutputItem[]{output(ItemRegistries.BABY_COW.get(), 1, 1)};
             }
             case TERRESTRIALHABITAT -> {
-                inputs = new IngredientItem[]{input(ItemRegistries.BABY_COW.get(), 1), input(Items.WHEAT, 2)};
-                outputs = new OutputItem[]{output(ItemRegistries.COW.get(), 1, 1), output(ItemRegistries.MANURE.get(), 2, 1)};
+                inputs = new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.COW.get()), false), input(Items.WHEAT, 1)};
+                outputs = new OutputItem[]{output(ItemRegistries.MANURE.get(), 1, 1)};
+                energy = 32000;
             }
             case SLAUGHTERHOUSE -> {
                 // Mirror the largest production recipe so the two-column second row and chance label stay covered.
@@ -124,7 +133,8 @@ final class PreviewFixtures {
             }
             default -> throw new IllegalArgumentException("Missing fixture for " + kind);
         }
-        return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, new FluidStack[0], energy);
+        return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, kind == MachineUi.Kind.TERRESTRIALHABITAT
+                ? new FluidStack[]{new FluidStack(NeoForgeMod.MILK.get(), 1000)} : new FluidStack[0], energy);
     }
 
     private static IngredientItem input(Item item, int count) { return new IngredientItem(new ItemStack(item, count), true); }

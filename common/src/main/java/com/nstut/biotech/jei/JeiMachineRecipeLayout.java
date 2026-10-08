@@ -6,6 +6,7 @@ import com.nstut.biotech.items.MobItem;
 import com.nstut.biotech.recipes.SlaughterhouseLootPreparation;
 import com.nstut.biotech.recipes.SlaughterhouseRecipe;
 import com.nstut.biotech.recipes.TerrestrialHabitatRecipe;
+import com.nstut.biotech.recipes.AnimalRecipeStatePreparation;
 import com.nstut.nstutlib.recipes.ModRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -52,7 +53,9 @@ final class JeiMachineRecipeLayout {
             if (planned.kind() == JeiRecipeLayout.Kind.ITEM) {
                 var output = recipe.getItemOutputs().get(i);
                 var slot = builder.addSlot(RecipeIngredientRole.OUTPUT).setSlotName("output-item-" + i)
-                        .setStandardSlotBackground().addItemStack(output.getItemStack());
+                        .setStandardSlotBackground().addItemStacks(recipe instanceof TerrestrialHabitatRecipe habitat
+                                ? AnimalRecipeStatePreparation.habitatOutputVariants(habitat, output.getItemStack())
+                                : java.util.List.of(output.getItemStack()));
                 JeiOutputChanceHelper.addChance(slot, output.getChance());
                 addRate(slot, output.getItemStack().getCount(), output.getChance(), recipe.getTotalEnergy(), false);
             } else {

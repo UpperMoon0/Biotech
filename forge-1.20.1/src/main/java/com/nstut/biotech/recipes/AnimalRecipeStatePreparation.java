@@ -98,7 +98,7 @@ public final class AnimalRecipeStatePreparation {
             if (outputs.size() >= 256) {
                 // The provider persists at most 256 entries. Abort before startRecipe/consumption
                 // rather than create an in-flight transaction that cannot survive a save/reload.
-                throw new IllegalStateException("Prepared animal outputs exceed the snapshot entry limit");
+                throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Prepared animal outputs exceed the snapshot entry limit");
             }
             ItemStack part = remaining.copy();
             part.setCount(Math.min(limit, remaining.getCount()));
@@ -135,6 +135,21 @@ public final class AnimalRecipeStatePreparation {
             recolored.putString("id", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(wool).toString());
             output.setItemStack(ItemStack.of(recolored));
         }
+    }
+
+    /** JEI alternatives mirror runtime recoloring, including authored metadata and count. */
+    public static List<ItemStack> habitatOutputVariants(TerrestrialHabitatRecipe recipe, ItemStack authored) {
+        if (!authored.is(Items.WHITE_WOOL) || recipe.getItemIngredients().stream().noneMatch(
+                input -> "minecraft:sheep".equals(CapturedAnimalStackState.entityTypeId(input.getItemStack())))) {
+            return List.of(authored.copy());
+        }
+        List<ItemStack> variants = new ArrayList<>();
+        for (DyeColor color : DyeColor.values()) {
+            CompoundTag tag = authored.save(new CompoundTag());
+            tag.putString("id", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(woolFor(color)).toString());
+            variants.add(ItemStack.of(tag));
+        }
+        return variants;
     }
 
     private static int sheepColorId(ItemStack donor, CompoundTag state) {
