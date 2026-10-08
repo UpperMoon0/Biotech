@@ -40,7 +40,7 @@ Install the file matching both your Minecraft version and loader. A jar built fo
 
 Place a **Net Trap** and let an entity in `#biotech:capturable` step onto it. The animal becomes an item that preserves gameplay-relevant state and can later be released again or processed by Biotech machinery when a matching recipe exists.
 
-Biotech 2.3 includes these capturable entities by default:
+Biotech includes these capturable entities by default:
 
 - Cows
 - Chickens
@@ -60,8 +60,8 @@ Adult/baby state, variants, custom names, and other persistent gameplay state ar
 
 - **Greenhouse** — grows wheat, beetroot, carrots, potatoes, melons, pumpkins, cactus, and sugar cane. Supported crops have higher-yield fertilizer recipes.
 - **Breeding Chamber** — combines two captured adult parents with matching food, water, and energy to produce a baby animal. Parent items are required but not consumed.
-- **Terrestrial Habitat** — raises captured baby animals into adults and produces manure as a by-product.
-- **Slaughterhouse** — converts captured adult animals into larger batches of their normal drops.
+- **Terrestrial Habitat** — raises captured babies while retaining each individual's state, or keeps adults as non-consumed inhabitants to produce eggs, colored wool, and milk, with manure as a by-product.
+- **Slaughterhouse** — resolves captured animals' real entity loot tables for its default recipes. Explicit datapack item outputs remain static overrides.
 - **Mixer** — produces animal feeds and supports recipes with item and fluid inputs/outputs.
 - **Fermenter** — processes organic materials, including turning manure into Fertilizer.
 
@@ -81,7 +81,7 @@ External automation is directional: connect item pipes, fluid pipes, or energy c
 
 ### Transaction-safe machine processing
 
-Biotech 2.3 keeps NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid.
+Biotech uses NsTut Lib's persisted transactional recipe engine. Active recipes survive safe reloads, partial commits can roll back, probabilistic output decisions do not reroll after reload, and machines pause safely when their multiblock becomes invalid. Biotech 2.4 binds prepared livestock transactions to their concrete animal inputs, so replacing an animal while outputs are blocked cannot transfer the old animal's prepared state to its replacement. See [2.4 processing and compatibility](docs/upgrade-2.4.md).
 
 ---
 
@@ -89,7 +89,7 @@ Biotech 2.3 keeps NsTut Lib's persisted transactional recipe engine. Active reci
 
 The **Biotech Guide Book** is the main player reference. It covers machine basics, Net Traps, hatches, crafting recipes, and every multiblock structure.
 
-With **JEI**, each Biotech machine has a recipe category showing exact inputs, fluid quantities, outputs, chances, and energy cost. With **Jade**, machine controllers expose status information such as structure validity, progress, energy, and fluid state.
+With **JEI**, each Biotech machine has a recipe category showing inputs, fluid quantities, outputs, chances, and energy cost. Probability tooltips preserve exact recipe probabilities; scrolling ingredient grids keep large custom recipes readable. Persistent animal inputs and production timing are explained in the recipe view. With **Jade**, machine controllers expose status information such as structure validity, progress, energy, and fluid state.
 
 ---
 
@@ -193,7 +193,9 @@ NeoForge 1.21.1 and 26.1.2 use lowercase item counts and modern fluid fields:
 ./gradlew gameTestAll
 ```
 
-Generated machine data is deterministic and verified during builds. Each target must generate exactly 59 machine recipes using the schema and datapack layout required by that Minecraft version.
+Generated machine data is deterministic and verified during builds. Each target must generate exactly 70 machine recipes using the schema and datapack layout required by that Minecraft version.
+
+Draft pull requests normally use the fast CI lane. Add the `full-validation` label to opt into every loader's unit/build and GameTest jobs without changing the pull request's draft status.
 
 ## License
 

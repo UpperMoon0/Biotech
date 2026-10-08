@@ -14,13 +14,43 @@ neoForge {
     runs {
         client { client() }
         server { server(); programArgument '--nogui' }
-        gameTestServer { type = 'gameTestServer' }
+        gameTestServer {
+            type = 'gameTestServer'
+            programArgument '--report'
+            programArgument layout.buildDirectory.file('reports/gametest/results.xml').get().asFile.absolutePath
+        }
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
     mods { "${rootProject.mod_id}" { sourceSet(sourceSets.main) } }
 }
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
+}
+
+// A shutdown exception can hide a failing GameTest exit status. Check the fresh report itself.
+tasks.named('runGameTestServer').configure {
+    def report = layout.buildDirectory.file('reports/gametest/results.xml')
+    doFirst {
+        report.get().asFile.parentFile.mkdirs()
+        delete report
+    }
+    doLast {
+        def result = report.get().asFile
+        if (!result.isFile()) throw new GradleException('GameTest server did not produce its completion report')
+        def document = new groovy.xml.XmlSlurper().parse(result)
+        def cases = document.depthFirst().findAll { it.name() == 'testcase' }
+        def failed = cases.findAll { it.failure.size() || it.error.size() || it.skipped.size() }
+        if (!failed.isEmpty()) throw new GradleException("GameTest failures: ${failed.collect { it.@name.text() }}")
+        def expected = [] as Set
+        fileTree('src/main/java/com/nstut/biotech/gametest').matching { include '*GameTests.java' }.each { source ->
+            (source.getText('UTF-8') =~ /\bregister\("([a-z0-9_]+)"/).each { match -> expected.add("biotech:${match[1]}".toString()) }
+        }
+        def completed = cases.collect { it.@name.text() } as Set
+        if (expected.isEmpty() || !completed.containsAll(expected)) {
+            throw new GradleException("GameTest coverage missing: ${expected - completed}")
+        }
+        logger.lifecycle("Verified ${expected.size()} Biotech GameTests from the fresh XML report.")
+    }
 }
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
@@ -49,8 +79,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipe')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 59) {
-            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 70) {
+            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         recipeFiles.each { recipe ->
             def text = recipe.getText('UTF-8')
@@ -80,8 +110,14 @@ tasks.named('check').configure { dependsOn verifyGeneratedRecipes }
 
 repositories {
     mavenLocal()
-    maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
-    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    exclusiveContent {
+        forRepository { maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' } }
+        filter { includeGroup 'mezz.jei' }
+    }
+    exclusiveContent {
+        forRepository { maven { name = 'Curse Maven'; url = 'https://www.cursemaven.com' } }
+        filter { includeGroup 'curse.maven' }
+    }
     exclusiveContent {
         forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
         filter { includeGroup 'maven.modrinth' }

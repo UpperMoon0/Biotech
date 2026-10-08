@@ -5,7 +5,11 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Slaughterhouse processes captured adult animals into drops, with larger yields than a normal kill.$(br)$(br)Supply an adult animal, water, and energy. The animal is consumed when the recipe completes."
+      "text": "The Slaughterhouse rolls the captured animal's actual entity loot table once per consumed individual. Variant state and datapack changes apply. Counts are multiplied by the server's slaughterhouseYieldMultiplier setting (default 2, range 1\u201364) and split into legal stacks.$(br)$(br)Prepared results survive blocked outputs, power loss and reloads. The machine uses a non-player, non-looting context; player-only drops are not granted."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Packmakers: empty itemOutputs opt into entity loot. Nonempty itemOutputs are explicit static products, keep their listed chances and counts, and are not multiplied. Retained animal catalysts never grant death loot.$(br)$(br)The multiplier affects new transactions only. Oversized loot exceeding 256 output stacks pauses safely before consuming anything; reduce the multiplier or loot-table yield. A full output inventory also prevents consumption."
     },
     {
       "multiblock": {

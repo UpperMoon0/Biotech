@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, labeled, unlabeled]
   push:
     branches: [main]
   workflow_dispatch:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   draft-fast:
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft && !contains(github.event.pull_request.labels.*.name, 'full-validation')
     name: draft-fast-neoforge-26.1.2
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -77,7 +77,8 @@ jobs:
           if-no-files-found: warn
 
   build:
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    # Opt-in keeps draft status while validating every supported loader and GameTest lane.
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, 'full-validation')
     name: ${{ matrix.target }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -154,4 +155,23 @@ jobs:
         if: matrix.target == 'neoforge-26.1.2'
         run: ./gradlew verifyPatchouliDocs verifyHandAuthoredMachineRecipeParity --no-daemon --stacktrace
       - name: Forge/NeoForge GameTests
-        run: ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :${{ matrix.target }}:runGameTestServer --no-daemon --stacktrace 2>&1 | tee "${{ matrix.target }}-gametest.log"
+          python3 scripts/verify_gametest_log.py "${{ matrix.target }}" "${{ matrix.target }}-gametest.log"
+      - name: Upload unit and GameTest evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verification-${{ matrix.target }}
+          path: |
+            ${{ matrix.target }}/build/test-results/
+            ${{ matrix.target }}/build/reports/tests/
+            ${{ matrix.target }}/build/reports/gametest/
+            ${{ matrix.target }}/run/logs/
+            ${{ matrix.target }}/runGameTestServer/logs/
+            ${{ matrix.target }}-build.log
+            ${{ matrix.target }}-gametest.log
+          if-no-files-found: warn
+          retention-days: 14

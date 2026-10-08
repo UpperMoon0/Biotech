@@ -1,0 +1,43 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:sheep",
+        "count": 1
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "biotech:sheep_feed",
+        "count": 4
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "minecraft:white_wool",
+        "count": 3
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "count": 3
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 500
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 64000
+}

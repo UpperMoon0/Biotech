@@ -35,14 +35,15 @@ public final class UiPreviewRunner {
     public UiPreviewRunner() { }
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
+        if (Boolean.getBoolean("biotech.jeiPreview.enabled")) return;
         Minecraft mc = Minecraft.getInstance();
         try {
             if (previews == null && mc.level != null && mc.player != null && mc.screen == null && mc.getOverlay() == null) {
                 output = Path.of(System.getProperty("biotech.uiPreview.output"));
                 Files.createDirectories(output);
                 previews = PreviewFixtures.all();
-                if (previews.size() != 56 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 56) {
-                    throw new IllegalStateException("Expected 56 unique preview cases");
+                if (previews.size() != 63 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 63) {
+                    throw new IllegalStateException("Expected 63 unique preview cases");
                 }
                 mc.setScreen(new PreviewScreen(previews.get(0)));
             } else if (advance) {
@@ -74,6 +75,7 @@ public final class UiPreviewRunner {
         private final PreviewFixtures.Preview preview;
         private int frames;
         private boolean captured;
+        private long firstRender;
 
         PreviewScreen(PreviewFixtures.Preview preview) {
             super(Component.literal(preview.name()));
@@ -100,14 +102,75 @@ public final class UiPreviewRunner {
             }
             com.nstut.biotech.views.openui.BiotechBackdrop.paint(
                     new com.nstut.openui.graphics.UiCanvas(g, font), uiLeft(), uiTop(), uiWidth(), uiHeight());
-            // A neutral pointer and partial tick keep hover effects and animations out of baseline previews.
-            super.render(g, -1, -1, 0);
-            if (!captured && ++frames >= 8) {
+            // Chance tooltip cases use a fixed pointer; other previews keep neutral hover state.
+            if (firstRender == 0) firstRender = System.nanoTime();
+            int pointerX = -1, pointerY = -1;
+            if (preview.name().equals("controller-chances-tiny") || preview.name().equals("controller-chances-fractional")) {
+                pointerX = uiLeft() + com.nstut.biotech.views.openui.ControllerOutputLayout.VIEWPORT_X
+                        + (preview.name().endsWith("-tiny") ? 8 : 36);
+                pointerY = uiTop() + com.nstut.biotech.views.openui.ControllerOutputLayout.VIEWPORT_Y + 8;
+            }
+            super.render(g, pointerX, pointerY, 0);
+            frames++;
+            if (preview.name().startsWith("controller-") && preview.name().endsWith("-scrolled") && frames == 2) {
+                if (!mouseScrolled(uiLeft() + 156, uiTop() + 114, 0, -100))
+                    throw new IllegalStateException("Mixed controller products must accept native scrolling");
+            }
+            boolean hoveredChance = pointerX >= 0;
+            if (!captured && frames >= 8 && (!hoveredChance || System.nanoTime() - firstRender >= 500_000_000L)) {
+                if (hoveredChance && uiRuntime().overlays().components().stream()
+                        .noneMatch(component -> component instanceof com.nstut.openui.controls.Tooltip))
+                    throw new IllegalStateException("Chance screenshot must contain the native controller tooltip");
+                if (preview.name().startsWith("controller-chances")) verifyChances();
+                else if (preview.name().startsWith("controller-")) verifyMixedProducts();
                 g.flush();
                 capture();
                 captured = true;
                 advance = true;
             }
+        }
+
+        private void verifyChances() {
+            var products = findProducts(uiRuntime().root());
+            if (products == null) throw new IllegalStateException("Chance preview must use production controller outputs");
+            String[] exact = {"0.001%", "12.3456%", "0%", "99.9999%"};
+            for (int i = 0; i < exact.length; i++) {
+                String tooltip = products.productAt(products.getX()
+                        + com.nstut.biotech.views.openui.ControllerOutputLayout.itemX(i) + 8,
+                        products.getY() + com.nstut.biotech.views.openui.ControllerOutputLayout.itemY(i) + 8);
+                if (tooltip == null || !tooltip.endsWith(" (" + exact[i] + ")"))
+                    throw new IllegalStateException("Controller chance tooltip lost precision: " + tooltip);
+            }
+        }
+
+        private void verifyMixedProducts() {
+            var products = findProducts(uiRuntime().root());
+            if (products == null) throw new IllegalStateException("Controller preview must use the production combined output component");
+            var viewport = products.parent();
+            if (viewport.getY() != uiTop() + com.nstut.biotech.views.openui.ControllerOutputLayout.VIEWPORT_Y
+                    || viewport.getHeight() != com.nstut.biotech.views.openui.ControllerOutputLayout.VIEWPORT_HEIGHT)
+                throw new IllegalStateException("Controller output viewport drifted into the footer");
+            if (products.productAt(viewport.getX() + 8, viewport.getY() + viewport.getHeight() + 2) != null)
+                throw new IllegalStateException("Clipped controller outputs must not expose off-viewport hover targets");
+            if (preview.name().endsWith("-scrolled")) {
+                String product = products.productAt(viewport.getX() + 8, viewport.getY() + viewport.getHeight() - 20);
+                String expected = preview.name().contains("long") ? "500 mB per cycle" : "1000 mB per cycle";
+                if (product == null || !product.contains(expected))
+                    throw new IllegalStateException("Final fluid product must be reachable after native scrolling: " + product);
+            } else {
+                String product = products.productAt(viewport.getX() + 8, viewport.getY() + 40);
+                if (product == null || !product.contains("13%"))
+                    throw new IllegalStateException("Third item and its chance must stay in the item lane: " + product);
+            }
+        }
+
+        private com.nstut.biotech.views.openui.RecipeOutputs findProducts(UIComponent root) {
+            if (root instanceof com.nstut.biotech.views.openui.RecipeOutputs products) return products;
+            for (int i = 0; i < root.childCount(); i++) {
+                var found = findProducts(root.child(i));
+                if (found != null) return found;
+            }
+            return null;
         }
 
         private void capture() {

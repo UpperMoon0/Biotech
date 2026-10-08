@@ -5,7 +5,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Terrestrial Habitat raises captured baby animals into adults.$(br)$(br)Supply a baby animal, its matching food, water, and energy. The baby animal and food are consumed; the machine outputs the adult animal and manure."
+      "text": "The Terrestrial Habitat raises captured baby animals into adults and can keep adults for renewable production.$(br)$(br)Growth recipes consume the baby animal and food, producing the same individual as an adult plus manure. Renewable recipes keep the adult animal in place: chickens produce eggs, cows produce milk through the Fluid Output Hatch, and sheep produce wool matching their captured color."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Renewable tier 1 cycles keep 1 adult and consume 2 food, 250 mB water and 32,000 FE for 1 egg/wool or 1,000 mB milk, plus 1 manure. Tier 2 uses 4 feed, 500 mB and 64,000 FE for 3 products (3,000 mB milk), plus 3 manure.$(br)$(br)At a steady 512 FE/t these take 63 or 125 processing ticks (about 3.15 or 6.25 seconds). Less power or blocked outputs extends the cycle. Both item and milk outputs must fit before inputs are consumed."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Datapacks can add renewable recipes for goats or modded captured species. Use biotech:captured_animal with an EntityType selector, BiotechRecipeLifecycle set to adult, and isConsumable set to false. Define any registered item/fluid outputs and the desired food, water and energy costs.$(br)$(br)Milk is minecraft:milk and Biotech enables it itself. Goat examples for each target are included in the production datapack documentation."
     },
     {
       "multiblock": {
@@ -19,7 +27,8 @@
           "h": "biotech:fluid_input_hatch[facing=west]",
           "i": "minecraft:grass_block[snowy=false]",
           "j": "biotech:item_input_hatch[facing=south]",
-          "k": "biotech:item_output_hatch[facing=north]"
+          "k": "biotech:item_output_hatch[facing=north]",
+          "l": "biotech:fluid_output_hatch[facing=west]"
         },
         "symmetrical": true,
         "pattern": [
@@ -69,7 +78,7 @@
             "eeefeee"
           ],
           [
-            "eeegehe",
+            "elegehe",
             "eiieeej",
             "eiieeee",
             "kiieeej",

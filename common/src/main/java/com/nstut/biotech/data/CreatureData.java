@@ -1,7 +1,6 @@
 package com.nstut.biotech.data;
 
 import com.nstut.biotech.models.Creature;
-import com.nstut.biotech.models.Drop;
 import com.nstut.biotech.models.Food;
 
 import java.util.Arrays;
@@ -58,31 +57,5 @@ public class CreatureData {
         ));
     }};
 
-    public final static HashMap<Creature, List<Drop>> DROPS = new HashMap<>() {{
-        put(CREATURE_CHICKEN, List.of(
-                new Drop("minecraft:chicken", 2),
-                new Drop("minecraft:bone", 1),
-                new Drop("minecraft:feather", 3)
-        ));
-        put(CREATURE_COW, List.of(
-                new Drop("minecraft:beef", 4),
-                new Drop("minecraft:bone", 2),
-                new Drop("minecraft:leather", 3)
-        ));
-        put(CREATURE_PIG, List.of(
-                new Drop("minecraft:porkchop", 4),
-                new Drop("minecraft:bone", 2)
-        ));
-        put(CREATURE_SHEEP, List.of(
-                new Drop("minecraft:mutton", 3),
-                new Drop("minecraft:bone", 2),
-                new Drop("minecraft:white_wool", 1)
-        ));
-        put(CREATURE_RABBIT, List.of(
-                new Drop("minecraft:rabbit", 2),
-                new Drop("minecraft:bone", 1),
-                new Drop("minecraft:rabbit_hide", 2),
-                new Drop("minecraft:rabbit_foot", 1, 0.13f)
-        ));
-    }};
+
 }

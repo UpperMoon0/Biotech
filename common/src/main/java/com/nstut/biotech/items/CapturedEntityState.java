@@ -41,8 +41,10 @@ public final class CapturedEntityState {
         captured.remove("Motion");
         captured.remove("Rotation");
         captured.remove("FallDistance");
+        captured.remove("fall_distance");
         captured.remove("PortalCooldown");
         captured.remove("Leash");
+        captured.remove("leash");
         captured.remove("Passengers");
         captured.remove("RootVehicle");
         captured.remove("Dimension");

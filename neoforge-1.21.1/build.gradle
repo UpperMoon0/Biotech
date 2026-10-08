@@ -17,6 +17,7 @@ sourceSets {
 configurations {
     uiPreviewImplementation.extendsFrom implementation
     uiPreviewRuntimeOnly.extendsFrom runtimeOnly
+    uiPreviewCompileOnly.extendsFrom compileOnly
 }
 neoForge {
     version = rootProject.neoforge_version_1_21_1
@@ -36,6 +37,15 @@ neoForge {
             programArguments.addAll '--width', '1024', '--height', '832', '--quickPlaySingleplayer', 'world'
             systemProperty 'biotech.uiPreview.output', layout.buildDirectory.dir('ui-previews').get().asFile.absolutePath
         }
+        jeiPreview {
+            client()
+            sourceSet = sourceSets.uiPreview
+            loadedMods = [mods.biotech, mods.biotech_ui_preview]
+            gameDirectory = layout.buildDirectory.dir('jei-preview-run').get().asFile
+            programArguments.addAll '--width', '1024', '--height', '832', '--quickPlaySingleplayer', 'world'
+            systemProperty 'biotech.jeiPreview.enabled', 'true'
+            systemProperty 'biotech.jeiPreview.output', layout.buildDirectory.dir('jei-previews').get().asFile.absolutePath
+        }
         configureEach { logLevel = org.slf4j.event.Level.INFO }
     }
     addModdingDependenciesTo sourceSets.uiPreview
@@ -48,15 +58,15 @@ neoForge {
 
 tasks.register('renderUiPreviews') {
     group = 'verification'
-    description = 'Runs the isolated client renderer and verifies all 56 UI PNG previews.'
+    description = 'Runs the isolated client renderer and verifies all 63 UI PNG previews.'
     dependsOn 'runUiPreview'
     doLast {
         def output = layout.buildDirectory.dir('ui-previews').get().asFile
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('UI renderer did not finish: manifest.json is missing')
         def entries = new groovy.json.JsonSlurper().parse(manifest)
-        if (entries.size() != 56 || entries.collect { it.file }.toSet().size() != 56) {
-            throw new GradleException('Expected exactly 56 unique UI previews')
+        if (entries.size() != 63 || entries.collect { it.file }.toSet().size() != 63) {
+            throw new GradleException('Expected exactly 63 unique UI previews')
         }
         entries.each { entry ->
             def hatch = entry.file.contains('_hatch-')
@@ -85,9 +95,10 @@ tasks.register('renderUiPreviews') {
             }
         }
         assertEntityDetail('breeding_chamber-active.png', 140, 238)
-        assertEntityDetail('breeding_chamber-active.png', 364, 238)
+        // First output cell: viewport (146,104), cell padding 2, icon inset 1, GUI scale 2.
+        assertEntityDetail('breeding_chamber-active.png', 326, 242)
         assertEntityDetail('slaughterhouse-active.png', 140, 238)
-        logger.lifecycle("Verified 56 UI previews, including live animal entity models, in ${output}")
+        logger.lifecycle("Verified 63 UI previews, including live animal entity models, in ${output}")
     }
 }
 
@@ -174,8 +185,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipe')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 59) {
-            throw new GradleException("Expected 59 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 70) {
+            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         recipeFiles.each { recipe ->
             def text = recipe.getText('UTF-8')
@@ -207,8 +218,14 @@ tasks.named('check').configure { dependsOn verifyGeneratedRecipes }
 
 repositories {
     mavenLocal()
-    maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' }
-    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+    exclusiveContent {
+        forRepository { maven { name = "Jared's maven"; url = 'https://maven.blamejared.com/' } }
+        filter { includeGroup 'mezz.jei' }
+    }
+    exclusiveContent {
+        forRepository { maven { name = 'Curse Maven'; url = 'https://www.cursemaven.com' } }
+        filter { includeGroup 'curse.maven' }
+    }
     exclusiveContent {
         forRepository { maven { name = 'Modrinth'; url = 'https://api.modrinth.com/maven' } }
         filter { includeGroup 'maven.modrinth' }
@@ -251,3 +268,48 @@ sourceSets.main.resources.srcDir(generateModMetadata)
 neoForge.ideSyncTask(generateModMetadata)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 publishing { publications { mavenJava(MavenPublication) { from components.java; artifactId = base.archivesName.get() } } }
+
+// Real JEI integration gate: all categories, precise chance tooltips, catalysts, and scrolling.
+tasks.register('renderJeiPreviews') {
+    group = 'verification'
+    description = 'Runs real JEI slot/tooltip/scroll assertions and verifies 15 client screenshots.'
+    dependsOn 'runJeiPreview'
+    doLast {
+        def output = layout.buildDirectory.dir('jei-previews').get().asFile
+        def manifest = new File(output, 'manifest.json')
+        if (!manifest.isFile()) throw new GradleException('JEI renderer did not finish: manifest.json is missing')
+        def images = new groovy.json.JsonSlurper().parse(manifest)
+        if (images.size() != 15 || images.collect { it.file }.toSet().size() != 15) {
+            throw new GradleException('Expected 15 unique real JEI previews')
+        }
+        images.each { entry ->
+            def image = javax.imageio.ImageIO.read(new File(output, entry.file))
+            if (image == null || image.width != 1024 || image.height != 832) {
+                throw new GradleException("Missing/invalid JEI screenshot: ${entry.file}")
+            }
+        }
+        logger.lifecycle("Verified actual JEI layouts, tooltips, scrolling, and 15 screenshots in ${output}")
+    }
+}
+
+def cleanJeiPreviewRun = tasks.register('cleanJeiPreviewRun') {
+    outputs.upToDateWhen { false }
+    doLast { delete layout.buildDirectory.dir('jei-preview-run') }
+}
+tasks.named('prepareJeiPreviewRun').configure { dependsOn cleanJeiPreviewRun }
+tasks.named('runJeiPreview').configure {
+    dependsOn 'runGameTestServer'
+    doFirst {
+        delete layout.buildDirectory.dir('jei-previews')
+        def runDir = layout.buildDirectory.dir('jei-preview-run').get().asFile
+        runDir.mkdirs()
+        def sourceWorld = file('run/world')
+        if (!new File(sourceWorld, 'level.dat').isFile()) throw new GradleException('JEI preview requires the GameTest world')
+        copy {
+            from sourceWorld
+            into new File(runDir, 'saves/world')
+            exclude 'session.lock'
+        }
+        new File(runDir, 'options.txt').text = 'guiScale:2\nmaxFps:60\nenableVsync:false\nlang:en_us\n'
+    }
+}

@@ -91,6 +91,16 @@ public class CapturedAnimalItem extends Item {
         return actualBaby == expectedBaby;
     }
 
+    /** Human-readable recipe requirement, including selector-only JEI display stacks. */
+    public static Component lifecycleTooltip(ItemStack stack) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (root == null) return null;
+        String lifecycle = root.getString(RECIPE_LIFECYCLE_TAG).orElse(LIFECYCLE_ANY);
+        if (LIFECYCLE_BABY.equals(lifecycle)) return Component.translatable("tooltip.biotech.captured_animal.baby");
+        if (LIFECYCLE_ADULT.equals(lifecycle)) return Component.translatable("tooltip.biotech.captured_animal.adult");
+        return null;
+    }
+
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
@@ -110,19 +120,9 @@ public class CapturedAnimalItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        EntityType<?> entityType = EntityType.byString(entityTypeId).orElse(null);
-        if (entityType == null) {
-            return InteractionResult.FAIL;
-        }
-
-        Entity entity = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        Entity entity = createCapturedEntity(level, stack);
         if (entity == null) {
             return InteractionResult.FAIL;
-        }
-
-        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
-            entity.load(TagValueInput.create(ProblemReporter.DISCARDING, entity.registryAccess(), CapturedEntityState.sanitize(captured)));
         }
 
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
@@ -135,6 +135,30 @@ public class CapturedAnimalItem extends Item {
             stack.shrink(1);
         }
         return InteractionResult.CONSUME;
+    }
+
+    public Entity createCapturedEntity(Level level, ItemStack stack) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        String entityTypeId = root.getString(ENTITY_TYPE_TAG).orElse("");
+        if (entityTypeId.isEmpty()) {
+            return null;
+        }
+        EntityType<?> entityType = EntityType.byString(entityTypeId).orElse(null);
+        if (entityType == null) {
+            return null;
+        }
+        Entity entity = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        if (entity == null) {
+            return null;
+        }
+        if (root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
+            CompoundTag captured = root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG).orElseGet(CompoundTag::new);
+            entity.load(TagValueInput.create(
+                    ProblemReporter.DISCARDING,
+                    entity.registryAccess(),
+                    CapturedEntityState.sanitize(captured)));
+        }
+        return entity;
     }
 
     @Override
@@ -152,5 +176,7 @@ public class CapturedAnimalItem extends Item {
                 tooltip.accept(Component.translatable(
                         "tooltip.biotech.captured_animal",
                         Component.translatable(type.getDescriptionId()))));
+        Component lifecycle = lifecycleTooltip(stack);
+        if (lifecycle != null) tooltip.accept(lifecycle);
     }
 }

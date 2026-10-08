@@ -1,0 +1,43 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:chicken",
+        "count": 1
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:melon_seeds",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "minecraft:egg",
+        "count": 1
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 250
+    }
+  ],
+  "fluidOutputs": [],
+  "energy": 32000
+}

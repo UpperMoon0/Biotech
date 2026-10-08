@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Breeding Chamber produces baby animals in bulk without the normal breeding cooldown.$(br)$(br)Supply two captured adult animals, their matching food, water, and energy. The two parent animals are required by the recipe but are not consumed."
+      "text": "The Breeding Chamber produces baby animals in bulk without the normal breeding cooldown.$(br)$(br)Supply two captured adult animals, their matching food, water, and energy. The two parent animals are required by the recipe but are not consumed.$(br)$(br)Babies deterministically inherit supported traits from the first selected parent, in input slot order. For differently colored sheep, the baby inherits that parent's wool color; colors are not randomly mixed."
     },
     {
       "multiblock": {

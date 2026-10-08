@@ -17,7 +17,7 @@ jobs:
   render:
     name: Render all shared UI layouts
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       LIBGL_ALWAYS_SOFTWARE: '1'
       ALSOFT_DRIVERS: 'null'
@@ -57,12 +57,22 @@ jobs:
           sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 libopenal1
       - name: Render PNG previews
         run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderUiPreviews --no-daemon --stacktrace
+      - name: Verify and render actual JEI recipe layouts
+        run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderJeiPreviews --no-daemon --stacktrace
       - name: Upload PNGs and browsable gallery
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: biotech-ui-previews
           path: neoforge-1.21.1/build/ui-previews/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload JEI visual regression evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: biotech-jei-previews
+          path: neoforge-1.21.1/build/jei-previews/
           if-no-files-found: warn
           retention-days: 14
       - name: Upload renderer logs
@@ -73,4 +83,6 @@ jobs:
           path: |
             neoforge-1.21.1/build/ui-preview-run/logs/
             neoforge-1.21.1/build/ui-preview-run/crash-reports/
+            neoforge-1.21.1/build/jei-preview-run/logs/
+            neoforge-1.21.1/build/jei-preview-run/crash-reports/
           if-no-files-found: warn

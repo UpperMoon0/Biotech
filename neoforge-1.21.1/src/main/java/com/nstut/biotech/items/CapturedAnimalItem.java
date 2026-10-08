@@ -90,6 +90,16 @@ public class CapturedAnimalItem extends Item {
         return actualBaby == expectedBaby;
     }
 
+    /** Human-readable recipe requirement, including selector-only JEI display stacks. */
+    public static Component lifecycleTooltip(ItemStack stack) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (root == null) return null;
+        String lifecycle = root.contains(RECIPE_LIFECYCLE_TAG) ? root.getString(RECIPE_LIFECYCLE_TAG) : LIFECYCLE_ANY;
+        if (LIFECYCLE_BABY.equals(lifecycle)) return Component.translatable("tooltip.biotech.captured_animal.baby");
+        if (LIFECYCLE_ADULT.equals(lifecycle)) return Component.translatable("tooltip.biotech.captured_animal.adult");
+        return null;
+    }
+
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
@@ -138,6 +148,8 @@ public class CapturedAnimalItem extends Item {
                 tooltip.add(Component.translatable(
                         "tooltip.biotech.captured_animal",
                         Component.translatable(type.getDescriptionId()))));
+        Component lifecycle = lifecycleTooltip(stack);
+        if (lifecycle != null) tooltip.add(lifecycle);
     }
     @Nullable
     public Entity createCapturedEntity(Level level, ItemStack stack) {

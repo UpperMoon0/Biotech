@@ -9,29 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "minecraft:chicken",
-        "Count": 2
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "minecraft:bone",
-        "Count": 1
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "minecraft:feather",
-        "Count": 3
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",

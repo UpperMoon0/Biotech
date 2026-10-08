@@ -35,6 +35,8 @@ public class Biotech {
     public static boolean IS_DEV_ENV;
 
     public Biotech(IEventBus modEventBus, ModContainer modContainer) {
+        // Milk recipes must also work when no other mod enables the loader milk fluid.
+        net.neoforged.neoforge.common.NeoForgeMod.enableMilkFluid();
         BlockRegistries.BLOCKS.register(modEventBus);
         BlockEntityRegistries.BLOCK_ENTITIES.register(modEventBus);
         MachineRegistries.register(modEventBus);
@@ -46,6 +48,7 @@ public class Biotech {
         modEventBus.addListener(PacketRegistries::register);
         modEventBus.addListener(BlockEntityRegistries::registerCapabilities);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
     }
 
     @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)

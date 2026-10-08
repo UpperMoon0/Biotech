@@ -2,6 +2,7 @@ package com.nstut.biotech.items;
 
 import com.nstut.biotech.blocks.NetTrapBlock;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashSet;
@@ -12,10 +13,15 @@ public final class CapturedAnimalStackState {
 
     public static CompoundTag read(ItemStack stack) {
         CompoundTag root = stack.getTag();
-        if (root == null || !root.contains(NetTrapBlock.CAPTURED_ENTITY_TAG)) {
-            return new CompoundTag();
+        if (root == null) return new CompoundTag();
+        CompoundTag state = CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG));
+        // Old Biotech stacks stored sheep colour outside CapturedEntity. Normalize that supported
+        // release format before breeding/growth, without mutating the player's original stack.
+        if (!state.contains("Color") && root.contains("SheepColor")
+                && "minecraft:sheep".equals(entityTypeId(stack))) {
+            state.putByte("Color", (byte) root.getInt("SheepColor"));
         }
-        return CapturedEntityState.sanitize(root.getCompound(NetTrapBlock.CAPTURED_ENTITY_TAG));
+        return state;
     }
 
     public static void write(ItemStack stack, CompoundTag state) {
@@ -36,6 +42,30 @@ public final class CapturedAnimalStackState {
     }
     public static CompoundTag forAdult(ItemStack source) {
         return CapturedEntityState.asAdult(read(source));
+    }
+
+    public static String entityTypeId(ItemStack stack) {
+        if (stack.getItem() instanceof MobItem mobItem && mobItem.entityType() != null) {
+            return EntityType.getKey(mobItem.entityType()).toString();
+        }
+        CompoundTag root = stack.getTag();
+        return root != null && root.contains(CapturedAnimalItem.ENTITY_TYPE_TAG)
+                ? root.getString(CapturedAnimalItem.ENTITY_TYPE_TAG)
+                : "";
+    }
+
+    public static void writeDerived(ItemStack target, ItemStack source, CompoundTag state) {
+        String entityTypeId = entityTypeId(source);
+        if (entityTypeId.isEmpty()) {
+            write(target, state);
+            return;
+        }
+        CompoundTag sourceRoot = source.getTag();
+        int sheepColor = state.contains("Color")
+                ? state.getByte("Color")
+                : sourceRoot != null && sourceRoot.contains("SheepColor") ? sourceRoot.getInt("SheepColor") : -1;
+        writeCapture(target, state, entityTypeId, sheepColor);
+        target.getOrCreateTag().remove(CapturedAnimalItem.RECIPE_LIFECYCLE_TAG);
     }
 
     public static CompoundTag forOffspring(ItemStack donorParent) {

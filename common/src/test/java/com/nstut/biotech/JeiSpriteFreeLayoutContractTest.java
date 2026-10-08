@@ -36,8 +36,10 @@ class JeiSpriteFreeLayoutContractTest {
                 assertFalse(source.contains("getSlotDrawable"), context);
                 assertFalse(source.contains("JeiCategoryDraw"), context);
                 assertTrue(source.contains("createDrawableItemLike"), context);
-                assertTrue(source.contains("getRecipeArrow"), context);
-                assertTrue(source.contains("setStandardSlotBackground"), context);
+                String shared = Files.readString(root.resolve("common/src/main/java/com/nstut/biotech/jei/JeiMachineRecipeLayout.java"));
+                assertTrue(shared.contains("addRecipeArrow()"), context);
+                assertTrue(shared.contains("setStandardSlotBackground()"), context);
+                assertTrue(shared.contains("addScrollGridWidget"), context);
                 assertTrue(source.contains("getWidth()"), context);
                 assertTrue(source.contains("getHeight()"), context);
             }

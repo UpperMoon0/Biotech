@@ -6,6 +6,9 @@ import com.nstut.biotech.client.ClientRecipeSync;
 import com.nstut.biotech.client.AnimalSpecialRenderer;
 import com.nstut.biotech.creative_tabs.CreativeTabRegistries;
 import com.nstut.biotech.gametest.BiotechGameTests;
+import com.nstut.biotech.gametest.AnimalTransactionGameTests;
+import com.nstut.biotech.gametest.CaptureReleaseGameTests;
+import com.nstut.biotech.gametest.LivestockProductionGameTests;
 import com.nstut.biotech.items.ItemRegistries;
 import com.nstut.biotech.machines.MachineRegistries;
 import com.nstut.biotech.network.PacketRegistries;
@@ -40,6 +43,8 @@ public class Biotech {
     public static boolean IS_DEV_ENV;
 
     public Biotech(IEventBus modEventBus, ModContainer modContainer) {
+        // Milk recipes must also work when no other mod enables the loader milk fluid.
+        net.neoforged.neoforge.common.NeoForgeMod.enableMilkFluid();
         BlockRegistries.BLOCKS.register(modEventBus);
         BlockEntityRegistries.BLOCK_ENTITIES.register(modEventBus);
         MachineRegistries.register(modEventBus);
@@ -47,13 +52,20 @@ public class Biotech {
         CreativeTabRegistries.CREATIVE_MODE_TABS.register(modEventBus);
         MenuRegistries.MENUS.register(modEventBus);
         BiotechGameTests.TEST_FUNCTIONS.register(modEventBus);
+        AnimalTransactionGameTests.TEST_FUNCTIONS.register(modEventBus);
+        CaptureReleaseGameTests.TEST_FUNCTIONS.register(modEventBus);
+        LivestockProductionGameTests.TEST_FUNCTIONS.register(modEventBus);
 
         modEventBus.addListener(Config::onLoad);
         modEventBus.addListener(PacketRegistries::register);
         modEventBus.addListener(BlockEntityRegistries::registerCapabilities);
         modEventBus.addListener(BiotechGameTests::register);
+        modEventBus.addListener(AnimalTransactionGameTests::register);
+        modEventBus.addListener(CaptureReleaseGameTests::register);
+        modEventBus.addListener(LivestockProductionGameTests::register);
         NeoForge.EVENT_BUS.addListener(Biotech::syncRecipes);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);
     }
 
     private static void syncRecipes(OnDatapackSyncEvent event) {

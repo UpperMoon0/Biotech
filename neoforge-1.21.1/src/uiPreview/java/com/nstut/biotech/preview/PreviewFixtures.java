@@ -57,6 +57,15 @@ final class PreviewFixtures {
             backgrounds.add(p);
             backgrounds.add(new Preview(p.name() + "-textured", p.width(), p.height(), p.content(), true));
         }
+        for (boolean large : new boolean[]{false, true}) {
+            String prefix = large ? "controller-long-products" : "controller-three-items-milk";
+            backgrounds.add(new Preview(prefix, BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT, () -> mixedProducts(large)));
+            backgrounds.add(new Preview(prefix + "-scrolled", BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT, () -> mixedProducts(large)));
+        }
+        for (String suffix : List.of("", "-tiny", "-fractional")) {
+            backgrounds.add(new Preview("controller-chances" + suffix, BiotechStyle.MACHINE_WIDTH,
+                    BiotechStyle.MACHINE_HEIGHT, PreviewFixtures::chanceProducts));
+        }
         return List.copyOf(backgrounds);
     }
 
@@ -78,7 +87,14 @@ final class PreviewFixtures {
         boolean valid = !state.equals("invalid"), active = state.equals("active");
         MachineDisplay data = new MachineDisplay(() -> valid, () -> active, () -> 307200,
                 () -> 614400, () -> recipe.getTotalEnergy() / 2, recipe::getTotalEnergy,
-                () -> 64, () -> active ? recipe : null);
+                () -> kind == MachineUi.Kind.TERRESTRIALHABITAT ? 512 : 64, () -> active ? recipe : null);
+        if (kind == MachineUi.Kind.TERRESTRIALHABITAT) {
+            String products = new RecipeOutputs(data).productDescription();
+            if (active && (!products.contains("Milk") || !products.contains("1000 mB per cycle"))) {
+                throw new IllegalStateException("Habitat controller must display the milk product and exact amount");
+            }
+            if (!active && !products.isEmpty()) throw new IllegalStateException("Inactive controller leaked fluid products");
+        }
         if (kind == MachineUi.Kind.MIXER) return MachineUi.build(kind, title(machineId(kind)), data);
         return MachineUi.build(kind, title(machineId(kind)), data,
                 new FluidWidget(() -> water(16000), () -> 32000, () -> valid),
@@ -87,6 +103,12 @@ final class PreviewFixtures {
     }
 
     private static ModRecipeData recipe(MachineUi.Kind kind) {
+        if (kind == MachineUi.Kind.TERRESTRIALHABITAT) {
+            return net.minecraft.client.Minecraft.getInstance().level.getRecipeManager()
+                    .getAllRecipesFor(com.nstut.biotech.recipes.TerrestrialHabitatRecipe.TYPE).stream()
+                    .filter(holder -> holder.id().getPath().equals("terrestrial_habitat_cow_milk_t1_wheat"))
+                    .findFirst().orElseThrow().value().getRecipe().copy();
+        }
         IngredientItem[] inputs;
         OutputItem[] outputs;
         int energy = 20000;
@@ -107,10 +129,6 @@ final class PreviewFixtures {
                 inputs = new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.COW.get(), 2), false), input(Items.WHEAT, 2)};
                 outputs = new OutputItem[]{output(ItemRegistries.BABY_COW.get(), 1, 1)};
             }
-            case TERRESTRIALHABITAT -> {
-                inputs = new IngredientItem[]{input(ItemRegistries.BABY_COW.get(), 1), input(Items.WHEAT, 2)};
-                outputs = new OutputItem[]{output(ItemRegistries.COW.get(), 1, 1), output(ItemRegistries.MANURE.get(), 2, 1)};
-            }
             case SLAUGHTERHOUSE -> {
                 // Mirror the largest production recipe so the two-column second row and chance label stay covered.
                 inputs = new IngredientItem[]{input(ItemRegistries.RABBIT.get(), 1)};
@@ -125,6 +143,31 @@ final class PreviewFixtures {
             default -> throw new IllegalArgumentException("Missing fixture for " + kind);
         }
         return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, new FluidStack[0], energy);
+    }
+
+    private static UIComponent mixedProducts(boolean large) {
+        OutputItem[] items = new OutputItem[large ? 11 : 3];
+        for (int i = 0; i < items.length; i++) items[i] = output(i == 2 ? Items.RABBIT_FOOT : Items.EGG, i + 1, i == 2 ? .13f : 1);
+        FluidStack[] fluids = large ? new FluidStack[]{new FluidStack(net.neoforged.neoforge.common.NeoForgeMod.MILK.get(), 1000),
+                water(250), new FluidStack(Fluids.LAVA, 500)}
+                : new FluidStack[]{new FluidStack(net.neoforged.neoforge.common.NeoForgeMod.MILK.get(), 1000)};
+        ModRecipeData recipe = new ModRecipeData(new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.COW.get()), false),
+                input(Items.WHEAT, 2)}, items, new FluidStack[]{water(250)}, fluids, 32000);
+        MachineDisplay data = new MachineDisplay(() -> true, () -> true, () -> 307200, () -> 614400,
+                () -> 16000, () -> 32000, () -> 512, () -> recipe);
+        return MachineUi.build(MachineUi.Kind.TERRESTRIALHABITAT, title("terrestrial_habitat"), data,
+                new FluidWidget(() -> water(16000), () -> 32000, () -> true),
+                new FluidWidget(() -> water(250), () -> 250, () -> true));
+    }
+
+    private static UIComponent chanceProducts() {
+        ModRecipeData recipe = new ModRecipeData(new IngredientItem[]{input(Items.WHEAT, 1)},
+                new OutputItem[]{output(Items.EGG, 1, .00001f), output(Items.RABBIT_FOOT, 1, .123456f),
+                        output(Items.FEATHER, 1, 0), output(Items.BONE, 1, .999999f)},
+                new FluidStack[0], new FluidStack[0], 32000);
+        MachineDisplay data = new MachineDisplay(() -> true, () -> true, () -> 307200, () -> 614400,
+                () -> 16000, () -> 32000, () -> 512, () -> recipe);
+        return MachineUi.build(MachineUi.Kind.MIXER, title("mixer"), data);
     }
 
     private static IngredientItem input(Item item, int count) { return new IngredientItem(new ItemStack(item, count), true); }

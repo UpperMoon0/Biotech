@@ -9,22 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "minecraft:porkchop",
-        "Count": 4
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "minecraft:bone",
-        "Count": 2
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",

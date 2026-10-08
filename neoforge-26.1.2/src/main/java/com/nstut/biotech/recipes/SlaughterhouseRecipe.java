@@ -17,6 +17,11 @@ public class SlaughterhouseRecipe extends AnimalMobRecipe<SlaughterhouseRecipe> 
         super(id, recipe, SERIALIZER, TYPE);
     }
 
+    /** Empty authored item outputs opt into entity loot; explicit outputs remain static. */
+    public boolean usesEntityLoot() {
+        return getItemOutputs().isEmpty();
+    }
+
     @Override
     protected SlaughterhouseRecipe createInstance(Identifier id, ModRecipeData recipe) {
         return new SlaughterhouseRecipe(id, recipe);
