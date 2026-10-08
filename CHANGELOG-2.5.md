@@ -1,5 +1,6 @@
 # Biotech 2.5
 
+- Bump the network protocol to 3 so older clients cannot receive incompatible controller menu data.
 - Add persisted Ignore signal / Needs signal / No signal controls to all six controllers. Paused transactions retain their inputs, energy progress, recipe snapshot, and output rolls.
 - Show server-authoritative stall diagnostics in controller menus and Jade, including missing fluid, energy, blocked outputs, redstone pause, and transaction rejection.
 - Add bounded server settings for new-cycle energy cost and controller processing rate; preserve default balance and active saved costs.

@@ -1,6 +1,6 @@
 # Biotech 2.5: factory control
 
-Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Existing worlds retain their inventories and saved transactions. No provider dependency upgrade is required.
+Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Existing worlds retain their inventories and saved transactions. No provider dependency upgrade is required. Update Biotech on both clients and servers: network protocol 3 rejects older clients before the new controller menu data can reach an incompatible menu.
 
 ## Redstone control
 
