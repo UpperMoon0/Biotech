@@ -119,6 +119,11 @@ public final class JeiPreviewRunner implements IModPlugin {
     private static Case focusedWoolCase() {
         var manager = runtime.getRecipeManager();
         var factory = runtime.getJeiHelpers().getFocusFactory();
+        var loaded = Minecraft.getInstance().level.getRecipeManager().getAllRecipesFor(TerrestrialHabitatRecipe.TYPE);
+        var tier1 = loaded.stream().filter(h -> h.id().getPath().equals("terrestrial_habitat_sheep_wool_t1_wheat"))
+                .findFirst().orElseThrow().value();
+        var tier2 = loaded.stream().filter(h -> h.id().getPath().equals("terrestrial_habitat_sheep_wool_t2_sheep_feed"))
+                .findFirst().orElseThrow().value();
         List<net.minecraft.world.item.Item> colors = List.of(Items.WHITE_WOOL, Items.ORANGE_WOOL,
                 Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL,
                 Items.PINK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL,
@@ -127,14 +132,14 @@ public final class JeiPreviewRunner implements IModPlugin {
         for (var color : colors) {
             var focus = factory.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(color));
             var found = manager.createRecipeLookup(TerrestrialHabitatCategory.TYPE).limitFocus(List.of(focus)).get().toList();
-            require(found.stream().anyMatch(r -> r.getId().getPath().equals("terrestrial_habitat_sheep_wool_t1_wheat")),
+            require(found.contains(tier1),
                     "Focused JEI output search lost tier-1 production of " + color);
-            require(found.stream().anyMatch(r -> r.getId().getPath().equals("terrestrial_habitat_sheep_wool_t2_sheep_feed")),
+            require(found.contains(tier2),
                     "Focused JEI output search lost tier-2 production of " + color);
         }
         var red = factory.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(Items.RED_WOOL));
         var recipe = manager.createRecipeLookup(TerrestrialHabitatCategory.TYPE).limitFocus(List.of(red)).get()
-                .filter(r -> r.getId().getPath().equals("terrestrial_habitat_sheep_wool_t1_wheat")).findFirst().orElseThrow();
+                .filter(r -> r == tier1).findFirst().orElseThrow();
         var layout = manager.createRecipeLayoutDrawable(new TerrestrialHabitatCategory(runtime.getJeiHelpers().getGuiHelper()),
                 recipe, factory.createFocusGroup(List.of(red))).orElseThrow();
         require(slot(layout, "output-item-0").getItemStacks().allMatch(stack -> stack.is(Items.RED_WOOL)),

@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.ArrayList;
@@ -79,7 +78,7 @@ final class PreviewFixtures {
         boolean valid = !state.equals("invalid"), active = state.equals("active");
         MachineDisplay data = new MachineDisplay(() -> valid, () -> active, () -> 307200,
                 () -> 614400, () -> recipe.getTotalEnergy() / 2, recipe::getTotalEnergy,
-                () -> 64, () -> active ? recipe : null);
+                () -> kind == MachineUi.Kind.TERRESTRIALHABITAT ? 512 : 64, () -> active ? recipe : null);
         if (kind == MachineUi.Kind.TERRESTRIALHABITAT) {
             String products = new RecipeFluidOutputs(data).productDescription();
             if (active && (!products.contains("Milk") || !products.contains("1000 mB per cycle"))) {
@@ -95,6 +94,12 @@ final class PreviewFixtures {
     }
 
     private static ModRecipeData recipe(MachineUi.Kind kind) {
+        if (kind == MachineUi.Kind.TERRESTRIALHABITAT) {
+            return net.minecraft.client.Minecraft.getInstance().level.getRecipeManager()
+                    .getAllRecipesFor(com.nstut.biotech.recipes.TerrestrialHabitatRecipe.TYPE).stream()
+                    .filter(holder -> holder.id().getPath().equals("terrestrial_habitat_cow_milk_t1_wheat"))
+                    .findFirst().orElseThrow().value().getRecipe().copy();
+        }
         IngredientItem[] inputs;
         OutputItem[] outputs;
         int energy = 20000;
@@ -115,11 +120,6 @@ final class PreviewFixtures {
                 inputs = new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.COW.get(), 2), false), input(Items.WHEAT, 2)};
                 outputs = new OutputItem[]{output(ItemRegistries.BABY_COW.get(), 1, 1)};
             }
-            case TERRESTRIALHABITAT -> {
-                inputs = new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.COW.get()), false), input(Items.WHEAT, 1)};
-                outputs = new OutputItem[]{output(ItemRegistries.MANURE.get(), 1, 1)};
-                energy = 32000;
-            }
             case SLAUGHTERHOUSE -> {
                 // Mirror the largest production recipe so the two-column second row and chance label stay covered.
                 inputs = new IngredientItem[]{input(ItemRegistries.RABBIT.get(), 1)};
@@ -133,8 +133,7 @@ final class PreviewFixtures {
             }
             default -> throw new IllegalArgumentException("Missing fixture for " + kind);
         }
-        return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, kind == MachineUi.Kind.TERRESTRIALHABITAT
-                ? new FluidStack[]{new FluidStack(NeoForgeMod.MILK.get(), 1000)} : new FluidStack[0], energy);
+        return new ModRecipeData(inputs, outputs, new FluidStack[]{water(200)}, new FluidStack[0], energy);
     }
 
     private static IngredientItem input(Item item, int count) { return new IngredientItem(new ItemStack(item, count), true); }
