@@ -82,7 +82,7 @@ public class MixerBlockEntity extends ControlledMachineBlockEntity {
                     recipeEnergyCost,
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

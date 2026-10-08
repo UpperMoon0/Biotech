@@ -6,7 +6,7 @@ Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Exi
 
 The button at the top right of each controller cycles **Ignore signal**, **Needs signal**, and **No signal**. Ignore signal is the default, including for old worlds and unknown saved mode IDs. The other modes read the controller's vanilla neighbor signal. Modes are saved per controller. A player must have the controller's valid menu open to change its mode.
 
-Pausing stops transaction processing before preparation, consumption, energy extraction, or completion. The active recipe definition, exact chance decisions, consumed-input phase, and energy progress remain saved. Resuming continues that cycle; it does not refund consumed inputs or reroll products. Structure validation continues while paused. A broken structure takes precedence over a redstone pause in diagnostics.
+Pausing stops transaction processing before preparation, consumption, energy extraction, or completion. The active recipe definition, exact chance decisions, consumed-input phase, and energy progress remain saved. A paused controller also exposes its saved recipe and progress to the menu after reload, before processing resumes. Resuming continues that cycle; it does not refund consumed inputs or reroll products. Structure validation continues while paused. A broken structure takes precedence over a redstone pause in diagnostics.
 
 The controller's existing operating block state represents an active transaction, including a paused transaction. Use the menu or Jade status to distinguish a stall from processing. Comparator output is not added in this release.
 

@@ -29,6 +29,10 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
         if (level != null && !redstoneMode.permits(level.hasNeighborSignal(worldPosition))) return MachineStatus.REDSTONE_PAUSED;
         return status;
     }
+    /** Read-only recipe view remains available before the provider restores a paused cycle. */
+    public ModRecipeData getDisplayRecipe() {
+        return recipeHandler.map(ModRecipe::getRecipe).orElse(savedDisplayRecipe);
+    }
     public RedstoneMode getRedstoneMode() { return redstoneMode; }
     public void setRedstoneMode(RedstoneMode mode) {
         if (level != null && level.isClientSide) return;
@@ -64,6 +68,8 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
             status = MachineStatus.TRANSACTION_ERROR;
             throw exception;
         }
+        // After any successful provider tick its live handler is authoritative, including clears.
+        savedDisplayRecipe = null;
         if (!isStructureValid) { status = MachineStatus.INVALID_STRUCTURE; return; }
         ModRecipe<?> active = recipeHandler.orElse(null);
         if (active == null) {

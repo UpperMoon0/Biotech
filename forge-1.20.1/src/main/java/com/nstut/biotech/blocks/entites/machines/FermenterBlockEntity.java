@@ -80,7 +80,7 @@ public class FermenterBlockEntity extends ControlledMachineBlockEntity {
                     inputFluid.getFluidInTank(0).copy(),
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

@@ -517,6 +517,8 @@ public final class AnimalTransactionGameTests {
         for (int tick = 0; tick < 260 && count(f.outputs, animal) < expected; tick++) tick(helper, f);
         helper.assertTrue(count(f.outputs, animal) == expected, "Actual livestock machine must finish with exactly " + expected + " animal outputs");
         helper.assertTrue(!save(helper, f.machine).contains("activeRecipeSnapshot"), "Finished transaction must clear its snapshot");
+        helper.assertTrue(((com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) f.machine).getDisplayRecipe() == null,
+                "Completed reloaded cycle must clear the menu recipe view as well");
     }
 
     private static void tick(GameTestHelper helper, Fixture f) {

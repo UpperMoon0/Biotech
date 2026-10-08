@@ -89,7 +89,7 @@ public class BreedingChamberBlockEntity extends ControlledMachineBlockEntity {
                     fluidStored,
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

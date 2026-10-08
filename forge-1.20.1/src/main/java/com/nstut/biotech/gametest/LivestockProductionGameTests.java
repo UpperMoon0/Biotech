@@ -93,6 +93,8 @@ public final class LivestockProductionGameTests {
         machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
         tick(helper, machine, 1);
         helper.assertTrue(machine.getRedstoneMode() == com.nstut.biotech.machines.RedstoneMode.HIGH && Arrays.equals(rolls, (int[]) field(machine, "activeItemOutputIndexes")), "Mode and exact output rolls must survive save/load while paused");
+        helper.assertTrue(machine.getDisplayRecipe() != null && machine.getDisplayRecipe().getTotalEnergy() == original.getTotalEnergy()
+                && outputCounts(machine.getDisplayRecipe()).equals(outputCounts(original)), "Paused reload must expose the exact saved recipe to the menu before resuming");
         machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.LOW);
         rig.energy.setEnergy(0);
         tick(helper, machine, 1);
