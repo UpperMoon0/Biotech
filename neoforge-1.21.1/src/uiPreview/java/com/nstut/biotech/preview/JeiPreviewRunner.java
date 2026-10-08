@@ -142,9 +142,9 @@ public final class JeiPreviewRunner implements IModPlugin {
                 .filter(r -> r == tier1).findFirst().orElseThrow();
         var layout = manager.createRecipeLayoutDrawable(new TerrestrialHabitatCategory(runtime.getJeiHelpers().getGuiHelper()),
                 recipe, factory.createFocusGroup(List.of(red))).orElseThrow();
-        require(slot(layout, "output-item-0").getItemStacks().allMatch(stack -> stack.is(Items.RED_WOOL)),
+        require(slot(layout, "output-item-0").getDisplayedItemStack().orElseThrow().is(Items.RED_WOOL),
                 "Red-wool focus must display the selected variant");
-        require(slot(layout, "output-item-0").getItemStacks().count() == 1, "Focused wool slot must contain one red variant");
+        require(slot(layout, "output-item-0").getItemStacks().count() == 16, "Focused wool slot must retain all indexed alternatives");
         return new Case("habitat-focused-red-wool", layout, Mode.CARD);
     }
 
