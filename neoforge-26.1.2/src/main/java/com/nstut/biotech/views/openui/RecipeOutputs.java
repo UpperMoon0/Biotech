@@ -1,5 +1,6 @@
 package com.nstut.biotech.views.openui;
 
+import com.nstut.biotech.jei.JeiChancePresentation;
 import com.nstut.biotech.views.renderer.BiotechFluidTankRenderer;
 import com.nstut.nstutlib.recipes.ModRecipeData;
 import com.nstut.openui.api.UiRender;
@@ -46,7 +47,8 @@ public final class RecipeOutputs extends LiveTooltipComponent {
             if (mx >= cx - 2 && mx < cx + 22 && my >= cy - 2 && my < cy + 30) {
                 var output = items[i];
                 return output.getItemStack().getHoverName().getString() + "\n" + output.getItemStack().getCount()
-                        + (output.getChance() < 1 ? " (" + (int)(output.getChance() * 100) + "%)" : "");
+                        + (JeiChancePresentation.needsLabel(output.getChance())
+                                ? " (" + JeiChancePresentation.exactPercent(output.getChance()) + ")" : "");
             }
         }
         var fluids = recipe.getFluidOutputs();
@@ -74,7 +76,16 @@ public final class RecipeOutputs extends LiveTooltipComponent {
             canvas.surface(cx - 2, cy - 2, 22, 22, BiotechStyle.WELL);
             g.item(output.getItemStack(), cx + 1, cy + 1);
             g.itemDecorations(font, output.getItemStack(), cx + 1, cy + 1);
-            if (output.getChance() < 1) UiRender.text(g, font, (int)(output.getChance() * 100) + "%", cx, cy + 20, BiotechStyle.TEXT);
+            if (JeiChancePresentation.needsLabel(output.getChance())) {
+                String label = JeiChancePresentation.compactPercent(output.getChance());
+                // Preserve the whole label while keeping it inside this two-column cell.
+                float scale = Math.min(1.0f, 24.0f / Math.max(1, font.width(label)));
+                g.pose().pushMatrix();
+                g.pose().translate((float) cx, (float) cy + 20);
+                g.pose().scale(scale, scale);
+                UiRender.text(g, font, label, 0, 0, BiotechStyle.TEXT);
+                g.pose().popMatrix();
+            }
         }
         var fluids = recipe.getFluidOutputs();
         for (int i = 0; i < fluids.length; i++) {

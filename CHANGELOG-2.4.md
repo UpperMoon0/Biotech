@@ -24,6 +24,7 @@ Biotech 2.4 completes the stateful captured-animal processing pipeline across Fo
 - Index all sheep wool colors in JEI output searches, including focused tier-1 and tier-2 production lookups.
 - Display item and fluid products, quantities, and chance labels together in a clipped scrolling controller output lane, including mixed datapack recipes and Habitat milk.
 - Explain deterministic first-selected-parent inheritance in the in-game Breeding Chamber guide.
+- Controller output chances now share JEI's precision-aware labels and exact tooltips, including tiny and fractional probabilities.
 
 ## Compatibility
 

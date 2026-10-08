@@ -58,15 +58,15 @@ neoForge {
 
 tasks.register('renderUiPreviews') {
     group = 'verification'
-    description = 'Runs the isolated client renderer and verifies all 60 UI PNG previews.'
+    description = 'Runs the isolated client renderer and verifies all 63 UI PNG previews.'
     dependsOn 'runUiPreview'
     doLast {
         def output = layout.buildDirectory.dir('ui-previews').get().asFile
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('UI renderer did not finish: manifest.json is missing')
         def entries = new groovy.json.JsonSlurper().parse(manifest)
-        if (entries.size() != 60 || entries.collect { it.file }.toSet().size() != 60) {
-            throw new GradleException('Expected exactly 60 unique UI previews')
+        if (entries.size() != 63 || entries.collect { it.file }.toSet().size() != 63) {
+            throw new GradleException('Expected exactly 63 unique UI previews')
         }
         entries.each { entry ->
             def hatch = entry.file.contains('_hatch-')
@@ -98,7 +98,7 @@ tasks.register('renderUiPreviews') {
         // First output cell: viewport (146,104), cell padding 2, icon inset 1, GUI scale 2.
         assertEntityDetail('breeding_chamber-active.png', 326, 242)
         assertEntityDetail('slaughterhouse-active.png', 140, 238)
-        logger.lifecycle("Verified 60 UI previews, including live animal entity models, in ${output}")
+        logger.lifecycle("Verified 63 UI previews, including live animal entity models, in ${output}")
     }
 }
 

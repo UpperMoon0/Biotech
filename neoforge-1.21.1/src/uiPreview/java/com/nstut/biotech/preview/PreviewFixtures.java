@@ -62,6 +62,10 @@ final class PreviewFixtures {
             backgrounds.add(new Preview(prefix, BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT, () -> mixedProducts(large)));
             backgrounds.add(new Preview(prefix + "-scrolled", BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT, () -> mixedProducts(large)));
         }
+        for (String suffix : List.of("", "-tiny", "-fractional")) {
+            backgrounds.add(new Preview("controller-chances" + suffix, BiotechStyle.MACHINE_WIDTH,
+                    BiotechStyle.MACHINE_HEIGHT, PreviewFixtures::chanceProducts));
+        }
         return List.copyOf(backgrounds);
     }
 
@@ -154,6 +158,16 @@ final class PreviewFixtures {
         return MachineUi.build(MachineUi.Kind.TERRESTRIALHABITAT, title("terrestrial_habitat"), data,
                 new FluidWidget(() -> water(16000), () -> 32000, () -> true),
                 new FluidWidget(() -> water(250), () -> 250, () -> true));
+    }
+
+    private static UIComponent chanceProducts() {
+        ModRecipeData recipe = new ModRecipeData(new IngredientItem[]{input(Items.WHEAT, 1)},
+                new OutputItem[]{output(Items.EGG, 1, .00001f), output(Items.RABBIT_FOOT, 1, .123456f),
+                        output(Items.FEATHER, 1, 0), output(Items.BONE, 1, .999999f)},
+                new FluidStack[0], new FluidStack[0], 32000);
+        MachineDisplay data = new MachineDisplay(() -> true, () -> true, () -> 307200, () -> 614400,
+                () -> 16000, () -> 32000, () -> 512, () -> recipe);
+        return MachineUi.build(MachineUi.Kind.MIXER, title("mixer"), data);
     }
 
     private static IngredientItem input(Item item, int count) { return new IngredientItem(new ItemStack(item, count), true); }
