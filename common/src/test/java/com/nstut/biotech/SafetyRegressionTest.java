@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SafetyRegressionTest {
     @Test
-    void networkProtocolIsExplicitlyVersioned() {
-        assertEquals("2", PacketRegistries.PROTOCOL_VERSION);
+    void newControllerDataRequiresProtocolThreeOnEveryTarget() {
+        assertEquals("3", PacketRegistries.PROTOCOL_VERSION, "Older clients have no controller status/mode data slots and must be rejected at handshake");
     }
 }
