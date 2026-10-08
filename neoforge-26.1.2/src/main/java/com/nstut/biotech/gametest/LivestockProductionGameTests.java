@@ -72,13 +72,100 @@ public final class LivestockProductionGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GOATDATAPACKEXAMPLEDECODESANDREPEATS = TEST_FUNCTIONS.register("livestock_goat_datapack_example_decodes_and_repeats", () -> LivestockProductionGameTests::goatDatapackExampleDecodesAndRepeats);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER = TEST_FUNCTIONS.register("livestock_datapack_reload_keeps_in_flight_slaughter", () -> LivestockProductionGameTests::datapackReloadKeepsInFlightSlaughter);
 
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERDIAGNOSTICS = TEST_FUNCTIONS.register("controller_diagnostics_and_redstone", () -> LivestockProductionGameTests::controllerDiagnosticsAndRedstonePreserveCycle);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERBALANCE = TEST_FUNCTIONS.register("controller_balance_and_fluid_diagnostics", () -> LivestockProductionGameTests::controllerBalanceSnapshotAndFluidDiagnostics);
+
     public static void register(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(id("livestock_production"));
-        for (var test : List.of(LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
+        for (var test : List.of(CONTROLLERDIAGNOSTICS, CONTROLLERBALANCE, LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, id("livestock"), 400, 0, true)));
         }
     }
 
+
+    public static void controllerDiagnosticsAndRedstonePreserveCycle(GameTestHelper helper) {
+        Rig rig = slaughter(helper);
+        var machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS, "Empty valid controller must report missing items");
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel());
+        var oldMenu = player.containerMenu;
+        var menu = new com.nstut.biotech.views.machines.menu.SlaughterhouseMenu(91, player.getInventory(), machine);
+        player.setPos(machine.getBlockPos().getX() + 0.5, machine.getBlockPos().getY() + 0.5, machine.getBlockPos().getZ() + 0.5);
+        try {
+            helper.assertTrue(!menu.clickMenuButton(player, 90), "A menu not open for this player must reject mode changes");
+            player.containerMenu = menu;
+            helper.assertTrue(!menu.clickMenuButton(player, -1), "Unknown button IDs must be rejected");
+            helper.assertTrue(menu.clickMenuButton(player, 90) && machine.getRedstoneMode() == com.nstut.biotech.machines.RedstoneMode.HIGH, "Valid open menu must cycle the authoritative mode");
+            player.setPos(machine.getBlockPos().getX() + 40, machine.getBlockPos().getY(), machine.getBlockPos().getZ());
+            helper.assertTrue(!menu.clickMenuButton(player, 90), "Out-of-range player must not change the controller");
+        } finally { player.containerMenu = oldMenu; machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.IGNORE); }
+
+        rig.animals.setStackInSlot(0, animal(ItemRegistries.COW.get(), "cow", -1, "controlled_slaughter"));
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_FLUID, "Matching cow without water must report missing fluid");
+        rig.water.setFluid(new FluidStack(Fluids.WATER, 200));
+        fill(rig.outputs, new ItemStack(Items.COBBLESTONE, 64));
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.ITEM_OUTPUT_BLOCKED, "Exact prepared loot must report blocked item output");
+        int[] rolls = ((int[]) field(machine, "activeItemOutputIndexes")).clone();
+        ModRecipeData original = snapshot(machine).copy();
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.HIGH);
+        clear(rig.outputs);
+        rig.energy.setEnergy(10000);
+        tick(helper, machine, 3);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.REDSTONE_PAUSED && !rig.animals.getStackInSlot(0).isEmpty(), "Paused unconsumed transaction must retain inputs");
+        rig.machine = reload(helper, machine);
+        machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getRedstoneMode() == com.nstut.biotech.machines.RedstoneMode.HIGH && Arrays.equals(rolls, (int[]) field(machine, "activeItemOutputIndexes")), "Mode and exact output rolls must survive save/load while paused");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.LOW);
+        rig.energy.setEnergy(0);
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.INSUFFICIENT_ENERGY && rig.animals.getStackInSlot(0).isEmpty(), "Enabled cycle consumes inputs once then reports lack of energy");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.HIGH);
+        rig.energy.setEnergy(10000);
+        tick(helper, machine, 3);
+        helper.assertTrue((int) field(machine, "energyConsumed") == 0 && rig.energy.getInternalEnergyStorage().getEnergyStored() == 10000, "Paused committed cycle must not draw energy");
+        BlockPos signal = machine.getBlockPos().relative(Direction.SOUTH);
+        helper.getLevel().setBlock(signal, Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.PROCESSING && (int) field(machine, "energyConsumed") > 0, "High mode must resume with a real neighbor signal");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.LOW);
+        int progress = (int) field(machine, "energyConsumed");
+        tick(helper, machine, 2);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.REDSTONE_PAUSED && (int) field(machine, "energyConsumed") == progress, "Low mode must pause while powered");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.IGNORE);
+        tick(helper, machine, 1);
+        helper.assertTrue((int) field(machine, "energyConsumed") > progress && outputCounts(snapshot(machine)).equals(outputCounts(original)), "Ignore mode resumes the same exact products even while powered");
+        helper.succeed();
+    }
+
+    public static void controllerBalanceSnapshotAndFluidDiagnostics(GameTestHelper helper) {
+        Rig rig = habitat(helper);
+        rig.animals.setStackInSlot(0, animal(ItemRegistries.COW.get(), "cow", -1, null));
+        rig.food.setStackInSlot(0, new ItemStack(Items.WHEAT, 4));
+        rig.water.setFluid(new FluidStack(Fluids.WATER, 1000));
+        rig.milk.setFluid(new FluidStack(Fluids.LAVA, 1000));
+        double oldMultiplier = Config.machineEnergyMultiplier;
+        int oldRate = Config.machineEnergyPerTick;
+        try {
+            Config.machineEnergyMultiplier = 2.0;
+            Config.machineEnergyPerTick = 37;
+            rig.energy.setEnergy(10000);
+            tick(helper, rig.machine, 1);
+            var machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+            helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.FLUID_OUTPUT_BLOCKED, "Incompatible milk output tank must report fluid output blocked");
+            int cost = snapshot(machine).getTotalEnergy();
+            helper.assertTrue(cost == 64000 && (int) field(machine, "energyConsumed") == 0, "Blocked output must not consume any energy");
+            Config.machineEnergyMultiplier = 0.5;
+            rig.machine = reload(helper, machine);
+            rig.milk.setFluid(FluidStack.EMPTY);
+            tick(helper, rig.machine, 1);
+            helper.assertTrue(snapshot(rig.machine).getTotalEnergy() == cost && (int) field(rig.machine, "energyConsumed") == 37, "Reload/config change keeps active total cost and obeys configured throughput");
+        } finally { Config.machineEnergyMultiplier = oldMultiplier; Config.machineEnergyPerTick = oldRate; }
+        helper.succeed();
+    }
 
     public static void lootPolicySeedAndStackLimits(GameTestHelper helper) {
         SlaughterhouseRecipe recipe = slaughterRecipe(helper, "cow");

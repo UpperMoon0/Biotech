@@ -81,6 +81,7 @@ public class FermenterMenu extends MachineMenu {
         this.level = inventory.player.level();
         this.blockEntity = (FermenterBlockEntity) blockEntity;
         this.pos = blockEntity.getBlockPos();
+        bindController(this.blockEntity);
     }
 
     @Override

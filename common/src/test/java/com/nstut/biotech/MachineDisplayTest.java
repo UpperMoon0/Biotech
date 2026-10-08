@@ -12,16 +12,16 @@ class MachineDisplayTest {
         var energy = new AtomicInteger(100);
         var display = new MachineDisplay(valid::get, () -> true, energy::get,
                 () -> 1000, () -> 25, () -> 100, () -> 64, () -> null);
-        assertEquals("Invalid Structure", display.status());
-        assertEquals("Invalid Structure", display.energyTooltip());
+        assertEquals("ui.biotech.status.invalid_structure", display.status());
+        assertEquals("ui.biotech.status.invalid_structure", display.energyTooltip());
         valid.set(true);
         assertFalse(display.active());
-        assertEquals("Not Operating", display.progressTooltip());
-        assertTrue(display.energyTooltip().contains("100 / 1000 FE"));
-        assertTrue(display.energyTooltip().contains("Rate: 0 FE / t"));
+        assertEquals("ui.biotech.status.no_matching_recipe", display.progressTooltip());
+        assertEquals(100, display.stored().getAsInt());
+        assertEquals(com.nstut.biotech.machines.MachineStatus.NO_MATCHING_RECIPE, display.diagnostic().get());
         energy.set(500);
-        assertTrue(display.energyTooltip().contains("500 / 1000 FE"));
+        assertEquals(500, display.stored().getAsInt());
         valid.set(false);
-        assertEquals("Invalid Structure", display.energyTooltip());
+        assertEquals("ui.biotech.status.invalid_structure", display.energyTooltip());
     }
 }

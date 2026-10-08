@@ -76,6 +76,7 @@ public class SlaughterhouseMenu extends MachineMenu {
         this.level = inventory.player.level();
         this.blockEntity = (SlaughterhouseBlockEntity) blockEntity;
         this.pos = blockEntity.getBlockPos();
+        bindController(this.blockEntity);
     }
 
     @Override

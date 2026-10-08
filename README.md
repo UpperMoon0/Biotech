@@ -34,6 +34,10 @@ Install the file matching both your Minecraft version and loader. A jar built fo
 
 ---
 
+## Factory controls in 2.5
+
+Every controller shows server-authoritative stall diagnostics and has a redstone mode button: Ignore signal (default), Needs signal, or No signal. Pausing keeps the active recipe, consumed inputs, output rolls, and energy progress across reloads. [Factory controls and server balance settings](docs/upgrade-2.5.md) explains the modes, troubleshooting, configuration, and upgrade behavior.
+
 ## Key features
 
 ### Capture livestock instead of moving entities through your factory

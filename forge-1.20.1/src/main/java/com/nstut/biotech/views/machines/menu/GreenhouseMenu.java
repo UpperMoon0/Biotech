@@ -81,6 +81,7 @@ public class GreenhouseMenu extends MachineMenu {
         this.level = inventory.player.level();
         this.blockEntity = (GreenhouseBlockEntity) blockEntity;
         this.pos = blockEntity.getBlockPos();
+        bindController(this.blockEntity);
     }
 
     @Override

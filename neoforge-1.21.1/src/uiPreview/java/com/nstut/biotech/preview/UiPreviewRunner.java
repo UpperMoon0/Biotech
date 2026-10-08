@@ -42,8 +42,8 @@ public final class UiPreviewRunner {
                 output = Path.of(System.getProperty("biotech.uiPreview.output"));
                 Files.createDirectories(output);
                 previews = PreviewFixtures.all();
-                if (previews.size() != 63 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 63) {
-                    throw new IllegalStateException("Expected 63 unique preview cases");
+                if (previews.size() != 87 || previews.stream().map(PreviewFixtures.Preview::name).distinct().count() != 87) {
+                    throw new IllegalStateException("Expected 87 unique preview cases");
                 }
                 mc.setScreen(new PreviewScreen(previews.get(0)));
             } else if (advance) {

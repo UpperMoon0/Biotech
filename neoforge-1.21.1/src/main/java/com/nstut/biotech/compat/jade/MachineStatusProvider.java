@@ -16,6 +16,11 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+        if (accessor.getServerData().contains("BiotechStatus")) {
+            tooltip.add(Component.translatable("jade.biotech.machine.status", Component.translatable(
+                    com.nstut.biotech.machines.MachineStatus.fromId(accessor.getServerData().getInt("BiotechStatus")).translationKey())));
+            return;
+        }
         boolean operating = accessor.getBlockState().hasProperty(MachineBlock.OPERATING)
                 && accessor.getBlockState().getValue(MachineBlock.OPERATING);
         tooltip.add(Component.translatable(

@@ -38,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class BreedingChamberBlockEntity extends MachineBlockEntity {
+public class BreedingChamberBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch1;
     private ItemInputHatchBlockEntity itemInputHatch2;
     private ItemInputHatchBlockEntity itemInputHatch3;
@@ -65,7 +65,7 @@ public class BreedingChamberBlockEntity extends MachineBlockEntity {
         IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
         IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 BreedingChamberRecipe.TYPE,
                 inputItems,
@@ -73,7 +73,7 @@ public class BreedingChamberBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                com.nstut.biotech.Config.machineEnergyPerTick,
                 null,
                 recipe -> AnimalRecipeStatePreparation.prepareBreeding(recipe, inputItems));
 
@@ -82,7 +82,7 @@ public class BreedingChamberBlockEntity extends MachineBlockEntity {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new BreedingChamberPacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     FluidInputHatchBlockEntity.TANK_CAPACITY,

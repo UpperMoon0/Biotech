@@ -34,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class FermenterBlockEntity extends MachineBlockEntity {
+public class FermenterBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch;
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
@@ -56,7 +56,7 @@ public class FermenterBlockEntity extends MachineBlockEntity {
         IFluidHandler inputFluid = fluidInputHatch.getInternalTank();
         IEnergyStorage energy = energyInputHatch.getInternalEnergyStorage();
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 FermenterRecipe.TYPE,
                 inputItems,
@@ -70,7 +70,7 @@ public class FermenterBlockEntity extends MachineBlockEntity {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new FermenterPacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     FluidInputHatchBlockEntity.TANK_CAPACITY,

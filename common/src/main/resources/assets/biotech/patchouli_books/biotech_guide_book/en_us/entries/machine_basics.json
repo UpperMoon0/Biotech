@@ -11,6 +11,18 @@
     {
       "type": "patchouli:text",
       "text": "Use JEI to inspect exact machine recipes, quantities, and outputs.$(br)$(br)For automation, connect pipes, cables, or inventories to the outward-facing side of each hatch. Input hatches accept resources; output hatches expose finished products for extraction."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The controller button cycles Ignore signal, Needs signal, and No signal. Ignore is the default. A disabled controller pauses its saved cycle without consuming more items, water, or energy. Re-enable it to resume the same cycle and output rolls, even after a world reload."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The status line and Jade explain stalls: invalid structure, missing items or fluid, no matching recipe, insufficient energy, blocked item or fluid output, or redstone pause. Outputs are checked before inputs are consumed and again when the cycle completes. Make room in the correct hatch to resume."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Servers can adjust new-cycle energy cost and processing rate in biotech-server.toml. Default settings preserve 2.4 balance. Existing active cycles keep their saved energy cost. JEI describes new recipes using the server settings; actual throughput also depends on energy supply. See the repository 2.5 upgrade guide for packmaker details."
     }
   ]
 }

@@ -37,7 +37,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class GreenhouseBlockEntity extends MachineBlockEntity {
+public class GreenhouseBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch;
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
@@ -60,7 +60,7 @@ public class GreenhouseBlockEntity extends MachineBlockEntity {
         IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
         IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 GreenhouseRecipe.TYPE,
                 inputItems,
@@ -68,14 +68,14 @@ public class GreenhouseBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                com.nstut.biotech.Config.machineEnergyPerTick,
                 Comparator.comparingInt(recipe -> recipe.getItemIngredients().size()));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new GreenhousePacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     FluidInputHatchBlockEntity.TANK_CAPACITY,

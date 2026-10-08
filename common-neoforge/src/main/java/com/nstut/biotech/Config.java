@@ -17,6 +17,15 @@ public final class Config {
                     "Explicit itemOutputs in datapack recipes are static and are not multiplied.")
             .defineInRange("slaughterhouseYieldMultiplier", 2, 1, 64);
 
+    public static final ModConfigSpec.DoubleValue MACHINE_ENERGY_MULTIPLIER = SERVER_BUILDER
+            .comment("Scales datapack totalEnergy when a NEW cycle starts. Active saved cycles keep their cost.")
+            .defineInRange("machineEnergyMultiplier", 1.0, 0.01, 100.0);
+    public static final ModConfigSpec.IntValue MACHINE_ENERGY_PER_TICK = SERVER_BUILDER
+            .comment("Maximum energy consumed per controller tick. Does not change hatch capacity or energy acceptance.")
+            .defineInRange("machineEnergyPerTick", 512, 1, 65536);
+    public static double machineEnergyMultiplier = 1.0;
+    public static int machineEnergyPerTick = 512;
+
     /** Cached config value; initialized for tests and callers before the config load event. */
     public static int slaughterhouseYieldMultiplier = SlaughterhouseYieldConfig.DEFAULT;
 
@@ -32,6 +41,9 @@ public final class Config {
         if (event.getConfig().getSpec() == SERVER_SPEC) {
             slaughterhouseYieldMultiplier = SlaughterhouseYieldConfig.forEvent(
                     event instanceof ModConfigEvent.Unloading, SLAUGHTERHOUSE_YIELD_MULTIPLIER::get);
+            boolean unloading = event instanceof ModConfigEvent.Unloading;
+            machineEnergyMultiplier = unloading ? 1.0 : MACHINE_ENERGY_MULTIPLIER.get();
+            machineEnergyPerTick = unloading ? 512 : MACHINE_ENERGY_PER_TICK.get();
             return;
         }
         if (event.getConfig().getSpec() != SPEC) return;

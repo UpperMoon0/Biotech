@@ -28,7 +28,7 @@ public final class FluidWidget extends LiveTooltipComponent {
     }
     @Override protected String tooltipText(int mx, int my) {
         if (capacity.getAsInt() <= 0) return null;
-        if (!valid.getAsBoolean()) return "Invalid Structure";
+        if (!valid.getAsBoolean()) return Component.translatable("ui.biotech.status.invalid_structure").getString();
         FluidStack value = fluid.get();
         return "Fluid:\n" + (value.isEmpty() ? "Empty" : value.getDisplayName().getString())
             + "\n" + value.getAmount() + " / " + capacity.getAsInt() + " mB";
