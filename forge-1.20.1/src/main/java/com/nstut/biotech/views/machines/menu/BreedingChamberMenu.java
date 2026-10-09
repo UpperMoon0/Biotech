@@ -77,6 +77,7 @@ public class BreedingChamberMenu extends MachineMenu {
         this.level = inventory.player.level();
         this.blockEntity = (BreedingChamberBlockEntity) blockEntity;
         this.pos = blockEntity.getBlockPos();
+        bindController(this.blockEntity);
     }
 
     @Override

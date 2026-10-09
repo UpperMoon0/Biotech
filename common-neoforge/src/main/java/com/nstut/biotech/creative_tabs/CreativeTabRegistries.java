@@ -22,6 +22,7 @@ public final class CreativeTabRegistries {
                         output.accept(item.get());
                     }
                 }
+                com.nstut.biotech.items.DefaultCapturedAnimals.stacks().forEach(output::accept);
             })
             .title(Component.translatable("itemGroup.biotech"))
             .build());

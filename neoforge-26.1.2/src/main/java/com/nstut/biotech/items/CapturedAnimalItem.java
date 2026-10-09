@@ -91,6 +91,15 @@ public class CapturedAnimalItem extends Item {
         return actualBaby == expectedBaby;
     }
 
+    /** JEI groups by the recipe selectors, rather than each individual's unrelated saved traits. */
+    public static String recipeSubtype(ItemStack stack) {
+        CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (root == null) return "";
+        String lifecycle = root.getString(RECIPE_LIFECYCLE_TAG).orElse(LIFECYCLE_ANY);
+        if (LIFECYCLE_ANY.equals(lifecycle)) lifecycle = CapturedAnimalStackState.read(stack).getInt("Age").orElse(0) < 0 ? LIFECYCLE_BABY : LIFECYCLE_ADULT;
+        return CapturedAnimalStackState.entityTypeId(stack) + "/" + lifecycle;
+    }
+
     /** Human-readable recipe requirement, including selector-only JEI display stacks. */
     public static Component lifecycleTooltip(ItemStack stack) {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
@@ -161,6 +170,13 @@ public class CapturedAnimalItem extends Item {
         return entity;
     }
 
+    @Override public Component getName(ItemStack stack) {
+        String id = CapturedAnimalStackState.entityTypeId(stack);
+        var type = EntityType.byString(id).orElse(null);
+        if (type == null) return super.getName(stack);
+        return Component.translatable("item.biotech.captured_named", Component.translatable(type.getDescriptionId()));
+    }
+
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context,
                                 @NotNull TooltipDisplay display, @NotNull Consumer<Component> tooltip,
@@ -178,5 +194,6 @@ public class CapturedAnimalItem extends Item {
                         Component.translatable(type.getDescriptionId()))));
         Component lifecycle = lifecycleTooltip(stack);
         if (lifecycle != null) tooltip.accept(lifecycle);
+        CapturedAnimalTraitTooltip.append(stack, context.level(), tooltip);
     }
 }

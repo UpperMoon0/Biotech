@@ -1,5 +1,7 @@
 package com.nstut.biotech.views.openui;
 
+import net.minecraft.network.chat.Component;
+
 import com.nstut.biotech.jei.JeiChancePresentation;
 import com.nstut.biotech.views.renderer.BiotechFluidTankRenderer;
 import com.nstut.nstutlib.recipes.ModRecipeData;
@@ -31,7 +33,7 @@ public final class RecipeOutputs extends LiveTooltipComponent {
             if (fluid.isEmpty()) continue;
             if (!products.isEmpty()) products.append("\n");
             products.append(fluid.getHoverName().getString()).append(": ")
-                    .append(fluid.getAmount()).append(" mB per cycle");
+                    .append(Component.translatable("jei.biotech.output.fluid_per_cycle", fluid.getAmount()).getString());
         }
         return products.toString();
     }
@@ -55,7 +57,7 @@ public final class RecipeOutputs extends LiveTooltipComponent {
         for (int i = 0; i < fluids.length; i++) {
             int cy = y + ControllerOutputLayout.fluidY(items.length, i);
             if (mx >= x && mx < x + width && my >= cy - 2 && my < cy + 30 && !fluids[i].isEmpty()) {
-                return fluids[i].getHoverName().getString() + ": " + fluids[i].getAmount() + " mB per cycle";
+                return fluids[i].getHoverName().getString() + ": " + Component.translatable("jei.biotech.output.fluid_per_cycle", fluids[i].getAmount()).getString();
             }
         }
         return null;

@@ -9,22 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "potato",
-        "Count": 8
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "poisonous_potato",
-        "Count": 2
-      },
-      "chance": 0.02
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",

@@ -1,0 +1,42 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "energy": 32000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:wolf",
+            "BiotechRecipeLifecycle": "adult"
+          }
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:beef",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 250
+    }
+  ],
+  "fluidOutputs": []
+}

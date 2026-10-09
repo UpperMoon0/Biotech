@@ -37,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class MixerBlockEntity extends MachineBlockEntity {
+public class MixerBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch;
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
@@ -66,7 +66,7 @@ public class MixerBlockEntity extends MachineBlockEntity {
         IFluidHandler outputFluid = fluidOutputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
         IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 MixerRecipe.TYPE,
                 inputItems,
@@ -80,12 +80,12 @@ public class MixerBlockEntity extends MachineBlockEntity {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new MixerPacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

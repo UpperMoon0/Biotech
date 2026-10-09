@@ -29,6 +29,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 legacyForge.addModdingDependenciesTo(sourceSets.test)
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    systemProperty 'biotech.animalVersion', '0'
     group = 'build'
     description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
     dependsOn tasks.named('compileJava')
@@ -50,8 +51,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipes')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 70) {
-            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 156) {
+            throw new GradleException("Expected 156 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         if (file('src/generated/resources/data/biotech/recipe').exists()) {
             throw new GradleException('Forge 1.20.1 must keep the plural generated recipes/ directory')

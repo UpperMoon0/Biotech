@@ -16,22 +16,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "wheat",
-        "Count": 6
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "wheat_seeds",
-        "Count": 9
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",

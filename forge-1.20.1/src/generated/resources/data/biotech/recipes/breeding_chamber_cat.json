@@ -1,0 +1,55 @@
+{
+  "type": "biotech:breeding_chamber",
+  "energy": 20000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:cat",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:cat",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:cod",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:cat",
+          "BiotechRecipeLifecycle": "baby"
+        }
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 200
+    }
+  ],
+  "fluidOutputs": []
+}

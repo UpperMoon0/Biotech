@@ -36,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
+public class TerrestrialHabitatBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch1;
     private ItemInputHatchBlockEntity itemInputHatch2;
     private ItemInputHatchBlockEntity itemInputHatch3;
@@ -65,7 +65,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
         IFluidHandler outputFluid = fluidOutputHatch.getInternalTank();
         IEnergyStorage energy = energyInputHatch.getInternalEnergyStorage();
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 TerrestrialHabitatRecipe.TYPE,
                 inputItems,
@@ -73,7 +73,7 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(outputFluid),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                com.nstut.biotech.Config.machineEnergyPerTick,
                 null,
                 recipe -> AnimalRecipeStatePreparation.prepareHabitat(recipe, inputItems));
 
@@ -81,14 +81,14 @@ public class TerrestrialHabitatBlockEntity extends MachineBlockEntity {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new TerrestrialHabitatPacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     FluidInputHatchBlockEntity.TANK_CAPACITY,
                     inputFluid.getFluidInTank(0).copy(),
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

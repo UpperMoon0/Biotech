@@ -1,0 +1,40 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "energy": 32000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:ocelot",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:cod",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "Count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 250
+    }
+  ],
+  "fluidOutputs": []
+}

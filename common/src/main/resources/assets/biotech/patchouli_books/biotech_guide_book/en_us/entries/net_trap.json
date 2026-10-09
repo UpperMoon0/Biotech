@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Biotech animal machines use captured mobs as items. Place a Net Trap on the ground and let a capturable mob step on it. The trap is consumed and the mob becomes an item that preserves safe gameplay state and can later be released.$(br)$(br)By default, cows, chickens, pigs, sheep, rabbits, horses, goats, llamas, and camels are capturable."
+      "text": "Biotech animal machines use captured mobs as items. Place a Net Trap on the ground and let a capturable mob step on it. The trap is consumed and the mob becomes an item that preserves safe gameplay state and can later be released.$(br)$(br)Vanilla land animals, land birds and bees, frogs, turtles, and Nether land animals are supported. Newer versions also include their newer animals. Fully aquatic animals are excluded.$(br)$(br)Default captured animals are available in the Biotech creative tab. Hover a captured item to compare its colors, genes, health, speed, jump strength, and other traits."
     },
     {
       "type": "patchouli:text",

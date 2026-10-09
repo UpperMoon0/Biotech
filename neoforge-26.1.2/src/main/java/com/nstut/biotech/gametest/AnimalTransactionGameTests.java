@@ -204,7 +204,7 @@ public final class AnimalTransactionGameTests {
         f = reload(helper, f);
         finish(helper, f, ItemRegistries.BABY_SHEEP.get(), 1);
         helper.assertTrue(same(f.inputs.getStackInSlot(0), first) && same(f.inputs.getStackInSlot(1), second), "Completion after reload must preserve both parent payloads");
-        helper.assertTrue(animalStates(f.outputs, ItemRegistries.BABY_SHEEP.get()).equals(List.of(CapturedAnimalStackState.forOffspring(first))), "Newborn must use the deterministic first parent and exclude individual name/inventory state");
+        assertVanillaSheepNewborn(helper, f.outputs);
         helper.assertTrue(f.energy.getInternalEnergyStorage().getEnergyStored() == 0, "Breeding progress must resume and use exactly 20000 FE");
         helper.succeed();
     }
@@ -228,8 +228,8 @@ public final class AnimalTransactionGameTests {
         f.inputs.setStackInSlot(1, second.copy());
         supplyTierOne(f, true);
         finish(helper, f, ItemRegistries.BABY_SHEEP.get(), 1);
-        helper.assertTrue(animalStates(f.outputs, ItemRegistries.BABY_SHEEP.get()).equals(List.of(CapturedAnimalStackState.forOffspring(first))), "Legacy breeding must normalize SheepColor before variant inheritance");
-        assertRedSheepReconstruction(helper, f.outputs, ItemRegistries.BABY_SHEEP.get(), true);
+        assertVanillaSheepNewborn(helper, f.outputs);
+
         helper.assertTrue(same(f.inputs.getStackInSlot(0), first) && same(f.inputs.getStackInSlot(1), second), "Legacy migration must not rewrite retained parent stacks");
         helper.succeed();
     }
@@ -463,6 +463,18 @@ public final class AnimalTransactionGameTests {
         return stack;
     }
 
+    private static void assertVanillaSheepNewborn(GameTestHelper helper, IItemHandler inventory) {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack stack = inventory.getStackInSlot(i);
+            if (!stack.is(ItemRegistries.BABY_SHEEP.get())) continue;
+            Sheep child = (Sheep) ((MobItem) stack.getItem()).createMob(helper.getLevel(), stack);
+            helper.assertTrue(child.isBaby() && child.getColor() == DyeColor.PURPLE && child.getCustomName() == null,
+                    "Both parents must determine vanilla purple offspring without inheriting their names, including after reload");
+            return;
+        }
+        throw new AssertionError("Missing newborn output");
+    }
+
     private static void assertRedSheepReconstruction(GameTestHelper helper, IItemHandler inventory, Item item, boolean baby) {
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
             ItemStack stack = inventory.getStackInSlot(slot);
@@ -517,6 +529,8 @@ public final class AnimalTransactionGameTests {
         for (int tick = 0; tick < 260 && count(f.outputs, animal) < expected; tick++) tick(helper, f);
         helper.assertTrue(count(f.outputs, animal) == expected, "Actual livestock machine must finish with exactly " + expected + " animal outputs");
         helper.assertTrue(!save(helper, f.machine).contains("activeRecipeSnapshot"), "Finished transaction must clear its snapshot");
+        helper.assertTrue(((com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) f.machine).getDisplayRecipe() == null,
+                "Completed reloaded cycle must clear the menu recipe view as well");
     }
 
     private static void tick(GameTestHelper helper, Fixture f) {

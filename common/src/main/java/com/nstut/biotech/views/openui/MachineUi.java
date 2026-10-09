@@ -38,9 +38,8 @@ public final class MachineUi {
                 at(text(title::getString, BiotechStyle.TEXT), 42, 12, 166, 12),
                 at(caption("control_panel"), 42, 28, 166, 10),
                 at(surface(BiotechStyle.BADGE), 218, 10, 88, 25),
-                at(text(() -> Component.translatable(!data.valid().getAsBoolean() ? "ui.biotech.invalid" :
-                        data.active() ? "ui.biotech.operating" : "ui.biotech.idle").getString(),
-                        BiotechStyle.MINT), 226, 19, 76, 10),
+                at(Ui.button(() -> Component.translatable(data.mode().get().translationKey()),
+                        data.cycleMode()).tooltip(Component.translatable("ui.biotech.redstone.help")), 218, 10, 88, 25),
                 at(surface(BiotechStyle.CARD), 12, 48, 204, 162),
                 at(caption("process"), 24, 58, 176, 10),
                 at(caption("inputs"), 26, 81, 76, 10),
@@ -51,7 +50,7 @@ public final class MachineUi {
                         BiotechStyle.TEXT), 234, 74, 66, 10),
                 at(gauge(() -> data.valid().getAsBoolean() ? data.stored().getAsInt() : 0,
                         data.capacity(), false, data::energyTooltip, 0xFFE8BC5A), 234, 93, 62, 7),
-                at(text(() -> (data.active() ? data.rate().getAsInt() : 0) + " FE/t",
+                at(text(() -> (data.diagnostic().get() == com.nstut.biotech.machines.MachineStatus.PROCESSING ? data.rate().getAsInt() : 0) + " FE/t",
                         BiotechStyle.MUTED), 234, 104, 62, 10),
                 at(surface(BiotechStyle.CARD), 224, 126, 84, 84));
 
@@ -97,9 +96,7 @@ public final class MachineUi {
             case SLAUGHTERHOUSE -> recipeFluid(root, data, fluids, 31, SECONDARY_Y);
         }
 
-        root.addChild(at(text(() -> data.active() ? inputName(data) :
-                Component.translatable(data.valid().getAsBoolean() ? "ui.biotech.waiting" : "ui.biotech.check_structure").getString(),
-                BiotechStyle.MUTED), 24, 192, 180, 10));
+        root.addChild(at(text(data::status, BiotechStyle.MUTED), 24, 192, 180, 10));
         // Positioned layers span the stack for hit testing. Keep the interactive output
         // viewport above read-only diagram layers so wheel events reach its ScrollView.
         root.addChild(at(Ui.scroll(new RecipeOutputs(data)), ControllerOutputLayout.VIEWPORT_X,

@@ -10,11 +10,12 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class PacketRegistries {
-    public static final String PROTOCOL_VERSION = "2";
+    public static final String PROTOCOL_VERSION = "4";
     private PacketRegistries() {}
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
+        registrar.playToClient(LootPreviewPacket.TYPE, LootPreviewPacket.STREAM_CODEC, LootPreviewPacket::handle);
         registrar.playToClient(FluidHatchPacket.TYPE, FluidHatchPacket.STREAM_CODEC, FluidHatchPacket::handle);
         registrar.playToClient(EnergyPacket.TYPE, EnergyPacket.STREAM_CODEC, EnergyPacket::handle);
         registrar.playToClient(BreedingChamberPacket.TYPE, BreedingChamberPacket.STREAM_CODEC, BreedingChamberPacket::handle);

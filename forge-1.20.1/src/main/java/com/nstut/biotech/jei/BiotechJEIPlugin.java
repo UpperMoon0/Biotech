@@ -20,6 +20,22 @@ import java.util.List;
 @SuppressWarnings("unused")
 @JeiPlugin
 public class BiotechJEIPlugin implements IModPlugin {
+    @Override public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(com.nstut.biotech.items.ItemRegistries.CAPTURED_ANIMAL.get(), (stack, context) -> com.nstut.biotech.items.CapturedAnimalItem.recipeSubtype(stack));
+    }
+    private java.util.List<GreenhouseRecipe> harvestRecipes = java.util.List.of();
+    private java.util.List<SlaughterhouseRecipe> lootRecipes = java.util.List.of();
+    @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        SlaughterhouseLootPreview.onRefresh(() -> {
+            runtime.getRecipeManager().hideRecipes(SlaughterhouseCategory.TYPE, lootRecipes);
+            lootRecipes = lootRecipes.stream().map(recipe -> new SlaughterhouseRecipe(recipe.getId(), recipe.getRecipe().copy())).toList();
+            runtime.getRecipeManager().addRecipes(SlaughterhouseCategory.TYPE, lootRecipes);
+            runtime.getRecipeManager().hideRecipes(GreenhouseCategory.TYPE, harvestRecipes);
+            harvestRecipes = harvestRecipes.stream().map(recipe -> new GreenhouseRecipe(recipe.getId(), recipe.getRecipe().copy())).toList();
+            runtime.getRecipeManager().addRecipes(GreenhouseCategory.TYPE, harvestRecipes);
+        });
+    }
+    @Override public void onRuntimeUnavailable() { SlaughterhouseLootPreview.onRefresh(() -> {}); }
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
@@ -63,9 +79,11 @@ public class BiotechJEIPlugin implements IModPlugin {
 
         List<SlaughterhouseRecipe> slaughterhouseRecipes = recipeManager.getAllRecipesFor(SlaughterhouseRecipe.TYPE);
         registration.addRecipes(SlaughterhouseCategory.TYPE, slaughterhouseRecipes);
+        lootRecipes = slaughterhouseRecipes;
 
         List<GreenhouseRecipe> greenhouseRecipes = recipeManager.getAllRecipesFor(GreenhouseRecipe.TYPE);
         registration.addRecipes(GreenhouseCategory.TYPE, greenhouseRecipes);
+        harvestRecipes = greenhouseRecipes;
 
         List<FermenterRecipe> fermenterRecipes = recipeManager.getAllRecipesFor(FermenterRecipe.TYPE);
         registration.addRecipes(FermenterCategory.TYPE, fermenterRecipes);

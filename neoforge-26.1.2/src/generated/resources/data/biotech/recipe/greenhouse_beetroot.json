@@ -9,22 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "beetroot",
-        "count": 4
-      },
-      "chance": 1.0
-    },
-    {
-      "itemStack": {
-        "id": "beetroot_seeds",
-        "count": 6
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "id": "minecraft:water",

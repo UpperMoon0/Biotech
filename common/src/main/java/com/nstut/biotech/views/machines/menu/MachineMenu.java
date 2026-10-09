@@ -15,6 +15,31 @@ public abstract class MachineMenu extends AbstractContainerMenu {
         super(pMenuType, pContainerId);
     }
 
+    private com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity controller;
+    private int syncedStatus, syncedMode;
+    protected final void bindController(com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity machine) {
+        controller = machine;
+        addDataSlot(new net.minecraft.world.inventory.DataSlot() {
+            public int get() { return machine.getLevel() != null && !machine.getLevel().isClientSide() ? machine.getMachineStatus().ordinal() : syncedStatus; }
+            public void set(int value) { syncedStatus = value; }
+        });
+        addDataSlot(new net.minecraft.world.inventory.DataSlot() {
+            public int get() { return machine.getLevel() != null && !machine.getLevel().isClientSide() ? machine.getRedstoneMode().ordinal() : syncedMode; }
+            public void set(int value) { syncedMode = value; }
+        });
+    }
+    public com.nstut.biotech.machines.MachineStatus getMachineStatus() { return com.nstut.biotech.machines.MachineStatus.fromId(syncedStatus); }
+    public com.nstut.biotech.machines.RedstoneMode getRedstoneMode() { return com.nstut.biotech.machines.RedstoneMode.fromId(syncedMode); }
+    public static final int CYCLE_REDSTONE_BUTTON = 90;
+    @Override public boolean clickMenuButton(net.minecraft.world.entity.player.Player player, int id) {
+        if (id != CYCLE_REDSTONE_BUTTON || player.containerMenu != this || controller == null || controller.getLevel() == null
+                || controller.getLevel().isClientSide() || !stillValid(player)
+                || controller.getLevel().getBlockEntity(controller.getBlockPos()) != controller) return false;
+        controller.setRedstoneMode(controller.getRedstoneMode().next());
+        broadcastChanges();
+        return true;
+    }
+
     public static List<Slot> createInventorySlots(Inventory inventory) {
         List<Slot> slots = new ArrayList<>(36);
         for (int row = 0; row < 3; ++row) {

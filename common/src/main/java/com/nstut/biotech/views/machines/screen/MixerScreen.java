@@ -11,7 +11,10 @@ public class MixerScreen extends BiotechContainerScreen<MixerMenu> {
     @Override protected UIComponent buildUI() {
         MachineDisplay display = new MachineDisplay(menu::getStructureValid, menu::getIsOperating,
                 menu::getEnergyStored, menu::getEnergyCapacity, menu::getEnergyConsumed,
-                menu::getRecipeEnergyCost, menu::getEnergyConsumeRate, menu::getRecipe);
+                menu::getRecipeEnergyCost, menu::getEnergyConsumeRate, menu::getRecipe, menu::getMachineStatus, menu::getRedstoneMode,
+                () -> { var mc = net.minecraft.client.Minecraft.getInstance();
+                    if (mc.gameMode != null) mc.gameMode.handleInventoryButtonClick(menu.containerId,
+                        com.nstut.biotech.views.machines.menu.MachineMenu.CYCLE_REDSTONE_BUTTON); });
         return MachineUi.build(MachineUi.Kind.MIXER, title, display);
     }
 }

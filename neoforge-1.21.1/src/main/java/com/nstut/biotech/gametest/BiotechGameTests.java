@@ -221,9 +221,9 @@ public final class BiotechGameTests {
         ItemStack otherParent = new ItemStack(ItemRegistries.SHEEP.get());
         CompoundTag otherState = new CompoundTag();
         otherState.putInt("Age", 0);
-        otherState.putByte("Color", (byte) 3);
+        otherState.putByte("Color", (byte) 11);
         otherState.putString("CustomName", "Parent B");
-        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 3);
+        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 11);
 
         ItemStackHandler breedingInputs = new ItemStackHandler(2);
         breedingInputs.setStackInSlot(0, adultParent.copy());
@@ -238,13 +238,13 @@ public final class BiotechGameTests {
                         0));
 
         BreedingChamberRecipe preparedBreeding =
-                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs);
+                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs, helper.getLevel());
         ItemStack newborn = preparedBreeding.getItemOutputs().get(0).getItemStack();
         CompoundTag newbornState = CapturedAnimalStackState.read(newborn);
         helper.assertTrue(newbornState.getInt("Age") == -24000,
                 "Prepared breeding output must be a newborn");
-        helper.assertTrue(newbornState.getByte("Color") == 14,
-                "Offspring inheritance must deterministically use the first matching parent");
+        helper.assertTrue(newbornState.getByte("Color") == 10,
+                "Red and blue parents must produce vanilla purple offspring");
         helper.assertTrue(!newbornState.contains("CustomName"),
                 "A newborn must not inherit individual identity such as the parent's custom name");
         helper.assertTrue("Parent A".equals(CapturedAnimalStackState.read(breedingInputs.getStackInSlot(0)).getString("CustomName")),
