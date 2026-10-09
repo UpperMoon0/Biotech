@@ -58,6 +58,90 @@ public final class LivestockProductionGameTests {
     private LivestockProductionGameTests() {}
 
     @GameTest(templateNamespace = Biotech.MOD_ID, template = "livestock", timeoutTicks = 400)
+    public static void allDefaultLandAnimalsHaveCaptureCreativeAndRecipes(GameTestHelper helper) {
+        var creative = com.nstut.biotech.items.DefaultCapturedAnimals.stacks();
+        for (var animal : com.nstut.biotech.data.TerrestrialAnimalCatalog.extras(0)) {
+            var stack = creative.stream().filter(item -> com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(item)
+                    .equals("minecraft:" + animal.id()) && !com.nstut.biotech.items.CapturedAnimalStackState.read(item).toString().contains("-24000")).findFirst().orElseThrow();
+            var entity = ((com.nstut.biotech.items.CapturedAnimalItem) stack.getItem()).createCapturedEntity(helper.getLevel(), stack);
+            helper.assertTrue(entity instanceof net.minecraft.world.entity.animal.Animal, "Each default captured land species must reconstruct as a vanilla Animal: " + animal.id());
+            helper.assertTrue(com.nstut.biotech.blocks.NetTrapBlock.isCaptureTypeSupported(entity.getType(), entity.getType().is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, id("capturable"))), helper.getLevel()),
+                    "Every default species must be in the actual capture tag: " + animal.id());
+            helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(id("slaughterhouse_" + animal.id())).isPresent()
+                    && helper.getLevel().getServer().getRecipeManager().byKey(id("terrestrial_habitat_" + animal.id() + "_renewable")).isPresent(),
+                    "Default species must have loaded machine recipes: " + animal.id());
+            if (animal.breeds()) {
+                var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(new net.minecraft.resources.ResourceLocation("minecraft", animal.food()));
+                helper.assertTrue(((net.minecraft.world.entity.animal.Animal) entity).isFood(new ItemStack(item)), "Default breeding food must match vanilla: " + animal.id());
+            } else helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(id("breeding_chamber_" + animal.id())).isEmpty(), "Sterile/non-breedable species must not get a fake breeding recipe");
+            if (animal.baby()) {
+                var baby = creative.stream().filter(item -> com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(item).equals("minecraft:" + animal.id())
+                        && com.nstut.biotech.items.CapturedAnimalStackState.read(item).toString().contains("-24000")).findFirst().orElseThrow();
+                helper.assertTrue(((net.minecraft.world.entity.AgeableMob) ((com.nstut.biotech.items.CapturedAnimalItem) baby.getItem()).createCapturedEntity(helper.getLevel(), baby)).isBaby(), "Creative baby variant must actually be a baby: " + animal.id());
+            }
+            entity.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "livestock", timeoutTicks = 400)
+    public static void horseAndHybridOffspringKeepVanillaStatsAndParents(GameTestHelper helper) {
+        var first = statHorse(helper, net.minecraft.world.entity.EntityType.HORSE, 0.15, 0.5, 18);
+        var second = statHorse(helper, net.minecraft.world.entity.EntityType.HORSE, 0.30, 0.9, 28);
+        var inputs = new net.minecraftforge.items.ItemStackHandler(3);
+        inputs.setStackInSlot(0, first.copy()); inputs.setStackInSlot(1, second.copy()); inputs.setStackInSlot(2, new ItemStack(Items.GOLDEN_CARROT, 2));
+        var recipe = (BreedingChamberRecipe) helper.getLevel().getServer().getRecipeManager().byKey(id("breeding_chamber_horse")).orElseThrow();
+        var prepared = AnimalRecipeStatePreparation.prepareBreeding(recipe, inputs, helper.getLevel());
+        encode(helper, prepared.getRecipe());
+        var persistenceOps = JsonOps.INSTANCE;
+        var encoded = ModRecipeData.CODEC.encodeStart(persistenceOps, prepared.getRecipe()).result().orElseThrow();
+        var restored = ModRecipeData.CODEC.parse(persistenceOps, encoded).result().orElseThrow();
+        var newbornStack = restored.getOutputItems()[0].getItemStack();
+        var newborn = (net.minecraft.world.entity.animal.horse.AbstractHorse) ((com.nstut.biotech.items.CapturedAnimalItem) newbornStack.getItem()).createCapturedEntity(helper.getLevel(), newbornStack);
+        helper.assertTrue(newborn.isBaby() && newborn.getCustomName() == null && !newborn.isTamed(), "Vanilla horse offspring must be a new untamed individual");
+        double speed = newborn.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double jump = newborn.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH);
+        helper.assertTrue(speed >= 0.1125 && speed <= 0.3375 && jump >= 0.4 && jump <= 1.0
+                        && newborn.getMaxHealth() >= 15 && newborn.getMaxHealth() <= 30 && speed != 0.15,
+                "Persisted offspring must keep vanilla mixed speed, jump and health rather than cloning the first parent");
+        var lines = new java.util.ArrayList<net.minecraft.network.chat.Component>();
+        com.nstut.biotech.items.CapturedAnimalTraitTooltip.append(newbornStack, helper.getLevel(), lines::add);
+        helper.assertTrue(lines.stream().anyMatch(line -> line.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents content
+                        && content.getKey().equals("tooltip.biotech.trait.jump")), "Captured horse tooltip must expose its actual jump trait");
+        helper.assertTrue(same(first, inputs.getStackInSlot(0)) && same(second, inputs.getStackInSlot(1)), "Preparing offspring must leave both parent's payloads unchanged");
+        var donkey = statHorse(helper, net.minecraft.world.entity.EntityType.DONKEY, 0.2, 0.65, 24);
+        inputs.setStackInSlot(1, donkey.copy());
+        var hybrid = (BreedingChamberRecipe) helper.getLevel().getServer().getRecipeManager().byKey(id("breeding_chamber_horse_donkey")).orElseThrow();
+        var mule = AnimalRecipeStatePreparation.prepareBreeding(hybrid, inputs, helper.getLevel()).getItemOutputs().get(0).getItemStack();
+        helper.assertTrue(com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(mule).equals("minecraft:mule")
+                        && ((net.minecraft.world.entity.AgeableMob) ((com.nstut.biotech.items.CapturedAnimalItem) mule.getItem()).createCapturedEntity(helper.getLevel(), mule)).isBaby(),
+                "Horse plus donkey must produce a baby mule with its own entity identity");
+        helper.assertTrue(same(first, inputs.getStackInSlot(0)) && same(donkey, inputs.getStackInSlot(1)), "Hybrid preparation must retain both parents");
+        // Wild horses may be captured, but they cannot bypass vanilla taming requirements.
+        var wild = statHorse(helper, net.minecraft.world.entity.EntityType.HORSE, 0.2, 0.6, 20);
+        var wildState = com.nstut.biotech.items.CapturedAnimalStackState.read(wild); wildState.putBoolean("Tame", false);
+        com.nstut.biotech.items.CapturedAnimalStackState.write(wild, wildState); inputs.setStackInSlot(0, wild);
+        inputs.setStackInSlot(1, second.copy());
+        boolean rejected = false;
+        try { AnimalRecipeStatePreparation.prepareBreeding(recipe, inputs, helper.getLevel()); }
+        catch (com.nstut.nstutlib.recipes.RecipeTransactionException expected) { rejected = true; }
+        helper.assertTrue(rejected && inputs.getStackInSlot(2).getCount() == 2, "Invalid mating must reject before food consumption");
+        helper.succeed();
+    }
+
+    private static ItemStack statHorse(GameTestHelper helper, net.minecraft.world.entity.EntityType<?> type, double speed, double jump, double health) {
+        var entity = (net.minecraft.world.entity.animal.horse.AbstractHorse) type.create(helper.getLevel());
+        entity.setTamed(true); entity.setCustomName(net.minecraft.network.chat.Component.literal("Parent"));
+        entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(speed);
+        entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH).setBaseValue(jump);
+        entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(health); entity.setHealth((float) health);
+        CompoundTag state = entity.saveWithoutId(new CompoundTag());
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        com.nstut.biotech.items.CapturedAnimalStackState.writeCapture(stack, state, net.minecraft.world.entity.EntityType.getKey(type).toString(), -1);
+        entity.discard(); return stack;
+    }
+
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "livestock", timeoutTicks = 400)
     public static void greenhouseBlockedReloadKeepsHarvestAndConsumesOnce(GameTestHelper helper) {
         var machine = place(helper, 2);
         BlockPos p = machine.getBlockPos();

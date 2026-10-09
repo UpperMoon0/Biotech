@@ -1,0 +1,61 @@
+{
+  "type": "biotech:breeding_chamber",
+  "energy": 20000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:wolf",
+            "BiotechRecipeLifecycle": "adult"
+          }
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:wolf",
+            "BiotechRecipeLifecycle": "adult"
+          }
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:beef",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:wolf",
+            "BiotechRecipeLifecycle": "baby"
+          }
+        }
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 200
+    }
+  ],
+  "fluidOutputs": []
+}

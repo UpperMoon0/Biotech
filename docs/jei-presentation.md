@@ -13,7 +13,7 @@ All six machine categories use the same slot construction and native JEI scrolli
 
 `./gradlew testAllVersions` includes the registry-free probability, layout and production-math tests. These exercise precision edge cases, 100,000 representative probabilities, every combined cardinality from zero through 512 slots (the codec permits 256 items plus 256 fluids), every scrolling window, non-overlapping geometry, exact-tick boundaries and rate calculations. Source contract tests only check that all target categories retain the shared wiring.
 
-`./gradlew :neoforge-1.21.1:renderJeiPreviews` starts a separate development client using the GameTest world. On a headless machine run it under `xvfb-run -a`; its game directory and outputs are under the target's `build/` directory. This test loads the real JEI runtime and production categories, constructs actual JEI layouts and tooltips, invokes real scroll handlers, asserts the final item/fluid slots are reachable, and writes 16 screenshots to `neoforge-1.21.1/build/jei-previews/`. It covers:
+`./gradlew :neoforge-1.21.1:renderJeiPreviews` starts a separate development client using the GameTest world. On a headless machine run it under `xvfb-run -a`; its game directory and outputs are under the target's `build/` directory. This test loads the real JEI runtime and production categories, constructs actual JEI layouts and tooltips, invokes real scroll handlers, asserts the final item/fluid slots are reachable, and writes 17 screenshots to `neoforge-1.21.1/build/jei-previews/`. It covers:
 
 1. All six categories with probabilistic item outputs and multiple fluids
 2. Independently scrolling long input/output lists to their final fluids
@@ -23,6 +23,9 @@ All six machine categories use the same slot construction and native JEI scrolli
 6. Both authored static and dynamic Slaughterhouse presentation
 7. Focused recipe discovery for all 16 wool colors at both renewable tiers, plus a red-wool focused layout
 
-`manifest.json` is written only after all assertions and captures succeed. The Gradle verification task requires all 16 distinct 1024×832 screenshots. Inspect the screenshots for label legibility and clipping; this is not a pixel-identical golden-image test. The 87-case OpenUI preview task also checks mixed controller item/fluid products, native scrolling, and exact tiny/fractional controller chance tooltips when JEI preview mode is off. Neither preview runner is included in release JARs.
+`manifest.json` is written only after all assertions and captures succeed. The Gradle verification task requires all 17 distinct 1024×832 screenshots. Inspect the screenshots for label legibility and clipping; this is not a pixel-identical golden-image test. The 87-case OpenUI preview task also checks mixed controller item/fluid products, native scrolling, and exact tiny/fractional controller chance tooltips when JEI preview mode is off. Neither preview runner is included in release JARs.
 
 Empty Greenhouse outputs use the same server-synchronized loot catalog and approximate slot counts as Slaughterhouse, with mature-block harvest context and no slaughter multiplier. The native JEI suite includes a live wheat recipe and output-search assertion.
+
+The captured-horse preview verifies saved health, speed and jump traits and short taming/health requirements in a real JEI tooltip.
+Captured animal subtypes are indexed by species and age, so every creative default remains visible and recipe searches find the matching animal rather than unrelated species. The preview checks every default adult/baby entry and its Slaughterhouse lookup.

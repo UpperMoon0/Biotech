@@ -197,10 +197,12 @@ NeoForge 1.21.1 and 26.1.2 use lowercase item counts and modern fluid fields:
 ./gradlew gameTestAll
 ```
 
-Generated machine data is deterministic and verified during builds. Each target must generate exactly 70 machine recipes using the schema and datapack layout required by that Minecraft version.
+Generated machine data is deterministic and verified during builds. Targets generate 156 (Forge 1.20.1), 160 (NeoForge 1.21.1), and 165 (NeoForge 26.1.2) machine recipes using the schema and datapack layout required by that Minecraft version.
 
 Draft pull requests normally use the fast CI lane. Add the `full-validation` label to opt into every loader's unit/build and GameTest jobs without changing the pull request's draft status.
 
 ## License
 
 All Rights Reserved. Created by **NsTut**.
+
+Vanilla land animals, land-associated fliers and Nether land animals now have default capture and machine support: 28 types in 1.20.1, 29 in 1.21.1, and 31 in 26.1.2. Fully aquatic creatures are excluded. The creative tab contains named default captured adult/juvenile stacks for the additional species. Captured tooltips show appearance, genes, horns, taming, equipment and saved health/speed/jump traits. See [production datapacks](docs/production-datapacks.md) for lifecycle and breeding exceptions.

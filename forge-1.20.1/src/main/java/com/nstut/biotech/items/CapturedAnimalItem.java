@@ -95,6 +95,15 @@ public class CapturedAnimalItem extends Item {
         return actualBaby == expectedBaby;
     }
 
+    /** JEI groups by the recipe selectors, rather than each individual's unrelated saved traits. */
+    public static String recipeSubtype(ItemStack stack) {
+        CompoundTag root = stack.getTag();
+        if (root == null) return "";
+        String lifecycle = root.contains(RECIPE_LIFECYCLE_TAG) ? root.getString(RECIPE_LIFECYCLE_TAG) : LIFECYCLE_ANY;
+        if (LIFECYCLE_ANY.equals(lifecycle)) lifecycle = CapturedAnimalStackState.read(stack).getInt("Age") < 0 ? LIFECYCLE_BABY : LIFECYCLE_ADULT;
+        return CapturedAnimalStackState.entityTypeId(stack) + "/" + lifecycle;
+    }
+
     /** Human-readable recipe requirement, including selector-only JEI display stacks. */
     public static Component lifecycleTooltip(ItemStack stack) {
         CompoundTag root = stack.getTag();
@@ -140,6 +149,13 @@ public class CapturedAnimalItem extends Item {
         return InteractionResult.CONSUME;
     }
 
+    @Override public Component getName(ItemStack stack) {
+        String id = CapturedAnimalStackState.entityTypeId(stack);
+        var type = EntityType.byString(id).orElse(null);
+        if (type == null) return super.getName(stack);
+        return Component.translatable("item.biotech.captured_named", Component.translatable(type.getDescriptionId()));
+    }
+
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level,
                                 @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
@@ -155,6 +171,7 @@ public class CapturedAnimalItem extends Item {
                         Component.translatable(type.getDescriptionId()))));
         Component lifecycle = lifecycleTooltip(stack);
         if (lifecycle != null) tooltip.add(lifecycle);
+        CapturedAnimalTraitTooltip.append(stack, level, tooltip::add);
     }
     @Nullable
     public Entity createCapturedEntity(Level level, ItemStack stack) {

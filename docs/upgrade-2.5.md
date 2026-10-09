@@ -49,3 +49,5 @@ Player-facing controller diagnostics, redstone labels, energy/fluid tooltips, an
 Patchouli prose is a separate translation surface: copy the guide's `en_us/categories` and `en_us/entries` trees to your locale directory. Preserve entry IDs, category IDs, page types, recipe references, and formatting codes such as `$(br)`. Translate names and prose. Translating the language JSON alone does not translate the guide's literal prose.
 
 Greenhouse defaults now follow mature crop loot rather than fixed item lists; melon output becomes slices and seed counts can vary. Explicit nonempty outputs preserve pack-authored balance. Breeding now derives each newborn from both parents using vanilla rules, replacing 2.4 first-parent inheritance.
+
+The default capture tag and machine recipes cover all supported vanilla non-aquatic Animal types in each version (28/29/31 species). New creative entries identify each additional species; captured-item tooltips expose appearance and saved attributes. Generic breeding uses two separate parent entries because captured animals have a stack limit of one.

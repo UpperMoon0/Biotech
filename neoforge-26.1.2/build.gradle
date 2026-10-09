@@ -54,6 +54,7 @@ tasks.named('runGameTestServer').configure {
 }
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    systemProperty 'biotech.animalVersion', '261'
     group = 'build'
     description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
     dependsOn tasks.named('compileJava')
@@ -79,8 +80,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipe')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 70) {
-            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 165) {
+            throw new GradleException("Expected 165 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         recipeFiles.each { recipe ->
             def text = recipe.getText('UTF-8')

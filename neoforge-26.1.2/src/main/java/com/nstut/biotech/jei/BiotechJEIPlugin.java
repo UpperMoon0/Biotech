@@ -17,6 +17,9 @@ import org.jetbrains.annotations.NotNull;
 
 @JeiPlugin
 public class BiotechJEIPlugin implements IModPlugin {
+    @Override public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(com.nstut.biotech.items.ItemRegistries.CAPTURED_ANIMAL.get(), (stack, context) -> com.nstut.biotech.items.CapturedAnimalItem.recipeSubtype(stack));
+    }
     private java.util.List<GreenhouseRecipe> harvestRecipes = java.util.List.of();
     private java.util.List<SlaughterhouseRecipe> lootRecipes = java.util.List.of();
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {

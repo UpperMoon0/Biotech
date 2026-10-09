@@ -159,6 +159,7 @@ sourceSets.main.resources {
 }
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    systemProperty 'biotech.animalVersion', '121'
     group = 'build'
     description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
     dependsOn tasks.named('compileJava')
@@ -185,8 +186,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipe')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 70) {
-            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 160) {
+            throw new GradleException("Expected 160 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         recipeFiles.each { recipe ->
             def text = recipe.getText('UTF-8')
@@ -272,15 +273,15 @@ publishing { publications { mavenJava(MavenPublication) { from components.java; 
 // Real JEI integration gate: all categories, precise chance tooltips, catalysts, and scrolling.
 tasks.register('renderJeiPreviews') {
     group = 'verification'
-    description = 'Runs real JEI slot/tooltip/scroll assertions and verifies 16 client screenshots.'
+    description = 'Runs real JEI slot/tooltip/scroll assertions and verifies 17 client screenshots.'
     dependsOn 'runJeiPreview'
     doLast {
         def output = layout.buildDirectory.dir('jei-previews').get().asFile
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('JEI renderer did not finish: manifest.json is missing')
         def images = new groovy.json.JsonSlurper().parse(manifest)
-        if (images.size() != 16 || images.collect { it.file }.toSet().size() != 16) {
-            throw new GradleException('Expected 16 unique real JEI previews')
+        if (images.size() != 17 || images.collect { it.file }.toSet().size() != 17) {
+            throw new GradleException('Expected 17 unique real JEI previews')
         }
         images.each { entry ->
             def image = javax.imageio.ImageIO.read(new File(output, entry.file))
@@ -288,7 +289,7 @@ tasks.register('renderJeiPreviews') {
                 throw new GradleException("Missing/invalid JEI screenshot: ${entry.file}")
             }
         }
-        logger.lifecycle("Verified actual JEI layouts, tooltips, scrolling, and 16 screenshots in ${output}")
+        logger.lifecycle("Verified actual JEI layouts, tooltips, scrolling, and 17 screenshots in ${output}")
     }
 }
 

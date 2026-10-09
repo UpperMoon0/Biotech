@@ -21,6 +21,12 @@ import java.util.List;
 @SuppressWarnings("unused")
 @JeiPlugin
 public class BiotechJEIPlugin implements IModPlugin {
+    @Override public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
+        registration.registerSubtypeInterpreter(com.nstut.biotech.items.ItemRegistries.CAPTURED_ANIMAL.get(), new mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter<ItemStack>() {
+            @Override public Object getSubtypeData(ItemStack stack, mezz.jei.api.ingredients.subtypes.UidContext context) { return com.nstut.biotech.items.CapturedAnimalItem.recipeSubtype(stack); }
+            @Override public String getLegacyStringSubtypeInfo(ItemStack stack, mezz.jei.api.ingredients.subtypes.UidContext context) { return com.nstut.biotech.items.CapturedAnimalItem.recipeSubtype(stack); }
+        });
+    }
     private java.util.List<GreenhouseRecipe> harvestRecipes = java.util.List.of();
     private java.util.List<SlaughterhouseRecipe> lootRecipes = java.util.List.of();
     @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {

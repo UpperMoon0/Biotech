@@ -12,3 +12,5 @@
 - Align animal inventory icons with block fronts. Show searchable server loot-table items and estimated per-cycle quantities on dynamic Slaughterhouse JEI output slots, refresh them on datapack synchronization, and remove the separate loot-description line. Network protocol 4 includes the loot catalog payload.
 
 - Greenhouse default recipes now resolve mature-crop loot once per cycle, with live searchable JEI estimates and static datapack overrides. Breeding uses both parents through vanilla offspring rules; persisted cycle results preserve traits and rolls across interruptions.
+
+- Added default capture, creative variants and machine recipes for vanilla terrestrial animals in each supported version, including proper mule hybrids, vanilla egg/spawn outputs and sterile-species exclusions. Captured tooltips show individual appearance, genes, equipment and health/speed/jump traits.

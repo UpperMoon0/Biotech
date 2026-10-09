@@ -31,6 +31,14 @@ final class JeiMachineRecipeLayout {
                 slot.addRichTooltipCallback((view, tooltip) -> {
                     tooltip.add(Component.translatable(ingredient.isConsumable()
                             ? "jei.biotech.input.consumed" : "jei.biotech.input.catalyst"));
+                    if (recipe instanceof com.nstut.biotech.recipes.BreedingChamberRecipe) {
+                        String type = com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(stack);
+                        if (java.util.Set.of("minecraft:horse", "minecraft:donkey", "minecraft:llama", "minecraft:trader_llama", "minecraft:camel").contains(type)) {
+                            tooltip.add(Component.translatable("jei.biotech.breeding.tame_healthy"));
+                        } else if (type.equals("minecraft:cat") || type.equals("minecraft:wolf")) {
+                            tooltip.add(Component.translatable("jei.biotech.breeding.tame"));
+                        }
+                    }
                     if (stack.getItem() instanceof MobItem mob) {
                         tooltip.add(Component.translatable(mob.isBabyVariant()
                                 ? "tooltip.biotech.captured_animal.baby" : "tooltip.biotech.captured_animal.adult"));

@@ -37,15 +37,19 @@ allprojects {
 def normalizeRecipeValue
 normalizeRecipeValue = { value ->
     if (value instanceof Map) {
-        return value.collectEntries { key, nested ->
+        def normalized = value.collectEntries { key, nested ->
             def normalizedKey = ['Count': 'count', 'FluidName': 'id', 'Amount': 'amount'].get(key, key)
             [(normalizedKey): normalizeRecipeValue(nested)]
         }
+        if (normalized.containsKey('id') && normalized.containsKey('count') && normalized.containsKey('tag')) {
+            normalized.components = ['minecraft:custom_data': normalized.remove('tag')]
+        }
+        return normalized
     }
     if (value instanceof List) {
         return value.collect { normalizeRecipeValue(it) }
     }
-    return value
+    return value == 'minecraft:turtle_scute' ? 'minecraft:scute' : value
 }
 
 tasks.register('verifyRecipeParity') {
@@ -72,7 +76,9 @@ tasks.register('verifyRecipeParity') {
         def baselineName = 'forge-1.20.1'
         def baseline = parsed[baselineName]
         parsed.each { target, recipes ->
-            if (recipes.keySet() != baseline.keySet()) {
+            def expectedExtras = target == 'forge-1.20.1' ? [] : target == 'neoforge-1.21.1' ? ['armadillo'] : ['armadillo', 'happy_ghast', 'camel_husk']
+            def versionOnly = recipes.keySet().findAll { name -> expectedExtras.any { species -> name.contains('_' + species + '.') || name.contains('_' + species + '_') } }.toSet()
+            if (recipes.keySet() - versionOnly != baseline.keySet()) {
                 throw new GradleException("Generated recipe file set differs between ${baselineName} and ${target}")
             }
             baseline.each { name, recipe ->
@@ -81,7 +87,7 @@ tasks.register('verifyRecipeParity') {
                 }
             }
         }
-        logger.lifecycle("Verified ${baseline.size()} generated machine recipes are semantically identical across all supported targets.")
+        logger.lifecycle("Verified ${baseline.size()} shared generated machine recipes match across targets; version-specific animal additions are checked by each target.")
     }
 }
 

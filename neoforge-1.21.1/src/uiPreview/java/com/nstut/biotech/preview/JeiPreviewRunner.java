@@ -72,7 +72,7 @@ public final class JeiPreviewRunner implements IModPlugin {
                 output = Path.of(System.getProperty("biotech.jeiPreview.output"));
                 Files.createDirectories(output);
                 cases = createCases();
-                require(cases.size() == 16, "Expected 16 distinct JEI cases");
+                require(cases.size() == 17, "Expected 17 distinct JEI cases");
                 mc.setScreen(new PreviewScreen(cases.get(0)));
             } else if (advance) {
                 advance = false;
@@ -95,6 +95,18 @@ public final class JeiPreviewRunner implements IModPlugin {
     private static List<Case> createCases() {
         var gui = runtime.getJeiHelpers().getGuiHelper();
         verifyLootCatalogRefresh();
+        var defaults = com.nstut.biotech.items.DefaultCapturedAnimals.stacks();
+        var indexed = runtime.getIngredientManager().getAllIngredients(VanillaTypes.ITEM_STACK).stream()
+                .filter(stack -> stack.getItem() instanceof com.nstut.biotech.items.CapturedAnimalItem)
+                .map(com.nstut.biotech.items.CapturedAnimalItem::recipeSubtype).collect(java.util.stream.Collectors.toSet());
+        for (var animal : defaults) {
+            require(indexed.contains(com.nstut.biotech.items.CapturedAnimalItem.recipeSubtype(animal)), "JEI lost a creative animal variant");
+            var focus = runtime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.INPUT, VanillaTypes.ITEM_STACK, animal);
+            var found = runtime.getRecipeManager().createRecipeLookup(SlaughterhouseCategory.TYPE).limitFocus(List.of(focus)).get().toList();
+            boolean adult = com.nstut.biotech.items.CapturedAnimalStackState.read(animal).getInt("Age") >= 0;
+            require(adult ? found.size() == 1 && found.get(0).getId().getPath().equals("slaughterhouse_" + com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(animal).split(":")[1]) : found.isEmpty(),
+                    "JEI must match the species and lifecycle, without unrelated animals");
+        }
         List<Case> result = new ArrayList<>();
         result.add(make("breeding-multiple-outputs", new BreedingChamberCategory(gui), d -> new BreedingChamberRecipe(id("breeding"), d), false, Mode.CARD));
         result.add(make("habitat-multiple-outputs", new TerrestrialHabitatCategory(gui), d -> new TerrestrialHabitatRecipe(id("habitat"), d), false, Mode.CARD));
@@ -144,6 +156,29 @@ public final class JeiPreviewRunner implements IModPlugin {
                 .get().anyMatch(recipe -> recipe.getId().equals(crop.getId())), "Live crop loot must be searchable in JEI");
         require(tooltip(cropLayout, "loot-item-0").contains("Actual drops may vary."), "Crop estimates need simple wording");
         result.add(new Case("greenhouse-live-harvest", cropLayout, Mode.CARD));
+        var horse = Minecraft.getInstance().getSingleplayerServer().submit(() -> {
+            var level = Minecraft.getInstance().getSingleplayerServer().overworld();
+            var animal = net.minecraft.world.entity.EntityType.HORSE.create(level);
+            animal.setTamed(true);
+            animal.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(0.28);
+            animal.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH).setBaseValue(0.82);
+            animal.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(28);
+            animal.setHealth(28);
+            var captured = new ItemStack(com.nstut.biotech.items.ItemRegistries.CAPTURED_ANIMAL.get());
+            com.nstut.biotech.items.CapturedAnimalStackState.writeCapture(captured, animal.saveWithoutId(new net.minecraft.nbt.CompoundTag()), "minecraft:horse", -1);
+            var loaded = level.getRecipeManager().getAllRecipesFor(BreedingChamberRecipe.TYPE).stream()
+                    .filter(holder -> holder.id().getPath().equals("breeding_chamber_horse")).findFirst().orElseThrow();
+            var data = loaded.value().getRecipe().copy();
+            data.getIngredientItems()[0].setItemStack(captured.copy());
+            data.getIngredientItems()[1].setItemStack(captured.copy());
+            return new BreedingChamberRecipe(loaded.id(), data);
+        }).join();
+        var horseLayout = create(new BreedingChamberCategory(gui), horse);
+        String horseTooltip = tooltip(horseLayout, "input-item-0");
+        require(horseTooltip.contains("Speed: 0.28") && horseTooltip.contains("Jump strength: 0.82")
+                        && horseTooltip.contains("14 / 14 hearts") && horseTooltip.contains("Parents must be tame and healthy."),
+                "Real captured horse tooltip must expose saved attributes and mating requirements with clear wording: " + horseTooltip);
+        result.add(new Case("captured-horse-traits", horseLayout, Mode.CATALYST));
         result.add(focusedWoolCase());
         return result;
     }

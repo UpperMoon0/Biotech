@@ -36,27 +36,36 @@ public final class AnimalRecipeStatePreparation {
         if (parents.size() != 2) throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Breeding requires two parents");
         var first = breedingParent(level, parents.get(0));
         var second = breedingParent(level, parents.get(1));
-        if (first == null || second == null || first.getType() != second.getType() || first.isBaby() || second.isBaby()) {
+        if (first == null || second == null || first.isBaby() || second.isBaby()) {
             throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Breeding requires two compatible adult animals");
+        }
+        // Machine recipes replace the natural cooldown/feeding step, not species mating rules.
+        first.setAge(0); second.setAge(0);
+        first.setInLoveTime(600); second.setInLoveTime(600);
+        if (!first.canMate(second) || !second.canMate(first)) {
+            throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Parents do not satisfy vanilla mating requirements");
         }
         ModRecipeData prepared = selection.applyTo(recipe.getRecipe());
         List<OutputItem> outputs = new ArrayList<>();
         for (int index : recipe.rollItemOutputIndexes()) {
             ItemStack template = prepared.getOutputItems()[index].getItemStack();
-            if (!isAnimalOutputFor(template, CapturedAnimalStackState.entityTypeId(parents.get(0)))) {
+            if (!(template.getItem() instanceof MobItem) && !(template.getItem() instanceof CapturedAnimalItem)) {
                 appendResolvedOutput(outputs, template);
                 continue;
             }
             for (int i = 0; i < template.getCount(); i++) {
                 var child = first.getBreedOffspring(level, second);
-                if (child == null || child.getType() != first.getType()) {
+                if (child == null || (!CapturedAnimalStackState.entityTypeId(template).isEmpty()
+                        && !CapturedAnimalStackState.entityTypeId(template).equals(net.minecraft.world.entity.EntityType.getKey(child.getType()).toString()))) {
                     throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Vanilla breeding did not produce a matching offspring");
                 }
                 try {
                     CompoundTag state = child.saveWithoutId(new CompoundTag());
                     ItemStack newborn = template.copy();
                     newborn.setCount(1);
-                    CapturedAnimalStackState.writeDerived(newborn, parents.get(0), com.nstut.biotech.items.CapturedEntityState.asNewborn(state));
+                    ItemStack childIdentity = template.copy();
+                    CapturedAnimalStackState.writeCapture(childIdentity, state, net.minecraft.world.entity.EntityType.getKey(child.getType()).toString(), -1);
+                    CapturedAnimalStackState.writeDerived(newborn, childIdentity, com.nstut.biotech.items.CapturedEntityState.asNewborn(state));
                     appendResolvedOutput(outputs, newborn);
                 } finally { child.discard(); }
             }
