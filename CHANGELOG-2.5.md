@@ -7,3 +7,5 @@
 - Apply server balance settings to JEI energy and timing estimates.
 - Localize controller diagnostics, controls, energy/fluid tooltips, and fluid product descriptions; document Patchouli translation and upgrade behavior.
 - Add native regressions for pause/resume, exact output preservation across reload, output diagnostics, and active cost preservation on every supported target.
+
+- Apply the bounded idle diagnostic refresh to Forge, distinguish an empty recipe set from missing items, and test controller cache boundaries using real world ticks on every target.

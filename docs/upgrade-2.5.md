@@ -12,7 +12,7 @@ The controller's existing operating block state represents an active transaction
 
 ## Stall diagnostics
 
-All six controllers synchronize diagnostics through their vanilla menu data. Jade requests the same cached server status. Clients do not scan inventories or choose recipes.
+All six controllers synchronize diagnostics through their vanilla menu data. Jade requests the same cached server status. Clients do not scan inventories or choose recipes. Idle input diagnoses refresh at most once every 20 world ticks (one second at 20 TPS), so a changed input may briefly retain its previous message. This informational cache does not delay transaction processing or redstone controls. A machine with no available recipes reports No matching recipe even when its input inventory is empty.
 
 | Status | Action |
 | --- | --- |

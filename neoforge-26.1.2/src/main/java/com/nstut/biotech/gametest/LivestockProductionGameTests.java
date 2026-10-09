@@ -73,15 +73,66 @@ public final class LivestockProductionGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER = TEST_FUNCTIONS.register("livestock_datapack_reload_keeps_in_flight_slaughter", () -> LivestockProductionGameTests::datapackReloadKeepsInFlightSlaughter);
 
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERDIAGNOSTICS = TEST_FUNCTIONS.register("controller_diagnostics_and_redstone", () -> LivestockProductionGameTests::controllerDiagnosticsAndRedstonePreserveCycle);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERTHROTTLE = TEST_FUNCTIONS.register("controller_diagnostic_throttle_and_empty_recipes", () -> LivestockProductionGameTests::controllerDiagnosticScansAreBoundedAndEmptyRecipesAreDistinct);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERBALANCE = TEST_FUNCTIONS.register("controller_balance_and_fluid_diagnostics", () -> LivestockProductionGameTests::controllerBalanceSnapshotAndFluidDiagnostics);
 
     public static void register(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(id("livestock_production"));
-        for (var test : List.of(CONTROLLERDIAGNOSTICS, CONTROLLERBALANCE, LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
+        for (var test : List.of(CONTROLLERDIAGNOSTICS, CONTROLLERTHROTTLE, CONTROLLERBALANCE, LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, id("livestock"), 400, 0, true)));
         }
     }
 
+
+    public static void controllerDiagnosticScansAreBoundedAndEmptyRecipesAreDistinct(GameTestHelper helper) {
+        Rig rig = slaughter(helper);
+        var controller = new CountingDiagnosticController(rig.machine.getBlockPos(), rig.machine.getBlockState());
+        helper.getLevel().setBlockEntity(controller);
+        rig.machine = controller;
+        tick(helper, controller, 100);
+        helper.assertTrue(controller.scans == 1, "Repeated actual controller ticks in one world tick must scan once");
+        helper.assertTrue(controller.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS,
+                "Loaded recipes with empty inputs must report missing items");
+        helper.runAfterDelay(19, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 1, "Idle world ticks 1 through 19 must reuse the initial scan");
+        });
+        helper.runAfterDelay(20, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 2, "World tick 20 must perform exactly one new diagnostic scan");
+            controller.emptyRecipes = true;
+        });
+        helper.runAfterDelay(39, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 2, "Second interval must also remain bounded");
+        });
+        helper.runAfterDelay(40, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 3
+                    && controller.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.NO_MATCHING_RECIPE,
+                    "Empty recipe set and empty inventory must report no matching recipe");
+            rig.animals.setStackInSlot(0, new ItemStack(Items.COBBLESTONE));
+        });
+        helper.runAfterDelay(60, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 4
+                    && controller.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.NO_MATCHING_RECIPE,
+                    "Supplying items must not change the empty-recipe-set diagnosis");
+            helper.succeed();
+        });
+    }
+
+    /** Instrument only recipe enumeration; all structure, hatch and transaction ticks remain production code. */
+    private static final class CountingDiagnosticController extends SlaughterhouseBlockEntity {
+        private int scans;
+        private boolean emptyRecipes;
+        CountingDiagnosticController(BlockPos pos, BlockState state) { super(pos, state); }
+        @Override protected <R extends com.nstut.nstutlib.recipes.ModRecipe<R>> List<R> diagnosticRecipes(
+                net.minecraft.world.level.Level level, net.minecraft.world.item.crafting.RecipeType<R> type) {
+            scans++;
+            return emptyRecipes ? List.of() : super.diagnosticRecipes(level, type);
+        }
+    }
 
     public static void controllerDiagnosticsAndRedstonePreserveCycle(GameTestHelper helper) {
         Rig rig = slaughter(helper);
@@ -103,7 +154,25 @@ public final class LivestockProductionGameTests {
 
         rig.animals.setStackInSlot(0, animal(ItemRegistries.COW.get(), "cow", -1, "controlled_slaughter"));
         tick(helper, machine, 1);
-        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_FLUID, "Matching cow without water must report missing fluid");
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS,
+                "Input changes must retain the cached diagnosis within the refresh interval");
+        helper.runAfterDelay(19, () -> {
+            var idle = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+            tick(helper, idle, 1);
+            helper.assertTrue(idle.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS,
+                    "Diagnosis must remain cached through world tick 19");
+        });
+        helper.runAfterDelay(20, () -> {
+            var idle = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+            tick(helper, idle, 1);
+            helper.assertTrue(idle.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_FLUID,
+                    "Matching cow without water must refresh to missing fluid after 20 world ticks");
+            finishControllerRedstoneCycle(helper, rig);
+        });
+    }
+
+    private static void finishControllerRedstoneCycle(GameTestHelper helper, Rig rig) {
+        var machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
         rig.water.setFluid(new FluidStack(Fluids.WATER, 200));
         fill(rig.outputs, new ItemStack(Items.COBBLESTONE, 64));
         tick(helper, machine, 1);

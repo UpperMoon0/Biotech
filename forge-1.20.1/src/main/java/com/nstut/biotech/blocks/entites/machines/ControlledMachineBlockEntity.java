@@ -21,6 +21,8 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
     private MachineStatus status = MachineStatus.NO_MATCHING_RECIPE;
     private ModRecipe<?> observedRecipe;
     private int[] observedRolls;
+    private long lastDiagnosisTick = Long.MIN_VALUE;
+    private MachineStatus cachedDiagnosis = MachineStatus.NO_MATCHING_RECIPE;
 
     protected ControlledMachineBlockEntity(BlockEntityType<? extends MachineBlockEntity> type, BlockPos pos,
             BlockState state, int x, int y, int z) { super(type, pos, state, x, y, z); }
@@ -74,7 +76,7 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
         ModRecipe<?> active = recipeHandler.orElse(null);
         if (active == null) {
             observedRecipe = null; observedRolls = null;
-            status = before > 0 ? MachineStatus.PROCESSING : diagnoseInputs(level, type, inputs, fluids);
+            status = before > 0 ? MachineStatus.PROCESSING : throttledDiagnosis(level, type, inputs, fluids);
             return;
         }
         if (active != observedRecipe) {
@@ -100,12 +102,24 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
                 data.getIngredientItems(), fluid ? new OutputItem[0] : data.getOutputItems(),
                 data.getFluidIngredients(), fluid ? data.getFluidOutputs() : new FluidStack[0], data.getTotalEnergy()));
     }
+    /** Diagnostics are informational: never rescan every recipe on every idle server tick. */
+    private <R extends ModRecipe<R>> MachineStatus throttledDiagnosis(Level level, RecipeType<R> type,
+            IItemHandler inputs, List<? extends IFluidHandler> fluids) {
+        long tick = level.getGameTime();
+        if (DiagnosticThrottle.shouldRefresh(tick, lastDiagnosisTick)) {
+            cachedDiagnosis = diagnoseInputs(level, type, inputs, fluids);
+            lastDiagnosisTick = tick;
+        }
+        return cachedDiagnosis;
+    }
     private <R extends ModRecipe<R>> MachineStatus diagnoseInputs(Level level, RecipeType<R> type,
             IItemHandler inputs, List<? extends IFluidHandler> fluids) {
         boolean anyItems = false;
         for (int slot = 0; slot < inputs.getSlots(); slot++) anyItems |= !inputs.getStackInSlot(slot).isEmpty();
         boolean insufficientQuantity = false;
+        boolean hasRecipes = false;
         for (R recipe : diagnosticRecipes(level, type)) {
+            hasRecipes = true;
             ModRecipeData data = recipe.getRecipe();
             R itemsOnly = recipe.create(recipe.getId(), new ModRecipeData(data.getIngredientItems(),
                     data.getOutputItems(), new FluidStack[0], data.getFluidOutputs(), data.getTotalEnergy()));
@@ -121,6 +135,6 @@ public abstract class ControlledMachineBlockEntity extends ControlStorageBlockEn
                     data.getOutputItems(), new FluidStack[0], data.getFluidOutputs(), data.getTotalEnergy()));
             insufficientQuantity |= RecipePreflight.matchesInputs(minimalItems, inputs, List.of());
         }
-        return anyItems && !insufficientQuantity ? MachineStatus.NO_MATCHING_RECIPE : MachineStatus.MISSING_ITEMS;
+        return !hasRecipes || (anyItems && !insufficientQuantity) ? MachineStatus.NO_MATCHING_RECIPE : MachineStatus.MISSING_ITEMS;
     }
 }
