@@ -75,7 +75,7 @@ public class BreedingChamberBlockEntity extends ControlledMachineBlockEntity {
                 energy,
                 com.nstut.biotech.Config.machineEnergyPerTick,
                 null,
-                recipe -> AnimalRecipeStatePreparation.prepareBreeding(recipe, inputItems));
+                recipe -> AnimalRecipeStatePreparation.prepareBreeding(recipe, inputItems, (ServerLevel) level));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             FluidStack fluidStored = inputFluid.getFluidInTank(0).copy();

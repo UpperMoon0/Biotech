@@ -67,11 +67,12 @@ public final class JeiPreviewRunner implements IModPlugin {
         Minecraft mc = Minecraft.getInstance();
         try {
             if (cases == null && runtime != null && mc.level != null && mc.player != null
-                    && mc.screen == null && mc.getOverlay() == null) {
+                    && mc.screen == null && mc.getOverlay() == null
+                    && !SlaughterhouseLootPreview.outputs("biotech:slaughterhouse_pig").isEmpty()) {
                 output = Path.of(System.getProperty("biotech.jeiPreview.output"));
                 Files.createDirectories(output);
                 cases = createCases();
-                require(cases.size() == 15, "Expected 15 distinct JEI cases");
+                require(cases.size() == 16, "Expected 16 distinct JEI cases");
                 mc.setScreen(new PreviewScreen(cases.get(0)));
             } else if (advance) {
                 advance = false;
@@ -93,6 +94,7 @@ public final class JeiPreviewRunner implements IModPlugin {
 
     private static List<Case> createCases() {
         var gui = runtime.getJeiHelpers().getGuiHelper();
+        verifyLootCatalogRefresh();
         List<Case> result = new ArrayList<>();
         result.add(make("breeding-multiple-outputs", new BreedingChamberCategory(gui), d -> new BreedingChamberRecipe(id("breeding"), d), false, Mode.CARD));
         result.add(make("habitat-multiple-outputs", new TerrestrialHabitatCategory(gui), d -> new TerrestrialHabitatRecipe(id("habitat"), d), false, Mode.CARD));
@@ -107,13 +109,72 @@ public final class JeiPreviewRunner implements IModPlugin {
         result.add(make("habitat-adult-catalyst", new TerrestrialHabitatCategory(gui), d -> new TerrestrialHabitatRecipe(id("adult"), d), true, Mode.CATALYST));
         result.add(make("habitat-item-fluid-layout", new TerrestrialHabitatCategory(gui), d -> new TerrestrialHabitatRecipe(id("milk"), d), true, Mode.CARD));
         result.add(make("habitat-milk-rate", new TerrestrialHabitatCategory(gui), d -> new TerrestrialHabitatRecipe(id("milk_rate"), d), true, Mode.MILK));
-        SlaughterhouseRecipe dynamic = new SlaughterhouseRecipe(id("dynamic"), new ModRecipeData(
-                new IngredientItem[]{new IngredientItem(new ItemStack(ItemRegistries.COW.get()), true)},
-                new OutputItem[0], new FluidStack[0], new FluidStack[0], 32000));
+        SlaughterhouseRecipe dynamic = Minecraft.getInstance().level.getRecipeManager()
+                .getAllRecipesFor(SlaughterhouseRecipe.TYPE).stream()
+                .filter(holder -> holder.id().getPath().equals("slaughterhouse_pig"))
+                .map(holder -> new SlaughterhouseRecipe(holder.id(), holder.value().getRecipe().copy()))
+                .findFirst().orElseThrow();
         require(dynamic.usesEntityLoot(), "Empty authored item outputs must advertise dynamic loot");
-        result.add(new Case("slaughterhouse-dynamic", create(new SlaughterhouseCategory(gui), dynamic), Mode.CARD));
+        var dynamicLayout = create(new SlaughterhouseCategory(gui), dynamic);
+        require(dynamicLayout.getRecipeSlotsView().getSlotViews().stream()
+                .filter(slot -> slot.getRole() == RecipeIngredientRole.OUTPUT)
+                .flatMap(IRecipeSlotView::getItemStacks).anyMatch(stack -> stack.is(Items.PORKCHOP)),
+                "Live server pig loot must appear in actual JEI output slots");
+        require(!tooltip(dynamicLayout, "loot-item-0").contains("per minute"), "Possible loot must not invent a fixed production rate");
+        var porkFocus = runtime.getJeiHelpers().getFocusFactory().createFocus(
+                RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(Items.PORKCHOP));
+        require(runtime.getRecipeManager().createRecipeLookup(SlaughterhouseCategory.TYPE)
+                .limitFocus(List.of(porkFocus)).get().anyMatch(recipe -> recipe.getId().equals(dynamic.getId())),
+                "Server loot outputs must be searchable through real JEI indexing");
+        require(tooltip(dynamicLayout, "loot-item-0").contains("items per cycle. Actual drops may vary."),
+                "Loot slot must explain its estimated quantity instead of a separate text line");
+        require(LootQuantityEstimate.label(SlaughterhouseLootPreview.estimate(dynamic.getId().toString(), 0),
+                SlaughterhouseLootPreparation.getYieldMultiplier()).equals("~4"), "Pig slot must display its approximate doubled yield");
+        result.add(new Case("slaughterhouse-dynamic", dynamicLayout, Mode.CARD));
+        GreenhouseRecipe crop = Minecraft.getInstance().level.getRecipeManager().getAllRecipesFor(GreenhouseRecipe.TYPE).stream()
+                .filter(holder -> holder.id().getPath().equals("greenhouse_wheat"))
+                .map(holder -> new GreenhouseRecipe(holder.id(), holder.value().getRecipe().copy())).findFirst().orElseThrow();
+        var cropLayout = create(new GreenhouseCategory(gui), crop);
+        require(crop.usesBlockLoot() && cropLayout.getRecipeSlotsView().getSlotViews().stream()
+                .filter(slot -> slot.getRole() == RecipeIngredientRole.OUTPUT).flatMap(IRecipeSlotView::getItemStacks)
+                .anyMatch(stack -> stack.is(Items.WHEAT)), "Live harvest outputs must appear in real JEI slots");
+        var wheatFocus = runtime.getJeiHelpers().getFocusFactory().createFocus(
+                RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(Items.WHEAT));
+        require(runtime.getRecipeManager().createRecipeLookup(GreenhouseCategory.TYPE).limitFocus(List.of(wheatFocus))
+                .get().anyMatch(recipe -> recipe.getId().equals(crop.getId())), "Live crop loot must be searchable in JEI");
+        require(tooltip(cropLayout, "loot-item-0").contains("Actual drops may vary."), "Crop estimates need simple wording");
+        result.add(new Case("greenhouse-live-harvest", cropLayout, Mode.CARD));
         result.add(focusedWoolCase());
         return result;
+    }
+
+    /** Exercise an arriving replacement catalog after JEI indexing, then restore real server data. */
+    private static void verifyLootCatalogRefresh() {
+        var server = Minecraft.getInstance().getSingleplayerServer();
+        String original = server.submit(() -> com.nstut.biotech.jei.SlaughterhouseLootSync.catalog(server.overworld()).toString()).join();
+        var changed = com.google.gson.JsonParser.parseString(original).getAsJsonObject();
+        var replacement = new com.google.gson.JsonArray();
+        var estimatedOutput = new com.google.gson.JsonObject();
+        estimatedOutput.addProperty("item", "minecraft:emerald");
+        estimatedOutput.addProperty("mean", 3.0);
+        replacement.add(estimatedOutput);
+        changed.add("biotech:slaughterhouse_pig", replacement);
+        try {
+            SlaughterhouseLootPreview.receive(changed.toString());
+            require(lootFocusFindsPig(Items.EMERALD), "Incoming loot catalog must update real JEI output indexing");
+            require(!lootFocusFindsPig(Items.PORKCHOP), "Replaced loot catalog must hide obsolete indexed outputs");
+        } finally {
+            SlaughterhouseLootPreview.receive(original);
+        }
+        require(lootFocusFindsPig(Items.PORKCHOP), "Restoring server loot must restore searchable porkchops");
+        require(!lootFocusFindsPig(Items.EMERALD), "Temporary replacement output must disappear after restoration");
+    }
+
+    private static boolean lootFocusFindsPig(net.minecraft.world.item.Item item) {
+        var focus = runtime.getJeiHelpers().getFocusFactory().createFocus(
+                RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, new ItemStack(item));
+        return runtime.getRecipeManager().createRecipeLookup(SlaughterhouseCategory.TYPE)
+                .limitFocus(List.of(focus)).get().anyMatch(recipe -> recipe.getId().getPath().equals("slaughterhouse_pig"));
     }
 
     private static Case focusedWoolCase() {
@@ -160,7 +221,7 @@ public final class JeiPreviewRunner implements IModPlugin {
         require(layout.getRecipeSlotsView().getSlotViews().size() == expected, name + ": missing actual JEI slots");
         require(slot(layout, "input-item-0").getRole() == JeiIngredientRoles.input(false), name + ": lost catalyst role");
         require(tooltip(layout, "input-item-0").contains("Requires an adult"), name + ": missing adult requirement");
-        require(tooltip(layout, "input-item-0").contains("not consumed"), name + ": missing reusable disclosure");
+        require(tooltip(layout, "input-item-0").contains("Kept after use"), name + ": missing reusable disclosure");
         if (!milk) {
             require(tooltip(layout, "output-item-1").contains("0.001%"), name + ": tiny chance rounded away");
             require(tooltip(layout, "output-item-2").contains("12.3456%"), name + ": exact tooltip rounded");

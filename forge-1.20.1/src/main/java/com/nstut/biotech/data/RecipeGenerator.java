@@ -207,8 +207,7 @@ public class RecipeGenerator extends DataGenerator {
             FluidJsonObj[] baseFluidInputs = new FluidJsonObj[]{
                     new FluidJsonObj("minecraft:water", 400)
             };
-            OutputItemJsonObj[] baseOutputItems = crop.yields().stream()
-                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count() * 2), y.chance())).toArray(OutputItemJsonObj[]::new);
+            OutputItemJsonObj[] baseOutputItems = new OutputItemJsonObj[0];
             FluidJsonObj[] baseFluidOutputs = new FluidJsonObj[]{};
             int baseEnergy = 128000;
 
@@ -228,8 +227,7 @@ public class RecipeGenerator extends DataGenerator {
             FluidJsonObj[] ferFluidInputs = new FluidJsonObj[]{
                     new FluidJsonObj("minecraft:water", 500)
             };
-            OutputItemJsonObj[] ferOutputItems = crop.yields().stream()
-                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count() * 3), y.chance())).toArray(OutputItemJsonObj[]::new);
+            OutputItemJsonObj[] ferOutputItems = new OutputItemJsonObj[0];
             int ferEnergy = 160000;
 
             String ferRecipeName = machineId + "_" + cropName + "_fertilizer";

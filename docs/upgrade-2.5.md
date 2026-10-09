@@ -1,6 +1,6 @@
 # Biotech 2.5: factory control
 
-Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Existing worlds retain their inventories and saved transactions. No provider dependency upgrade is required. Update Biotech on both clients and servers: network protocol 3 rejects older clients before the new controller menu data can reach an incompatible menu.
+Supported targets remain Forge 1.20.1, NeoForge 1.21.1, and NeoForge 26.1.2. Existing worlds retain their inventories and saved transactions. No provider dependency upgrade is required. Update Biotech on both clients and servers: network protocol 4 rejects clients that lack the controller menu data or synchronized Slaughterhouse loot catalog.
 
 ## Redstone control
 
@@ -47,3 +47,5 @@ For machine-specific costs, products, fluid amounts, chances, or renewable/manur
 Player-facing controller diagnostics, redstone labels, energy/fluid tooltips, and product descriptions use keys in `assets/biotech/lang/en_us.json`. Add another locale JSON alongside it, retain each key's `%s` placeholders in order, and translate values. Minecraft uses English fallback for untranslated keys. Automated checks verify literal translation references and dynamically generated status/mode keys against the English catalog.
 
 Patchouli prose is a separate translation surface: copy the guide's `en_us/categories` and `en_us/entries` trees to your locale directory. Preserve entry IDs, category IDs, page types, recipe references, and formatting codes such as `$(br)`. Translate names and prose. Translating the language JSON alone does not translate the guide's literal prose.
+
+Greenhouse defaults now follow mature crop loot rather than fixed item lists; melon output becomes slices and seed counts can vary. Explicit nonempty outputs preserve pack-authored balance. Breeding now derives each newborn from both parents using vanilla rules, replacing 2.4 first-parent inheritance.

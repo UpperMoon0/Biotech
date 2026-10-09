@@ -9,15 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "pumpkin",
-        "Count": 2
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",

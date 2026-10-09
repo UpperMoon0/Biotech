@@ -43,6 +43,7 @@ public class Biotech {
         ItemRegistries.ITEMS.register(modEventBus);
         CreativeTabRegistries.CREATIVE_MODE_TABS.register(modEventBus);
         MenuRegistries.MENUS.register(modEventBus);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(com.nstut.biotech.jei.SlaughterhouseLootSync::sync);
 
         modEventBus.addListener(Config::onLoad);
         modEventBus.addListener(PacketRegistries::register);

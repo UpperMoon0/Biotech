@@ -57,6 +57,10 @@ final class JeiMachineRecipeLayout {
                         .setStandardSlotBackground().addItemStacks(recipe instanceof TerrestrialHabitatRecipe habitat
                                 ? AnimalRecipeStatePreparation.habitatOutputVariants(habitat, output.getItemStack())
                                 : java.util.List.of(output.getItemStack()));
+                if (recipe instanceof TerrestrialHabitatRecipe
+                        && output.getItemStack().is(net.minecraft.tags.ItemTags.WOOL)) {
+                    slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable("jei.biotech.habitat.wool_color")));
+                }
                 JeiOutputChanceHelper.addChance(slot, output.getChance());
                 addRate(slot, output.getItemStack().getCount(), output.getChance(), recipe.getTotalEnergy(), false);
             } else {
@@ -65,6 +69,20 @@ final class JeiMachineRecipeLayout {
                         .setStandardSlotBackground().addFluidStack(fluid.getFluid(), fluid.getAmount())
                         .setFluidRenderer(fluid.getAmount(), false, 16, 16);
                 addRate(slot, fluid.getAmount(), 1.0f, recipe.getTotalEnergy(), true);
+            }
+        }
+        if ((recipe instanceof SlaughterhouseRecipe slaughter && slaughter.usesEntityLoot())
+                || (recipe instanceof com.nstut.biotech.recipes.GreenhouseRecipe greenhouse && greenhouse.usesBlockLoot())) {
+            var possible = SlaughterhouseLootPreview.outputs(recipe.getId().toString());
+            for (int i = 0; i < possible.size(); i++) {
+                double mean = SlaughterhouseLootPreview.estimate(recipe.getId().toString(), i);
+                int multiplier = recipe instanceof SlaughterhouseRecipe ? SlaughterhouseLootPreparation.getYieldMultiplier() : 1;
+                builder.addSlot(RecipeIngredientRole.OUTPUT).setSlotName("loot-item-" + i)
+                        .setStandardSlotBackground().addItemStack(possible.get(i))
+                        .setOverlay(JeiOutputChanceHelper.label(LootQuantityEstimate.label(mean, multiplier), 0xFFFFFFFF), 0, 11)
+                        .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(
+                                mean > 0 ? "jei.biotech.slaughterhouse.estimated_loot" : "jei.biotech.loot.unsampled",
+                                LootQuantityEstimate.precise(mean, multiplier))));
             }
         }
     }
@@ -94,12 +112,6 @@ final class JeiMachineRecipeLayout {
                 JeiProductionMath.seconds(cost(recipe.getTotalEnergy()), throughput()), throughput()), JeiRecipeLayout.CYCLE_Y, 20);
         if (recipe.getItemIngredients().stream().anyMatch(ingredient -> !ingredient.isConsumable())) {
             text(builder, Component.translatable("jei.biotech.catalyst.legend"), JeiRecipeLayout.CATALYST_Y, 10);
-        }
-        if (recipe instanceof SlaughterhouseRecipe slaughter && slaughter.usesEntityLoot()) {
-            text(builder, Component.translatable("jei.biotech.slaughterhouse.dynamic_loot",
-                    SlaughterhouseLootPreparation.getYieldMultiplier()), JeiRecipeLayout.DETAILS_Y, 20);
-        } else if (recipe instanceof TerrestrialHabitatRecipe) {
-            text(builder, Component.translatable("jei.biotech.habitat.production"), JeiRecipeLayout.DETAILS_Y, 20);
         }
     }
 

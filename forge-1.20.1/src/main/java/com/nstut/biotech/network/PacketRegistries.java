@@ -10,7 +10,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class PacketRegistries {
-    public static final String PROTOCOL_VERSION = "3";
+    public static final String PROTOCOL_VERSION = "4";
 
     private static SimpleChannel instance;
     private static int packetId;
@@ -32,6 +32,9 @@ public final class PacketRegistries {
                 .simpleChannel();
 
         instance = net;
+        net.messageBuilder(LootPreviewPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(LootPreviewPacket::new).encoder(LootPreviewPacket::toBytes)
+                .consumerMainThread(LootPreviewPacket::handle).add();
 
         net.messageBuilder(FluidHatchPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .decoder(FluidHatchPacket::new)

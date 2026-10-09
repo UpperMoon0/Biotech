@@ -17,6 +17,19 @@ import org.jetbrains.annotations.NotNull;
 
 @JeiPlugin
 public class BiotechJEIPlugin implements IModPlugin {
+    private java.util.List<GreenhouseRecipe> harvestRecipes = java.util.List.of();
+    private java.util.List<SlaughterhouseRecipe> lootRecipes = java.util.List.of();
+    @Override public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        SlaughterhouseLootPreview.onRefresh(() -> {
+            runtime.getRecipeManager().hideRecipes(SlaughterhouseCategory.TYPE, lootRecipes);
+            lootRecipes = lootRecipes.stream().map(recipe -> new SlaughterhouseRecipe(recipe.getId(), recipe.getRecipe().copy())).toList();
+            runtime.getRecipeManager().addRecipes(SlaughterhouseCategory.TYPE, lootRecipes);
+            runtime.getRecipeManager().hideRecipes(GreenhouseCategory.TYPE, harvestRecipes);
+            harvestRecipes = harvestRecipes.stream().map(recipe -> new GreenhouseRecipe(recipe.getId(), recipe.getRecipe().copy())).toList();
+            runtime.getRecipeManager().addRecipes(GreenhouseCategory.TYPE, harvestRecipes);
+        });
+    }
+    @Override public void onRuntimeUnavailable() { SlaughterhouseLootPreview.onRefresh(() -> {}); }
     @Override public @NotNull Identifier getPluginUid() { return Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "jei_plugin"); }
 
     @Override
@@ -45,8 +58,12 @@ public class BiotechJEIPlugin implements IModPlugin {
         var recipes = ClientRecipeSync.get();
         registration.addRecipes(BreedingChamberCategory.TYPE, values(recipes.byType(BreedingChamberRecipe.TYPE)));
         registration.addRecipes(TerrestrialHabitatCategory.TYPE, values(recipes.byType(TerrestrialHabitatRecipe.TYPE)));
-        registration.addRecipes(SlaughterhouseCategory.TYPE, values(recipes.byType(SlaughterhouseRecipe.TYPE)));
-        registration.addRecipes(GreenhouseCategory.TYPE, values(recipes.byType(GreenhouseRecipe.TYPE)));
+        lootRecipes = recipes.byType(SlaughterhouseRecipe.TYPE).stream()
+                .map(holder -> new SlaughterhouseRecipe(holder.id().identifier(), holder.value().getRecipe().copy())).toList();
+        registration.addRecipes(SlaughterhouseCategory.TYPE, lootRecipes);
+        harvestRecipes = recipes.byType(GreenhouseRecipe.TYPE).stream()
+                .map(holder -> new GreenhouseRecipe(holder.id().identifier(), holder.value().getRecipe().copy())).toList();
+        registration.addRecipes(GreenhouseCategory.TYPE, harvestRecipes);
         registration.addRecipes(FermenterCategory.TYPE, values(recipes.byType(FermenterRecipe.TYPE)));
         registration.addRecipes(MixerCategory.TYPE, values(recipes.byType(MixerRecipe.TYPE)));
     }

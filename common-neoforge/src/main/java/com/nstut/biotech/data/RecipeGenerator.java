@@ -169,9 +169,7 @@ public class RecipeGenerator extends DataGenerator {
                     new IngredientItemJsonObj(new ItemStackJsonObj(crop.seedId(), 2), true)
             };
             FluidJsonObj[] baseFluidInputs = new FluidJsonObj[]{new FluidJsonObj("minecraft:water", 400)};
-            OutputItemJsonObj[] baseOutputItems = crop.yields().stream()
-                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count() * 2), y.chance()))
-                    .toArray(OutputItemJsonObj[]::new);
+            OutputItemJsonObj[] baseOutputItems = new OutputItemJsonObj[0];
             String cropId = crop.yields().get(0).id();
             String cropName = cropId.substring(cropId.indexOf(":") + 1);
             generateRecipe(machineId + "_" + cropName,
@@ -182,9 +180,7 @@ public class RecipeGenerator extends DataGenerator {
                     new IngredientItemJsonObj(new ItemStackJsonObj("biotech:fertilizer", 2), true)
             };
             FluidJsonObj[] fertilizerFluidInputs = new FluidJsonObj[]{new FluidJsonObj("minecraft:water", 500)};
-            OutputItemJsonObj[] fertilizerOutputs = crop.yields().stream()
-                    .map(y -> new OutputItemJsonObj(new ItemStackJsonObj(y.id(), y.count() * 3), y.chance()))
-                    .toArray(OutputItemJsonObj[]::new);
+            OutputItemJsonObj[] fertilizerOutputs = new OutputItemJsonObj[0];
             generateRecipe(machineId + "_" + cropName + "_fertilizer",
                     new RecipeJson(type, fertilizerInputs, fertilizerOutputs, fertilizerFluidInputs, new FluidJsonObj[]{}, 160000));
         }

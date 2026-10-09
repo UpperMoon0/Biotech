@@ -18,6 +18,7 @@ import com.nstut.biotech.Biotech;
 import com.nstut.biotech.Config;
 import com.nstut.biotech.blocks.entites.hatches.*;
 import com.nstut.biotech.blocks.entites.machines.SlaughterhouseBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.TerrestrialHabitatBlockEntity;
 import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.ItemRegistries;
@@ -64,6 +65,8 @@ public final class LivestockProductionGameTests {
     private LivestockProductionGameTests() {}
 
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_CYCLE = TEST_FUNCTIONS.register("livestock_greenhouse_cycle", () -> LivestockProductionGameTests::greenhouseBlockedReloadKeepsHarvestAndConsumesOnce);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_LIVE = TEST_FUNCTIONS.register("livestock_greenhouse_live", () -> LivestockProductionGameTests::greenhouseHarvestsUseLiveMatureLootAndKeepOverrides);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> LOOTPOLICYSEEDANDSTACKLIMITS = TEST_FUNCTIONS.register("livestock_loot_policy_seed_and_stack_limits", () -> LivestockProductionGameTests::lootPolicySeedAndStackLimits);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT = TEST_FUNCTIONS.register("livestock_slaughter_blocked_pause_and_reload_preserve_exact_loot", () -> LivestockProductionGameTests::slaughterBlockedPauseAndReloadPreserveExactLoot);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE = TEST_FUNCTIONS.register("livestock_blocked_donor_replacement_and_oversize_are_safe", () -> LivestockProductionGameTests::blockedDonorReplacementAndOversizeAreSafe);
@@ -78,13 +81,72 @@ public final class LivestockProductionGameTests {
 
     public static void register(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(id("livestock_production"));
-        for (var test : List.of(CONTROLLERDIAGNOSTICS, CONTROLLERTHROTTLE, CONTROLLERBALANCE, LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
+        for (var test : List.of(GREENHOUSE_LIVE, GREENHOUSE_CYCLE, CONTROLLERDIAGNOSTICS, CONTROLLERTHROTTLE, CONTROLLERBALANCE, LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, id("livestock"), 400, 0, true)));
         }
     }
 
 
+    public static void greenhouseBlockedReloadKeepsHarvestAndConsumesOnce(GameTestHelper helper) {
+        var machine = place(helper, 2);
+        BlockPos p = machine.getBlockPos();
+        var input = block(helper, p.offset(-3, 0, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage();
+        var output = block(helper, p.offset(3, 0, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage();
+        var water = block(helper, p.offset(-2, 0, -6), FluidInputHatchBlockEntity.class);
+        var energy = block(helper, p.offset(0, 0, -6), EnergyInputHatchBlockEntity.class);
+        input.setStackInSlot(0, new ItemStack(Items.WHEAT_SEEDS, 2));
+        water.setFluid(new FluidStack(Fluids.WATER, 400));
+        energy.setEnergy(128000);
+        fill(output, new ItemStack(Items.COBBLESTONE, 64));
+        tick(helper, machine, 1);
+        var expected = outputCounts(snapshot(machine));
+        helper.assertTrue(expected.get(Items.WHEAT) == 2 && input.getStackInSlot(0).getCount() == 2,
+                "A blocked greenhouse must prepare live mature loot without consuming seeds");
+        machine = reload(helper, machine);
+        clear(output);
+        tick(helper, machine, 1100);
+        helper.assertTrue(counts(output).equals(expected) && input.getStackInSlot(0).isEmpty()
+                        && water.getInternalTank().getFluidInTank(0).isEmpty() && energy.getInternalEnergyStorage().getEnergyStored() == 0,
+                "Reload must retain exact harvests and consume seeds, water and energy once");
+        helper.succeed();
+    }
+
+    public static void greenhouseHarvestsUseLiveMatureLootAndKeepOverrides(GameTestHelper helper) {
+        var base = new GreenhouseRecipe(id("greenhouse_live_test"), new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(new ItemStack(Items.WHEAT_SEEDS, 2), true)},
+                new OutputItem[0], new FluidStack[0], new FluidStack[0], 128));
+        var harvest = GreenhouseHarvestPreparation.harvest(base);
+        helper.assertTrue(harvest.state().equals(((net.minecraft.world.level.block.CropBlock) Blocks.WHEAT).getStateForAge(7)) && harvest.count() == 2,
+                "Wheat seeds must resolve to two fully mature harvests");
+        var prepared = GreenhouseHarvestPreparation.prepare(base, helper.getLevel(), helper.absolutePos(BlockPos.ZERO));
+        helper.assertTrue(outputCounts(prepared.getRecipe()).get(Items.WHEAT) == 2,
+                "Live mature wheat loot must supply one wheat per planted seed");
+        encode(helper, prepared.getRecipe());
+        var staticData = base.getRecipe().copy();
+        var override = new GreenhouseRecipe(base.getId(), new ModRecipeData(staticData.getIngredientItems(),
+                new OutputItem[] {new OutputItem(new ItemStack(Items.DIAMOND, 7), 1.0f)},
+                staticData.getFluidIngredients(), staticData.getFluidOutputs(), staticData.getTotalEnergy()));
+        helper.assertTrue(GreenhouseHarvestPreparation.prepare(override, helper.getLevel(), BlockPos.ZERO) == override,
+                "Explicit pack-authored outputs must bypass crop loot");
+        var fertilized = new GreenhouseRecipe(base.getId(), new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(new ItemStack(Items.WHEAT_SEEDS, 2), true),
+                        new IngredientItem(new ItemStack(ItemRegistries.FERTILIZER.get(), 2), true)},
+                new OutputItem[0], new FluidStack[0], new FluidStack[0], 128));
+        helper.assertTrue(GreenhouseHarvestPreparation.harvest(fertilized).count() == 3,
+                "Fertilizer must provide 50 percent more harvests");
+        var catalog = com.nstut.biotech.jei.SlaughterhouseLootSync.catalog(helper.getLevel());
+        helper.assertTrue(catalog.getAsJsonArray("biotech:greenhouse_wheat").toString().contains("minecraft:wheat")
+                        && catalog.getAsJsonArray("biotech:greenhouse_melon").toString().contains("minecraft:melon_slice"),
+                "JEI must expose active mature-crop loot, including melon slices instead of a fabricated whole melon");
+        helper.succeed();
+    }
+
     public static void controllerDiagnosticScansAreBoundedAndEmptyRecipesAreDistinct(GameTestHelper helper) {
+        var lootCatalog = com.nstut.biotech.jei.SlaughterhouseLootSync.catalog(helper.getLevel());
+        helper.assertTrue(lootCatalog.getAsJsonArray("biotech:slaughterhouse_pig").toString().contains("minecraft:porkchop"),
+                "Server JEI catalog must expose actual pig loot-table products");
+        helper.assertTrue(lootCatalog.getAsJsonArray("biotech:slaughterhouse_cow").toString().contains("minecraft:leather"),
+                "Server JEI catalog must expose actual cow loot-table products");
         Rig rig = slaughter(helper);
         var controller = new CountingDiagnosticController(rig.machine.getBlockPos(), rig.machine.getBlockState());
         helper.getLevel().setBlockEntity(controller);
@@ -518,7 +580,7 @@ public final class LivestockProductionGameTests {
         CompoundTag saved = old.saveWithFullMetadata(helper.getLevel().registryAccess());
         helper.assertTrue(saved.contains("activeRecipeSnapshot"), "In-flight recipe snapshot must be present on disk");
         BlockState state = helper.getLevel().getBlockState(old.getBlockPos());
-        MachineBlockEntity reloaded = old instanceof SlaughterhouseBlockEntity ? new SlaughterhouseBlockEntity(old.getBlockPos(), state) : new TerrestrialHabitatBlockEntity(old.getBlockPos(), state);
+        MachineBlockEntity reloaded = old instanceof SlaughterhouseBlockEntity ? new SlaughterhouseBlockEntity(old.getBlockPos(), state) : old instanceof GreenhouseBlockEntity ? new GreenhouseBlockEntity(old.getBlockPos(), state) : new TerrestrialHabitatBlockEntity(old.getBlockPos(), state);
         reloaded.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), saved));
         helper.getLevel().setBlockEntity(reloaded);
         return reloaded;
@@ -533,10 +595,11 @@ public final class LivestockProductionGameTests {
         BlockPos p = machine.getBlockPos();
         return new Rig(machine, block(helper, p.offset(-3, -1, -1), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-3, -1, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(3, -1, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-2, -1, -6), FluidInputHatchBlockEntity.class), block(helper, p.offset(2, -1, -6), FluidOutputHatchBlockEntity.class), block(helper, p.offset(0, -1, -6), EnergyInputHatchBlockEntity.class));
     }
-    private static MachineBlockEntity place(GameTestHelper helper, boolean habitat) {
+    private static MachineBlockEntity place(GameTestHelper helper, boolean habitat) { return place(helper, habitat ? 1 : 0); }
+    private static MachineBlockEntity place(GameTestHelper helper, int kind) {
         BlockPos pos = helper.absolutePos(new BlockPos(8, 2, 8));
-        BlockState controller = (habitat ? MachineRegistries.TERRESTRIAL_HABITAT : MachineRegistries.SLAUGHTERHOUSE).block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.SOUTH);
-        MachineBlockEntity blueprint = habitat ? new TerrestrialHabitatBlockEntity(pos, controller) : new SlaughterhouseBlockEntity(pos, controller);
+        BlockState controller = (kind == 2 ? MachineRegistries.GREENHOUSE : kind == 1 ? MachineRegistries.TERRESTRIAL_HABITAT : MachineRegistries.SLAUGHTERHOUSE).block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.SOUTH);
+        MachineBlockEntity blueprint = kind == 2 ? new GreenhouseBlockEntity(pos, controller) : kind == 1 ? new TerrestrialHabitatBlockEntity(pos, controller) : new SlaughterhouseBlockEntity(pos, controller);
         MultiblockBlock[][][] pattern = blueprint.getMultiblockPattern().getPattern();
         for (int y = 0; y < pattern.length; y++) for (int z = 0; z < pattern[y].length; z++) for (int x = 0; x < pattern[y][z].length; x++) {
             MultiblockBlock expected = pattern[y][z][x];

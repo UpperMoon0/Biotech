@@ -69,7 +69,8 @@ public class GreenhouseBlockEntity extends ControlledMachineBlockEntity {
                 List.of(),
                 energy,
                 com.nstut.biotech.Config.machineEnergyPerTick,
-                Comparator.comparingInt(recipe -> recipe.getItemIngredients().size()));
+                Comparator.comparingInt(recipe -> recipe.getItemIngredients().size()),
+                recipe -> com.nstut.biotech.recipes.GreenhouseHarvestPreparation.prepare(recipe, (ServerLevel) level, blockPos));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new GreenhousePacket(

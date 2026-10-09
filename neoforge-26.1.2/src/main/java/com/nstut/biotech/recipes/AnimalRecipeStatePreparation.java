@@ -20,13 +20,59 @@ public final class AnimalRecipeStatePreparation {
     private AnimalRecipeStatePreparation() {
     }
 
-    public static BreedingChamberRecipe prepareBreeding(BreedingChamberRecipe recipe, IItemHandler inputs) {
+    /** Resolve vanilla offspring once, before committing the persisted transaction. */
+    public static BreedingChamberRecipe prepareBreeding(BreedingChamberRecipe recipe, IItemHandler inputs,
+                                                        net.minecraft.server.level.ServerLevel level) {
         PreparedAnimalInputs.Selection selection = PreparedAnimalInputs.select(recipe, inputs);
-        if (selection.animals().isEmpty()) return recipe;
-        ItemStack donor = selection.animals().get(0).getItemStack();
+        List<ItemStack> parents = new ArrayList<>();
+        for (IngredientItem selected : selection.animals()) {
+            for (int i = 0; i < selected.getItemStack().getCount(); i++) {
+                ItemStack individual = selected.getItemStack().copy();
+                individual.setCount(1);
+                parents.add(individual);
+                if (parents.size() > 2) throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Breeding requires exactly two parents");
+            }
+        }
+        if (parents.size() != 2) throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Breeding requires two parents");
+        var first = breedingParent(level, parents.get(0));
+        var second = breedingParent(level, parents.get(1));
+        if (first == null || second == null || first.getType() != second.getType() || first.isBaby() || second.isBaby()) {
+            throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Breeding requires two compatible adult animals");
+        }
         ModRecipeData prepared = selection.applyTo(recipe.getRecipe());
-        applyState(prepared, donor, CapturedAnimalStackState.forOffspring(donor));
-        return recipe.create(recipe.getId(), prepared);
+        List<OutputItem> outputs = new ArrayList<>();
+        for (int index : recipe.rollItemOutputIndexes()) {
+            ItemStack template = prepared.getOutputItems()[index].getItemStack();
+            if (!isAnimalOutputFor(template, CapturedAnimalStackState.entityTypeId(parents.get(0)))) {
+                appendResolvedOutput(outputs, template);
+                continue;
+            }
+            for (int i = 0; i < template.getCount(); i++) {
+                var child = first.getBreedOffspring(level, second);
+                if (child == null || child.getType() != first.getType()) {
+                    throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Vanilla breeding did not produce a matching offspring");
+                }
+                try {
+                    var saved = net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess());
+                    child.saveWithoutId(saved);
+                    CompoundTag state = saved.buildResult();
+                    ItemStack newborn = template.copy();
+                    newborn.setCount(1);
+                    CapturedAnimalStackState.writeDerived(newborn, parents.get(0), com.nstut.biotech.items.CapturedEntityState.asNewborn(state));
+                    appendResolvedOutput(outputs, newborn);
+                } finally { child.discard(); }
+            }
+        }
+        first.discard();
+        second.discard();
+        return recipe.create(recipe.getId(), new ModRecipeData(prepared.getIngredientItems(), outputs.toArray(OutputItem[]::new),
+                prepared.getFluidIngredients(), prepared.getFluidOutputs(), prepared.getTotalEnergy()));
+    }
+
+    private static net.minecraft.world.entity.animal.Animal breedingParent(net.minecraft.server.level.ServerLevel level, ItemStack stack) {
+        var entity = stack.getItem() instanceof MobItem mob ? mob.createMob(level, stack)
+                : stack.getItem() instanceof CapturedAnimalItem captured ? captured.createCapturedEntity(level, stack) : null;
+        return entity instanceof net.minecraft.world.entity.animal.Animal animal ? animal : null;
     }
 
     public static TerrestrialHabitatRecipe prepareGrowth(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
@@ -104,18 +150,6 @@ public final class AnimalRecipeStatePreparation {
             part.setCount(Math.min(limit, remaining.getCount()));
             outputs.add(new OutputItem(part, 1.0f));
             remaining.shrink(part.getCount());
-        }
-    }
-
-    private static void applyState(ModRecipeData prepared, ItemStack donor, CompoundTag derivedState) {
-        String donorType = CapturedAnimalStackState.entityTypeId(donor);
-        for (OutputItem output : prepared.getOutputItems()) {
-            ItemStack stack = output.getItemStack().copy();
-            if (!isAnimalOutputFor(stack, donorType)) {
-                continue;
-            }
-            CapturedAnimalStackState.writeDerived(stack, donor, derivedState);
-            output.setItemStack(stack);
         }
     }
 

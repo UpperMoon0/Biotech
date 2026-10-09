@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Greenhouse rapidly grows crops. Supply the required seeds, water, and energy.$(br)$(br)Fertilizer is optional for supported crops. Fertilized recipes consume more water and energy but produce a larger yield."
+      "text": "The Greenhouse rapidly grows crops. Supply the required seeds, water, and energy.$(br)$(br)Drops follow the mature crop, including changes made by your modpack. JEI shows the expected amounts; actual drops may vary. Melons produce slices.$(br)$(br)Fertilizer is optional for supported crops. Fertilized recipes consume more water and energy for 50% more harvests."
     },
     {
       "multiblock": {

@@ -62,8 +62,8 @@ Adult/baby state, variants, custom names, and other persistent gameplay state ar
 
 ### Six multiblock machines
 
-- **Greenhouse** — grows wheat, beetroot, carrots, potatoes, melons, pumpkins, cactus, and sugar cane. Supported crops have higher-yield fertilizer recipes.
-- **Breeding Chamber** — combines two captured adult parents with matching food, water, and energy to produce a baby animal. Parent items are required but not consumed.
+- **Greenhouse** — grows wheat, beetroot, carrots, potatoes, melons, pumpkins, cactus, and sugar cane. Supported crops have higher-yield fertilizer recipes. Default drops follow mature-crop loot tables, with expected quantities shown in JEI; packs can provide explicit outputs.
+- **Breeding Chamber** — combines two captured adult parents with matching food, water, and energy to produce a baby animal. Parent items are required but not consumed. Offspring traits follow Minecraft's breeding rules for both parents.
 - **Terrestrial Habitat** — raises captured babies while retaining each individual's state, or keeps adults as non-consumed inhabitants to produce eggs, colored wool, and milk, with manure as a by-product.
 - **Slaughterhouse** — resolves captured animals' real entity loot tables for its default recipes. Explicit datapack item outputs remain static overrides.
 - **Mixer** — produces animal feeds and supports recipes with item and fluid inputs/outputs.

@@ -9,3 +9,6 @@
 - Add native regressions for pause/resume, exact output preservation across reload, output diagnostics, and active cost preservation on every supported target.
 
 - Apply the bounded idle diagnostic refresh to Forge, distinguish an empty recipe set from missing items, and test controller cache boundaries using real world ticks on every target.
+- Align animal inventory icons with block fronts. Show searchable server loot-table items and estimated per-cycle quantities on dynamic Slaughterhouse JEI output slots, refresh them on datapack synchronization, and remove the separate loot-description line. Network protocol 4 includes the loot catalog payload.
+
+- Greenhouse default recipes now resolve mature-crop loot once per cycle, with live searchable JEI estimates and static datapack overrides. Breeding uses both parents through vanilla offspring rules; persisted cycle results preserve traits and rolls across interruptions.

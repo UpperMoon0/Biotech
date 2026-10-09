@@ -8,6 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SafetyRegressionTest {
     @Test
     void newControllerDataRequiresProtocolThreeOnEveryTarget() {
-        assertEquals("3", PacketRegistries.PROTOCOL_VERSION, "Older clients have no controller status/mode data slots and must be rejected at handshake");
+        assertEquals("4", PacketRegistries.PROTOCOL_VERSION, "Older clients lack controller data slots or the server loot catalog payload and must be rejected at handshake");
     }
 }

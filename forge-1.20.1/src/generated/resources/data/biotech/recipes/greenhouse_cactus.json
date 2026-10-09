@@ -9,15 +9,7 @@
       "isConsumable": true
     }
   ],
-  "itemOutputs": [
-    {
-      "itemStack": {
-        "id": "cactus",
-        "Count": 6
-      },
-      "chance": 1.0
-    }
-  ],
+  "itemOutputs": [],
   "fluidInputs": [
     {
       "FluidName": "minecraft:water",
