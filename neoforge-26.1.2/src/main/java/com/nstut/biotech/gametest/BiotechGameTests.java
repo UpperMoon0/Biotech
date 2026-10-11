@@ -253,6 +253,17 @@ public final class BiotechGameTests {
                 "Expected " + EXPECTED_BIOTECH_RECIPE_COUNT + " loaded Biotech recipes, got " + biotechRecipeCount);
         helper.assertTrue(recipe.getTotalEnergy() == 128000, "greenhouse_beetroot must retain its configured 128000 FE cost");
 
+        var harvest = com.nstut.biotech.recipes.GreenhouseHarvestPreparation.harvest(recipe);
+        helper.assertTrue(harvest.count() == 2, "Two planted seeds must resolve exactly two mature harvests");
+        boolean sawEightSeedHarvest = false;
+        for (long seed = 1; seed <= 256 && !sawEightSeedHarvest; seed++) {
+            int seedsPerPlant = com.nstut.biotech.recipes.GreenhouseHarvestPreparation
+                    .roll(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), harvest.state(), seed).stream()
+                    .filter(stack -> stack.is(Items.BEETROOT_SEEDS)).mapToInt(ItemStack::getCount).sum();
+            sawEightSeedHarvest = seedsPerPlant * harvest.count() == 8;
+        }
+        helper.assertTrue(sawEightSeedHarvest, "Deterministic vanilla loot samples must cover the valid eight-seed two-harvest outcome");
+
         BlockPos controllerRelative = new BlockPos(8, 1, 8);
         GreenhouseBlockEntity machine = placeGreenhouseStructure(helper, controllerRelative);
         BlockPos controllerPos = machine.getBlockPos();
@@ -273,6 +284,14 @@ public final class BiotechGameTests {
                         List.of()),
                 "Loaded greenhouse_beetroot recipe must match two beetroot seeds plus 400 mB water");
 
+        MachineBlockEntity.serverTick(helper.getLevel(), controllerPos, helper.getLevel().getBlockState(controllerPos), machine);
+        ModRecipeData harvestSnapshot = (ModRecipeData) getMachineField(machine, "activeRecipeSnapshot");
+        helper.assertTrue(harvestSnapshot != null, "Greenhouse must persist its resolved live harvest before completion");
+        int expectedSeeds = Arrays.stream(harvestSnapshot.getOutputItems())
+                .map(OutputItem::getItemStack).filter(stack -> stack.is(Items.BEETROOT_SEEDS))
+                .mapToInt(ItemStack::getCount).sum();
+        // Vanilla mature crops drop one seed plus a three-trial binomial bonus per harvest.
+        helper.assertTrue(expectedSeeds >= 2 && expectedSeeds <= 8, "Two live beetroot harvests must use vanilla seed loot bounds");
         for (int tick = 0; tick < 260 && countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 0; tick++) {
             BlockState state = helper.getLevel().getBlockState(controllerPos);
             MachineBlockEntity.serverTick(helper.getLevel(), controllerPos, state, machine);
@@ -282,7 +301,12 @@ public final class BiotechGameTests {
         helper.assertTrue(fluidInput.getInternalTank().getFluidInTank(0).isEmpty(), "Greenhouse must consume the configured 400 mB water");
         helper.assertTrue(energyInput.getInternalEnergyStorage().getEnergyStored() == 0, "Greenhouse must consume the configured 128000 FE");
         helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 2, "Greenhouse must produce two mature beetroot harvests");
-        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) <= 6, "Greenhouse seeds must follow the live mature-crop loot rolls");
+        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) == expectedSeeds, "Greenhouse seeds must equal the exact persisted live mature-crop loot rolls");
+        for (int slot = 0; slot < itemOutput.getInternalItemStorage().getSlots(); slot++) {
+            ItemStack output = itemOutput.getInternalItemStorage().getStackInSlot(slot);
+            helper.assertTrue(output.isEmpty() || output.is(Items.BEETROOT) || output.is(Items.BEETROOT_SEEDS),
+                    "Live beetroot harvesting must not add unrelated outputs");
+        }
         helper.succeed();
     }
 
