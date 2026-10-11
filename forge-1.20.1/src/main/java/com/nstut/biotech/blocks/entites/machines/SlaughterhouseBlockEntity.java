@@ -37,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-public class SlaughterhouseBlockEntity extends MachineBlockEntity {
+public class SlaughterhouseBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch1;
     private ItemInputHatchBlockEntity itemInputHatch2;
     private ItemOutputHatchBlockEntity itemOutputHatch;
@@ -62,7 +62,7 @@ public class SlaughterhouseBlockEntity extends MachineBlockEntity {
         IFluidHandler inputFluid = fluidInputHatch.getCapability(ForgeCapabilities.FLUID_HANDLER).orElseThrow(IllegalStateException::new);
         IEnergyStorage energy = energyInputHatch.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new);
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 SlaughterhouseRecipe.TYPE,
                 inputItems,
@@ -70,7 +70,7 @@ public class SlaughterhouseBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                com.nstut.biotech.Config.machineEnergyPerTick,
                 null,
                 recipe -> level instanceof ServerLevel serverLevel
                         ? SlaughterhouseLootPreparation.prepare(recipe, inputItems, serverLevel, blockPos)
@@ -80,14 +80,14 @@ public class SlaughterhouseBlockEntity extends MachineBlockEntity {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new SlaughterhousePacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     FluidInputHatchBlockEntity.TANK_CAPACITY,
                     inputFluid.getFluidInTank(0).copy(),
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

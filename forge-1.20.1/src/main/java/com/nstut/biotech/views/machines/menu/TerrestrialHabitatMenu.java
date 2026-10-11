@@ -78,6 +78,7 @@ public class TerrestrialHabitatMenu extends MachineMenu {
         this.level = inventory.player.level();
         this.blockEntity = (TerrestrialHabitatBlockEntity) blockEntity;
         this.pos = blockEntity.getBlockPos();
+        bindController(this.blockEntity);
     }
 
     @Override

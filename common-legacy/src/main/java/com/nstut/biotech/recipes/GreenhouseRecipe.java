@@ -18,6 +18,9 @@ public class GreenhouseRecipe extends ModRecipe<GreenhouseRecipe> {
         super(id, recipe, SERIALIZER, TYPE);
     }
 
+    /** Empty item outputs opt into mature crop block loot. */
+    public boolean usesBlockLoot() { return getItemOutputs().isEmpty(); }
+
     @Override
     protected GreenhouseRecipe createInstance(ResourceLocation id, ModRecipeData recipe) {
         return new GreenhouseRecipe(id, recipe);

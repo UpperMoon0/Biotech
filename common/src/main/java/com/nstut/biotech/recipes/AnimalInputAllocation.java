@@ -8,7 +8,7 @@ final class AnimalInputAllocation {
                                         boolean[] visitedAnimals, boolean[] visitedSlots) {
         if (visitedAnimals[animal]) return false;
         visitedAnimals[animal] = true;
-        // Prefer a free matching unit before relocating earlier donors. This keeps first-parent
+        // Prefer a free matching unit before relocating earlier donors. This keeps input-slot
         // inheritance unchanged whenever the authored greedy ordering already has a valid solution.
         for (int slot = 0; slot < available.length; slot++) {
             if (matches[animal][slot] && !visitedSlots[slot] && available[slot] > 0) {

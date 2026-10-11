@@ -1,0 +1,25 @@
+{
+  "type": "biotech:slaughterhouse",
+  "energy": 16000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:bee",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 200
+    }
+  ],
+  "fluidOutputs": []
+}

@@ -35,7 +35,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class GreenhouseBlockEntity extends MachineBlockEntity {
+public class GreenhouseBlockEntity extends ControlledMachineBlockEntity {
     private ItemInputHatchBlockEntity itemInputHatch;
     private ItemOutputHatchBlockEntity itemOutputHatch;
     private EnergyInputHatchBlockEntity energyInputHatch;
@@ -57,7 +57,7 @@ public class GreenhouseBlockEntity extends MachineBlockEntity {
         IFluidHandler inputFluid = fluidInputHatch.getInternalTank();
         IEnergyStorage energy = energyInputHatch.getInternalEnergyStorage();
 
-        processRecipeTransaction(
+        processControlledRecipeTransaction(
                 level,
                 GreenhouseRecipe.TYPE,
                 inputItems,
@@ -65,21 +65,22 @@ public class GreenhouseBlockEntity extends MachineBlockEntity {
                 outputItems,
                 List.of(),
                 energy,
-                EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
-                Comparator.comparingInt(recipe -> recipe.getItemIngredients().size()));
+                com.nstut.biotech.Config.machineEnergyPerTick,
+                Comparator.comparingInt(recipe -> recipe.getItemIngredients().size()),
+                recipe -> com.nstut.biotech.recipes.GreenhouseHarvestPreparation.prepare(recipe, (ServerLevel) level, blockPos));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new GreenhousePacket(
                     EnergyInputHatchBlockEntity.ENERGY_CAPACITY,
                     energy.getEnergyStored(),
-                    EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT,
+                    com.nstut.biotech.Config.machineEnergyPerTick,
                     energyConsumed,
                     recipeEnergyCost,
                     FluidInputHatchBlockEntity.TANK_CAPACITY,
                     inputFluid.getFluidInTank(0).copy(),
                     isStructureValid,
                     blockPos,
-                    recipeHandler.map(ModRecipe::getRecipe).orElse(null)));
+                    getDisplayRecipe()));
         }
     }
 

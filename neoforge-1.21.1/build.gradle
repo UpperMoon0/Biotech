@@ -58,15 +58,15 @@ neoForge {
 
 tasks.register('renderUiPreviews') {
     group = 'verification'
-    description = 'Runs the isolated client renderer and verifies all 63 UI PNG previews.'
+    description = 'Runs the isolated client renderer and verifies all 87 UI PNG previews.'
     dependsOn 'runUiPreview'
     doLast {
         def output = layout.buildDirectory.dir('ui-previews').get().asFile
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('UI renderer did not finish: manifest.json is missing')
         def entries = new groovy.json.JsonSlurper().parse(manifest)
-        if (entries.size() != 63 || entries.collect { it.file }.toSet().size() != 63) {
-            throw new GradleException('Expected exactly 63 unique UI previews')
+        if (entries.size() != 87 || entries.collect { it.file }.toSet().size() != 87) {
+            throw new GradleException('Expected exactly 87 unique UI previews')
         }
         entries.each { entry ->
             def hatch = entry.file.contains('_hatch-')
@@ -98,7 +98,7 @@ tasks.register('renderUiPreviews') {
         // First output cell: viewport (146,104), cell padding 2, icon inset 1, GUI scale 2.
         assertEntityDetail('breeding_chamber-active.png', 326, 242)
         assertEntityDetail('slaughterhouse-active.png', 140, 238)
-        logger.lifecycle("Verified 63 UI previews, including live animal entity models, in ${output}")
+        logger.lifecycle("Verified 87 UI previews, including live animal entity models, in ${output}")
     }
 }
 
@@ -159,6 +159,7 @@ sourceSets.main.resources {
 }
 
 def generateBiotechResources = tasks.register('generateBiotechResources', JavaExec) {
+    systemProperty 'biotech.animalVersion', '121'
     group = 'build'
     description = 'Regenerates deterministic Biotech recipes, machine assets, and generated loot tables.'
     dependsOn tasks.named('compileJava')
@@ -185,8 +186,8 @@ def verifyGeneratedRecipes = tasks.register('verifyGeneratedRecipes') {
     doLast {
         def recipeDir = file('src/generated/resources/data/biotech/recipe')
         def recipeFiles = fileTree(recipeDir) { include '*.json' }.files
-        if (recipeFiles.size() != 70) {
-            throw new GradleException("Expected 70 generated Biotech machine recipes, found ${recipeFiles.size()}")
+        if (recipeFiles.size() != 160) {
+            throw new GradleException("Expected 160 generated Biotech machine recipes, found ${recipeFiles.size()}")
         }
         recipeFiles.each { recipe ->
             def text = recipe.getText('UTF-8')
@@ -272,15 +273,15 @@ publishing { publications { mavenJava(MavenPublication) { from components.java; 
 // Real JEI integration gate: all categories, precise chance tooltips, catalysts, and scrolling.
 tasks.register('renderJeiPreviews') {
     group = 'verification'
-    description = 'Runs real JEI slot/tooltip/scroll assertions and verifies 15 client screenshots.'
+    description = 'Runs real JEI slot/tooltip/scroll assertions and verifies 17 client screenshots.'
     dependsOn 'runJeiPreview'
     doLast {
         def output = layout.buildDirectory.dir('jei-previews').get().asFile
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('JEI renderer did not finish: manifest.json is missing')
         def images = new groovy.json.JsonSlurper().parse(manifest)
-        if (images.size() != 15 || images.collect { it.file }.toSet().size() != 15) {
-            throw new GradleException('Expected 15 unique real JEI previews')
+        if (images.size() != 17 || images.collect { it.file }.toSet().size() != 17) {
+            throw new GradleException('Expected 17 unique real JEI previews')
         }
         images.each { entry ->
             def image = javax.imageio.ImageIO.read(new File(output, entry.file))
@@ -288,7 +289,7 @@ tasks.register('renderJeiPreviews') {
                 throw new GradleException("Missing/invalid JEI screenshot: ${entry.file}")
             }
         }
-        logger.lifecycle("Verified actual JEI layouts, tooltips, scrolling, and 15 screenshots in ${output}")
+        logger.lifecycle("Verified actual JEI layouts, tooltips, scrolling, and 17 screenshots in ${output}")
     }
 }
 

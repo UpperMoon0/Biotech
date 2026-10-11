@@ -71,7 +71,7 @@ import java.util.function.Consumer;
 public final class BiotechGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
     private static final int MAX_TICKS = 100;
-    private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 91;
+    private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 186;
 
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION = register("hatches_enforce_external_io_direction", BiotechGameTests::hatchesEnforceExternalIoDirection);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION = register("invalid_structure_and_reload_preserve_active_machine_transaction", BiotechGameTests::invalidStructureAndReloadPreserveActiveMachineTransaction);
@@ -253,6 +253,19 @@ public final class BiotechGameTests {
                 "Expected " + EXPECTED_BIOTECH_RECIPE_COUNT + " loaded Biotech recipes, got " + biotechRecipeCount);
         helper.assertTrue(recipe.getTotalEnergy() == 128000, "greenhouse_beetroot must retain its configured 128000 FE cost");
 
+        var harvest = com.nstut.biotech.recipes.GreenhouseHarvestPreparation.harvest(recipe);
+        helper.assertTrue(harvest.count() == 2, "Two planted seeds must resolve exactly two mature harvests");
+        // Seed -1 gives LegacyRandomSource bonus draws 0.2689426, 0.4395620,
+        // 0.0122700, all below vanilla's 0.5714286 threshold. Exercise the actual
+        // loaded loot table twice instead of assuming nearby seeds are independent.
+        int highSeedHarvest = 0;
+        for (int plant = 0; plant < harvest.count(); plant++) {
+            highSeedHarvest += com.nstut.biotech.recipes.GreenhouseHarvestPreparation
+                    .roll(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), harvest.state(), -1L).stream()
+                    .filter(stack -> stack.is(Items.BEETROOT_SEEDS)).mapToInt(ItemStack::getCount).sum();
+        }
+        helper.assertTrue(highSeedHarvest == 8, "The fixed native loot fixture must produce eight seeds from two mature harvests");
+
         BlockPos controllerRelative = new BlockPos(8, 1, 8);
         GreenhouseBlockEntity machine = placeGreenhouseStructure(helper, controllerRelative);
         BlockPos controllerPos = machine.getBlockPos();
@@ -273,6 +286,14 @@ public final class BiotechGameTests {
                         List.of()),
                 "Loaded greenhouse_beetroot recipe must match two beetroot seeds plus 400 mB water");
 
+        MachineBlockEntity.serverTick(helper.getLevel(), controllerPos, helper.getLevel().getBlockState(controllerPos), machine);
+        ModRecipeData harvestSnapshot = (ModRecipeData) getMachineField(machine, "activeRecipeSnapshot");
+        helper.assertTrue(harvestSnapshot != null, "Greenhouse must persist its resolved live harvest before completion");
+        int expectedSeeds = Arrays.stream(harvestSnapshot.getOutputItems())
+                .map(OutputItem::getItemStack).filter(stack -> stack.is(Items.BEETROOT_SEEDS))
+                .mapToInt(ItemStack::getCount).sum();
+        // Vanilla mature crops drop one seed plus a three-trial binomial bonus per harvest.
+        helper.assertTrue(expectedSeeds >= 2 && expectedSeeds <= 8, "Two live beetroot harvests must use vanilla seed loot bounds");
         for (int tick = 0; tick < 260 && countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 0; tick++) {
             BlockState state = helper.getLevel().getBlockState(controllerPos);
             MachineBlockEntity.serverTick(helper.getLevel(), controllerPos, state, machine);
@@ -281,8 +302,13 @@ public final class BiotechGameTests {
         helper.assertTrue(itemInput.getInternalItemStorage().getStackInSlot(0).isEmpty(), "Greenhouse must consume the two beetroot seeds exactly once");
         helper.assertTrue(fluidInput.getInternalTank().getFluidInTank(0).isEmpty(), "Greenhouse must consume the configured 400 mB water");
         helper.assertTrue(energyInput.getInternalEnergyStorage().getEnergyStored() == 0, "Greenhouse must consume the configured 128000 FE");
-        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 4, "Greenhouse must produce four beetroot");
-        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) == 6, "Greenhouse must produce six beetroot seeds");
+        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT) == 2, "Greenhouse must produce two mature beetroot harvests");
+        helper.assertTrue(countItem(itemOutput.getInternalItemStorage(), Items.BEETROOT_SEEDS) == expectedSeeds, "Greenhouse seeds must equal the exact persisted live mature-crop loot rolls");
+        for (int slot = 0; slot < itemOutput.getInternalItemStorage().getSlots(); slot++) {
+            ItemStack output = itemOutput.getInternalItemStorage().getStackInSlot(slot);
+            helper.assertTrue(output.isEmpty() || output.is(Items.BEETROOT) || output.is(Items.BEETROOT_SEEDS),
+                    "Live beetroot harvesting must not add unrelated outputs");
+        }
         helper.succeed();
     }
 
@@ -297,9 +323,9 @@ public final class BiotechGameTests {
         ItemStack otherParent = new ItemStack(ItemRegistries.SHEEP.get());
         CompoundTag otherState = new CompoundTag();
         otherState.putInt("Age", 0);
-        otherState.putByte("Color", (byte) 3);
+        otherState.putByte("Color", (byte) 11);
         otherState.putString("CustomName", "Parent B");
-        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 3);
+        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 11);
 
         ItemStackHandler breedingInputs = new ItemStackHandler(2);
         breedingInputs.setStackInSlot(0, adultParent.copy());
@@ -314,13 +340,13 @@ public final class BiotechGameTests {
                         0));
 
         BreedingChamberRecipe preparedBreeding =
-                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs);
+                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs, helper.getLevel());
         ItemStack newborn = preparedBreeding.getItemOutputs().get(0).getItemStack();
         CompoundTag newbornState = CapturedAnimalStackState.read(newborn);
         helper.assertTrue(newbornState.getInt("Age").orElse(0) == -24000,
                 "Prepared breeding output must be a newborn");
-        helper.assertTrue(newbornState.getByte("Color").orElse((byte) 0) == 14,
-                "Offspring inheritance must deterministically use the first matching parent");
+        helper.assertTrue(newbornState.getByte("Color").orElse((byte) 0) == 10,
+                "Red and blue parents must produce vanilla purple offspring");
         helper.assertTrue(!newbornState.contains("CustomName"),
                 "A newborn must not inherit individual identity such as the parent's custom name");
         helper.assertTrue("Parent A".equals(CapturedAnimalStackState.read(breedingInputs.getStackInSlot(0)).getString("CustomName").orElse("")),
@@ -344,7 +370,7 @@ public final class BiotechGameTests {
                         new FluidStack[0],
                         0));
         TerrestrialHabitatRecipe preparedGrowth =
-                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs);
+                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs, helper.getLevel());
         ItemStack adult = preparedGrowth.getItemOutputs().get(0).getItemStack();
         CompoundTag adultState = CapturedAnimalStackState.read(adult);
         helper.assertTrue(adultState.getInt("Age").orElse(-1) == 0 && adultState.getInt("ForcedAge").orElse(-1) == 0,

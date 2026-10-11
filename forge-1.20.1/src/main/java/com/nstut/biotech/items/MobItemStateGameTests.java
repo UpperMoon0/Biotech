@@ -137,9 +137,9 @@ public final class MobItemStateGameTests {
         ItemStack otherParent = new ItemStack(ItemRegistries.SHEEP.get());
         CompoundTag otherState = new CompoundTag();
         otherState.putInt("Age", 0);
-        otherState.putByte("Color", (byte) 3);
+        otherState.putByte("Color", (byte) 11);
         otherState.putString("CustomName", "Parent B");
-        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 3);
+        CapturedAnimalStackState.writeCapture(otherParent, otherState, "minecraft:sheep", 11);
 
         ItemStackHandler breedingInputs = new ItemStackHandler(2);
         breedingInputs.setStackInSlot(0, adultParent.copy());
@@ -154,13 +154,13 @@ public final class MobItemStateGameTests {
                         0));
 
         BreedingChamberRecipe preparedBreeding =
-                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs);
+                AnimalRecipeStatePreparation.prepareBreeding(breeding, breedingInputs, helper.getLevel());
         ItemStack newborn = preparedBreeding.getItemOutputs().get(0).getItemStack();
         CompoundTag newbornState = CapturedAnimalStackState.read(newborn);
         helper.assertTrue(newbornState.getInt("Age") == -24000,
                 "Prepared breeding output must be a newborn");
-        helper.assertTrue(newbornState.getByte("Color") == 14,
-                "Offspring inheritance must deterministically use the first matching parent");
+        helper.assertTrue(newbornState.getByte("Color") == 10,
+                "Red and blue parents must produce vanilla purple offspring");
         helper.assertTrue(!newbornState.contains("CustomName"),
                 "A newborn must not inherit individual identity such as the parent's custom name");
         helper.assertTrue("Parent A".equals(CapturedAnimalStackState.read(breedingInputs.getStackInSlot(0)).getString("CustomName")),
@@ -184,7 +184,7 @@ public final class MobItemStateGameTests {
                         new FluidStack[0],
                         0));
         TerrestrialHabitatRecipe preparedGrowth =
-                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs);
+                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs, helper.getLevel());
         ItemStack adult = preparedGrowth.getItemOutputs().get(0).getItemStack();
         CompoundTag adultState = CapturedAnimalStackState.read(adult);
         helper.assertTrue(adultState.getInt("Age") == 0 && adultState.getInt("ForcedAge") == 0,
@@ -240,7 +240,7 @@ public final class MobItemStateGameTests {
                         new IngredientItem[] {new IngredientItem(new ItemStack(ItemRegistries.SHEEP.get()), false)},
                         new OutputItem[] {new OutputItem(new ItemStack(Items.WHITE_WOOL), 1.0f)},
                         new FluidStack[0], new FluidStack[0], 0));
-        TerrestrialHabitatRecipe preparedWool = AnimalRecipeStatePreparation.prepareHabitat(woolRecipe, sheepInputs);
+        TerrestrialHabitatRecipe preparedWool = AnimalRecipeStatePreparation.prepareHabitat(woolRecipe, sheepInputs, helper.getLevel());
         helper.assertTrue(preparedWool.getItemOutputs().get(0).getItemStack().is(Items.RED_WOOL),
                 "Renewable sheep production must preserve captured wool color");
         helper.assertTrue(sheepInputs.getStackInSlot(0).getCount() == 1,
@@ -254,7 +254,7 @@ public final class MobItemStateGameTests {
                         new FluidStack[0],
                         new FluidStack[] {new FluidStack(net.minecraftforge.common.ForgeMod.MILK.get(), 1000)},
                         0));
-        TerrestrialHabitatRecipe preparedMilk = AnimalRecipeStatePreparation.prepareHabitat(milkRecipe, cowInputs);
+        TerrestrialHabitatRecipe preparedMilk = AnimalRecipeStatePreparation.prepareHabitat(milkRecipe, cowInputs, helper.getLevel());
         helper.assertTrue(!preparedMilk.getItemIngredients().get(0).isConsumable()
                         && preparedMilk.getFluidOutputs().get(0).getAmount() == 1000,
                 "Renewable cow production must retain the adult catalyst and expose milk as fluid output");

@@ -125,6 +125,8 @@ public class MobItem extends Item {
                                 @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
+        CapturedAnimalTraitTooltip.append(stack, context.level(), tooltip::add);
+        if (CapturedAnimalStackState.read(stack).contains("Color")) return;
         if (type != 7 && type != 8) {
             return;
         }

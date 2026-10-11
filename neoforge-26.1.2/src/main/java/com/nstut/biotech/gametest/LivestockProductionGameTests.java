@@ -18,6 +18,7 @@ import com.nstut.biotech.Biotech;
 import com.nstut.biotech.Config;
 import com.nstut.biotech.blocks.entites.hatches.*;
 import com.nstut.biotech.blocks.entites.machines.SlaughterhouseBlockEntity;
+import com.nstut.biotech.blocks.entites.machines.GreenhouseBlockEntity;
 import com.nstut.biotech.blocks.entites.machines.TerrestrialHabitatBlockEntity;
 import com.nstut.biotech.items.CapturedAnimalStackState;
 import com.nstut.biotech.items.ItemRegistries;
@@ -64,6 +65,10 @@ public final class LivestockProductionGameTests {
     private LivestockProductionGameTests() {}
 
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> ALL_LAND_ANIMALS = TEST_FUNCTIONS.register("all_land_animals", () -> LivestockProductionGameTests::allDefaultLandAnimalsHaveCaptureCreativeAndRecipes);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HORSE_TRAITS = TEST_FUNCTIONS.register("horse_traits", () -> LivestockProductionGameTests::horseAndHybridOffspringKeepVanillaStatsAndParents);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_CYCLE = TEST_FUNCTIONS.register("livestock_greenhouse_cycle", () -> LivestockProductionGameTests::greenhouseBlockedReloadKeepsHarvestAndConsumesOnce);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GREENHOUSE_LIVE = TEST_FUNCTIONS.register("livestock_greenhouse_live", () -> LivestockProductionGameTests::greenhouseHarvestsUseLiveMatureLootAndKeepOverrides);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> LOOTPOLICYSEEDANDSTACKLIMITS = TEST_FUNCTIONS.register("livestock_loot_policy_seed_and_stack_limits", () -> LivestockProductionGameTests::lootPolicySeedAndStackLimits);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT = TEST_FUNCTIONS.register("livestock_slaughter_blocked_pause_and_reload_preserve_exact_loot", () -> LivestockProductionGameTests::slaughterBlockedPauseAndReloadPreserveExactLoot);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE = TEST_FUNCTIONS.register("livestock_blocked_donor_replacement_and_oversize_are_safe", () -> LivestockProductionGameTests::blockedDonorReplacementAndOversizeAreSafe);
@@ -72,13 +77,415 @@ public final class LivestockProductionGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GOATDATAPACKEXAMPLEDECODESANDREPEATS = TEST_FUNCTIONS.register("livestock_goat_datapack_example_decodes_and_repeats", () -> LivestockProductionGameTests::goatDatapackExampleDecodesAndRepeats);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER = TEST_FUNCTIONS.register("livestock_datapack_reload_keeps_in_flight_slaughter", () -> LivestockProductionGameTests::datapackReloadKeepsInFlightSlaughter);
 
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERDIAGNOSTICS = TEST_FUNCTIONS.register("controller_diagnostics_and_redstone", () -> LivestockProductionGameTests::controllerDiagnosticsAndRedstonePreserveCycle);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERTHROTTLE = TEST_FUNCTIONS.register("controller_diagnostic_throttle_and_empty_recipes", () -> LivestockProductionGameTests::controllerDiagnosticScansAreBoundedAndEmptyRecipesAreDistinct);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CONTROLLERBALANCE = TEST_FUNCTIONS.register("controller_balance_and_fluid_diagnostics", () -> LivestockProductionGameTests::controllerBalanceSnapshotAndFluidDiagnostics);
+
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> GOAT_LIFECYCLE = TEST_FUNCTIONS.register("goat_lifecycle", () -> LivestockProductionGameTests::goatLifecycleSurvivesBreedingAndBlockedGrowthReload);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> TURTLE_GROWTH_DROPS = TEST_FUNCTIONS.register("turtle_growth_drops", () -> LivestockProductionGameTests::turtleGrowthDoesNotPublishPreparationDrops);
+
     public static void register(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(id("livestock_production"));
-        for (var test : List.of(LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
+        for (var test : List.of(GOAT_LIFECYCLE, TURTLE_GROWTH_DROPS, ALL_LAND_ANIMALS, HORSE_TRAITS, GREENHOUSE_LIVE, GREENHOUSE_CYCLE, CONTROLLERDIAGNOSTICS, CONTROLLERTHROTTLE, CONTROLLERBALANCE, LOOTPOLICYSEEDANDSTACKLIMITS, SLAUGHTERBLOCKEDPAUSEANDRELOADPRESERVEEXACTLOOT, BLOCKEDDONORREPLACEMENTANDOVERSIZEARESAFE, RENEWABLEITEMSREPEATWITHEXACTCOSTS, RENEWABLEMILKBLOCKSANDRELOADSWITHOUTCONSUMINGADULT, GOATDATAPACKEXAMPLEDECODESANDREPEATS, DATAPACKRELOADKEEPSINFLIGHTSLAUGHTER)) {
             event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, id("livestock"), 400, 0, true)));
         }
     }
 
+
+    public static void allDefaultLandAnimalsHaveCaptureCreativeAndRecipes(GameTestHelper helper) {
+        var creative = com.nstut.biotech.items.DefaultCapturedAnimals.stacks();
+        for (var animal : com.nstut.biotech.data.TerrestrialAnimalCatalog.extras(261)) {
+            var stack = creative.stream().filter(item -> com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(item)
+                    .equals("minecraft:" + animal.id()) && !com.nstut.biotech.items.CapturedAnimalStackState.read(item).toString().contains("-24000")).findFirst().orElseThrow();
+            var entity = ((com.nstut.biotech.items.CapturedAnimalItem) stack.getItem()).createCapturedEntity(helper.getLevel(), stack);
+            helper.assertTrue(entity instanceof net.minecraft.world.entity.animal.Animal, "Each default captured land species must reconstruct as a vanilla Animal: " + animal.id());
+            helper.assertTrue(com.nstut.biotech.blocks.NetTrapBlock.isCaptureTypeSupported(entity.getType(), entity.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, id("capturable"))), helper.getLevel()),
+                    "Every default species must be in the actual capture tag: " + animal.id());
+            helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(recipeKey("slaughterhouse_" + animal.id())).isPresent()
+                    && helper.getLevel().getServer().getRecipeManager().byKey(recipeKey("terrestrial_habitat_" + animal.id() + "_renewable")).isPresent(),
+                    "Default species must have loaded machine recipes: " + animal.id());
+            if (animal.breeds()) {
+                var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse("minecraft:" + animal.food()));
+                helper.assertTrue(((net.minecraft.world.entity.animal.Animal) entity).isFood(new ItemStack(item)), "Default breeding food must match vanilla: " + animal.id());
+            } else helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(recipeKey("breeding_chamber_" + animal.id())).isEmpty(), "Sterile/non-breedable species must not get a fake breeding recipe");
+            if (animal.baby()) {
+                var baby = creative.stream().filter(item -> com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(item).equals("minecraft:" + animal.id())
+                        && com.nstut.biotech.items.CapturedAnimalStackState.read(item).toString().contains("-24000")).findFirst().orElseThrow();
+                helper.assertTrue(((net.minecraft.world.entity.AgeableMob) ((com.nstut.biotech.items.CapturedAnimalItem) baby.getItem()).createCapturedEntity(helper.getLevel(), baby)).isBaby(), "Creative baby variant must actually be a baby: " + animal.id());
+            }
+            entity.discard();
+        }
+        helper.succeed();
+    }
+
+    public static void horseAndHybridOffspringKeepVanillaStatsAndParents(GameTestHelper helper) {
+        var first = statHorse(helper, net.minecraft.world.entity.EntityType.HORSE, 0.15, 0.5, 18);
+        var second = statHorse(helper, net.minecraft.world.entity.EntityType.HORSE, 0.30, 0.9, 28);
+        var inputs = new net.neoforged.neoforge.items.ItemStackHandler(3);
+        inputs.setStackInSlot(0, first.copy()); inputs.setStackInSlot(1, second.copy()); inputs.setStackInSlot(2, new ItemStack(Items.GOLDEN_CARROT, 2));
+        var recipe = (BreedingChamberRecipe) helper.getLevel().getServer().getRecipeManager().byKey(recipeKey("breeding_chamber_horse")).orElseThrow().value();
+        var prepared = AnimalRecipeStatePreparation.prepareBreeding(recipe, inputs, helper.getLevel());
+        encode(helper, prepared.getRecipe());
+        var persistenceOps = helper.getLevel().registryAccess().createSerializationContext(JsonOps.INSTANCE);
+        var encoded = ModRecipeData.CODEC.encodeStart(persistenceOps, prepared.getRecipe()).result().orElseThrow();
+        var restored = ModRecipeData.CODEC.parse(persistenceOps, encoded).result().orElseThrow();
+        var newbornStack = restored.getOutputItems()[0].getItemStack();
+        var newborn = (net.minecraft.world.entity.animal.equine.AbstractHorse) ((com.nstut.biotech.items.CapturedAnimalItem) newbornStack.getItem()).createCapturedEntity(helper.getLevel(), newbornStack);
+        helper.assertTrue(newborn.isBaby() && newborn.getCustomName() == null && !newborn.isTamed(), "Vanilla horse offspring must be a new untamed individual");
+        double speed = newborn.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+        double jump = newborn.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH);
+        helper.assertTrue(speed >= 0.1125 && speed <= 0.3375 && jump >= 0.4 && jump <= 1.0
+                        && newborn.getMaxHealth() >= 15 && newborn.getMaxHealth() <= 30 && speed != 0.15,
+                "Persisted offspring must keep vanilla mixed speed, jump and health rather than cloning the first parent");
+        var lines = new java.util.ArrayList<net.minecraft.network.chat.Component>();
+        com.nstut.biotech.items.CapturedAnimalTraitTooltip.append(newbornStack, helper.getLevel(), lines::add);
+        helper.assertTrue(lines.stream().anyMatch(line -> line.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents content
+                        && content.getKey().equals("tooltip.biotech.trait.jump")), "Captured horse tooltip must expose its actual jump trait");
+        helper.assertTrue(same(first, inputs.getStackInSlot(0)) && same(second, inputs.getStackInSlot(1)), "Preparing offspring must leave both parent's payloads unchanged");
+        var donkey = statHorse(helper, net.minecraft.world.entity.EntityType.DONKEY, 0.2, 0.65, 24);
+        inputs.setStackInSlot(1, donkey.copy());
+        var hybrid = (BreedingChamberRecipe) helper.getLevel().getServer().getRecipeManager().byKey(recipeKey("breeding_chamber_horse_donkey")).orElseThrow().value();
+        var mule = AnimalRecipeStatePreparation.prepareBreeding(hybrid, inputs, helper.getLevel()).getItemOutputs().get(0).getItemStack();
+        helper.assertTrue(com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(mule).equals("minecraft:mule")
+                        && ((net.minecraft.world.entity.AgeableMob) ((com.nstut.biotech.items.CapturedAnimalItem) mule.getItem()).createCapturedEntity(helper.getLevel(), mule)).isBaby(),
+                "Horse plus donkey must produce a baby mule with its own entity identity");
+        helper.assertTrue(same(first, inputs.getStackInSlot(0)) && same(donkey, inputs.getStackInSlot(1)), "Hybrid preparation must retain both parents");
+        // Wild horses may be captured, but they cannot bypass vanilla taming requirements.
+        var wild = statHorse(helper, net.minecraft.world.entity.EntityType.HORSE, 0.2, 0.6, 20);
+        var wildState = com.nstut.biotech.items.CapturedAnimalStackState.read(wild); wildState.putBoolean("Tame", false);
+        com.nstut.biotech.items.CapturedAnimalStackState.write(wild, wildState); inputs.setStackInSlot(0, wild);
+        inputs.setStackInSlot(1, second.copy());
+        boolean rejected = false;
+        try { AnimalRecipeStatePreparation.prepareBreeding(recipe, inputs, helper.getLevel()); }
+        catch (com.nstut.nstutlib.recipes.RecipeTransactionException expected) { rejected = true; }
+        helper.assertTrue(rejected && inputs.getStackInSlot(2).getCount() == 2, "Invalid mating must reject before food consumption");
+        helper.succeed();
+    }
+
+    public static void goatLifecycleSurvivesBreedingAndBlockedGrowthReload(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var first = net.minecraft.world.entity.EntityType.GOAT.create(level, net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
+        var second = net.minecraft.world.entity.EntityType.GOAT.create(level, net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
+        first.setScreamingGoat(true); second.setScreamingGoat(true);
+        ItemStack firstStack = captureLifecycle(first), secondStack = captureLifecycle(second);
+        var inputs = new net.neoforged.neoforge.items.ItemStackHandler(3);
+        inputs.setStackInSlot(0, firstStack.copy()); inputs.setStackInSlot(1, secondStack.copy());
+        inputs.setStackInSlot(2, new ItemStack(Items.WHEAT, 2));
+        var recipe = (BreedingChamberRecipe) level.getServer().getRecipeManager().byKey(recipeKey("breeding_chamber_goat")).orElseThrow().value();
+        var prepared = AnimalRecipeStatePreparation.prepareBreeding(recipe, inputs, level);
+        var ops = level.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+        var encoded = ModRecipeData.CODEC.encodeStart(ops, prepared.getRecipe()).result().orElseThrow();
+        var restored = ModRecipeData.CODEC.parse(ops, encoded).result().orElseThrow();
+        var newbornStack = restored.getOutputItems()[0].getItemStack();
+        var newborn = (net.minecraft.world.entity.animal.goat.Goat) ((com.nstut.biotech.items.CapturedAnimalItem) newbornStack.getItem()).createCapturedEntity(level, newbornStack);
+        var vanilla = first.getBreedOffspring(level, second);
+        vanilla.setBaby(true);
+        assertGoatLifecycle(helper, newborn, vanilla);
+        helper.assertTrue(same(firstStack, inputs.getStackInSlot(0)) && same(secondStack, inputs.getStackInSlot(1)), "Native baby initialization must not mutate retained parents");
+        newborn.discard(); first.discard(); second.discard();
+
+        // Capture an actual native baby, including its age-dependent attributes and horn flags.
+        vanilla.setCustomName(net.minecraft.network.chat.Component.literal("Growing goat"));
+        ItemStack captured = captureLifecycle(vanilla);
+        CompoundTag payload = CapturedAnimalStackState.read(captured);
+        payload.putString("PackGrowthMarker", "preserve me");
+        CapturedAnimalStackState.write(captured, payload);
+        vanilla.setAge(-1);
+        vanilla.aiStep();
+        helper.assertTrue(!vanilla.isBaby(), "Control goat must naturally cross the age boundary");
+        Rig rig = habitat(helper);
+        rig.animals.setStackInSlot(0, captured.copy());
+        rig.food.setStackInSlot(0, new ItemStack(Items.WHEAT, 4));
+        rig.water.setFluid(new FluidStack(Fluids.WATER, 400));
+        rig.energy.setEnergy(48000);
+        fill(rig.outputs, new ItemStack(Items.COBBLESTONE, 64));
+        tick(helper, rig.machine, 1);
+        helper.assertTrue(snapshot(rig.machine) != null && same(captured, rig.animals.getStackInSlot(0)), "Blocked growth must prepare without consuming the captured baby");
+        rig.machine = reload(helper, rig.machine);
+        clear(rig.outputs);
+        tick(helper, rig.machine, 500);
+        ItemStack grownStack = ItemStack.EMPTY;
+        for (int slot = 0; slot < rig.outputs.getSlots(); slot++) {
+            var candidate = rig.outputs.getStackInSlot(slot);
+            if (CapturedAnimalStackState.entityTypeId(candidate).equals("minecraft:goat")) grownStack = candidate;
+        }
+        helper.assertTrue(!grownStack.isEmpty(), "Reloaded growth must complete with an adult goat");
+        var grown = (net.minecraft.world.entity.animal.goat.Goat) ((com.nstut.biotech.items.CapturedAnimalItem) grownStack.getItem()).createCapturedEntity(level, grownStack);
+        assertGoatLifecycle(helper, grown, vanilla);
+        helper.assertTrue(grown.isScreamingGoat() && grown.getCustomName().getString().equals("Growing goat")
+                        && CapturedAnimalStackState.read(grownStack).getString("PackGrowthMarker").orElse("").equals("preserve me"),
+                "Growth must retain the same individual's unrelated traits and pack fields");
+        helper.assertTrue(rig.animals.getStackInSlot(0).isEmpty() && rig.food.getStackInSlot(0).isEmpty()
+                        && rig.water.getInternalTank().getFluidInTank(0).isEmpty() && rig.energy.getInternalEnergyStorage().getEnergyStored() == 0,
+                "Growth reload must consume the baby, food, water and energy exactly once");
+        grown.discard(); vanilla.discard();
+        helper.succeed();
+    }
+
+    private static void assertGoatLifecycle(GameTestHelper helper, net.minecraft.world.entity.animal.goat.Goat actual,
+                                           net.minecraft.world.entity.animal.goat.Goat expected) {
+        helper.assertTrue(actual.isBaby() == expected.isBaby()
+                        && actual.hasLeftHorn() == expected.hasLeftHorn() && actual.hasRightHorn() == expected.hasRightHorn()
+                        && actual.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
+                        == expected.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE),
+                "Persisted goat age, horns and attack damage must match this version's native lifecycle");
+    }
+
+    private static ItemStack captureLifecycle(net.minecraft.world.entity.animal.Animal animal) {
+        var saved = net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, animal.registryAccess());
+        animal.saveWithoutId(saved); CompoundTag state = saved.buildResult();
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CapturedAnimalStackState.writeCapture(stack, state, net.minecraft.world.entity.EntityType.getKey(animal.getType()).toString(), -1);
+        return stack;
+    }
+
+    public static void turtleGrowthDoesNotPublishPreparationDrops(GameTestHelper helper) {
+        var level = helper.getLevel();
+        level.getChunk(0, 0);
+        var bounds = new net.minecraft.world.phys.AABB(-4, -4, -4, 4, 8, 4);
+        int before = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, bounds).size();
+        var turtle = net.minecraft.world.entity.EntityType.TURTLE.create(level, net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
+        turtle.setBaby(true);
+        var source = captureLifecycle(turtle);
+        turtle.discard();
+        var inputs = new net.neoforged.neoforge.items.ItemStackHandler(2);
+        inputs.setStackInSlot(0, source.copy()); inputs.setStackInSlot(1, new ItemStack(Items.SEAGRASS, 4));
+        var recipe = (TerrestrialHabitatRecipe) level.getServer().getRecipeManager().byKey(recipeKey("terrestrial_habitat_turtle_growth")).orElseThrow().value();
+        for (int attempt = 0; attempt < 3; attempt++) {
+            var prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs, level);
+            helper.assertTrue(outputCounts(prepared.getRecipe()).get(Items.TURTLE_SCUTE) == 1, "Turtle scute must remain an explicit transaction output");
+        }
+        helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, bounds).size() == before
+                        && same(source, inputs.getStackInSlot(0)),
+                "Preparing or retrying temporary turtle maturation must never publish world drops or consume inputs");
+        helper.succeed();
+    }
+
+    private static ItemStack statHorse(GameTestHelper helper, net.minecraft.world.entity.EntityType<?> type, double speed, double jump, double health) {
+        var entity = (net.minecraft.world.entity.animal.equine.AbstractHorse) type.create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.SPAWN_ITEM_USE);
+        entity.setTamed(true); entity.setCustomName(net.minecraft.network.chat.Component.literal("Parent"));
+        entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(speed);
+        entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH).setBaseValue(jump);
+        entity.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(health); entity.setHealth((float) health);
+        var output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, entity.registryAccess());
+        entity.saveWithoutId(output); CompoundTag state = output.buildResult();
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        com.nstut.biotech.items.CapturedAnimalStackState.writeCapture(stack, state, net.minecraft.world.entity.EntityType.getKey(type).toString(), -1);
+        entity.discard(); return stack;
+    }
+
+    public static void greenhouseBlockedReloadKeepsHarvestAndConsumesOnce(GameTestHelper helper) {
+        var machine = place(helper, 2);
+        BlockPos p = machine.getBlockPos();
+        var input = block(helper, p.offset(-3, 0, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage();
+        var output = block(helper, p.offset(3, 0, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage();
+        var water = block(helper, p.offset(-2, 0, -6), FluidInputHatchBlockEntity.class);
+        var energy = block(helper, p.offset(0, 0, -6), EnergyInputHatchBlockEntity.class);
+        input.setStackInSlot(0, new ItemStack(Items.WHEAT_SEEDS, 2));
+        water.setFluid(new FluidStack(Fluids.WATER, 400));
+        energy.setEnergy(128000);
+        fill(output, new ItemStack(Items.COBBLESTONE, 64));
+        tick(helper, machine, 1);
+        var expected = outputCounts(snapshot(machine));
+        helper.assertTrue(expected.get(Items.WHEAT) == 2 && input.getStackInSlot(0).getCount() == 2,
+                "A blocked greenhouse must prepare live mature loot without consuming seeds");
+        machine = reload(helper, machine);
+        clear(output);
+        tick(helper, machine, 1100);
+        helper.assertTrue(counts(output).equals(expected) && input.getStackInSlot(0).isEmpty()
+                        && water.getInternalTank().getFluidInTank(0).isEmpty() && energy.getInternalEnergyStorage().getEnergyStored() == 0,
+                "Reload must retain exact harvests and consume seeds, water and energy once");
+        helper.succeed();
+    }
+
+    public static void greenhouseHarvestsUseLiveMatureLootAndKeepOverrides(GameTestHelper helper) {
+        var base = new GreenhouseRecipe(id("greenhouse_live_test"), new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(new ItemStack(Items.WHEAT_SEEDS, 2), true)},
+                new OutputItem[0], new FluidStack[0], new FluidStack[0], 128));
+        var harvest = GreenhouseHarvestPreparation.harvest(base);
+        helper.assertTrue(harvest.state().equals(((net.minecraft.world.level.block.CropBlock) Blocks.WHEAT).getStateForAge(7)) && harvest.count() == 2,
+                "Wheat seeds must resolve to two fully mature harvests");
+        var prepared = GreenhouseHarvestPreparation.prepare(base, helper.getLevel(), helper.absolutePos(BlockPos.ZERO));
+        helper.assertTrue(outputCounts(prepared.getRecipe()).get(Items.WHEAT) == 2,
+                "Live mature wheat loot must supply one wheat per planted seed");
+        encode(helper, prepared.getRecipe());
+        var staticData = base.getRecipe().copy();
+        var override = new GreenhouseRecipe(base.getId(), new ModRecipeData(staticData.getIngredientItems(),
+                new OutputItem[] {new OutputItem(new ItemStack(Items.DIAMOND, 7), 1.0f)},
+                staticData.getFluidIngredients(), staticData.getFluidOutputs(), staticData.getTotalEnergy()));
+        helper.assertTrue(GreenhouseHarvestPreparation.prepare(override, helper.getLevel(), BlockPos.ZERO) == override,
+                "Explicit pack-authored outputs must bypass crop loot");
+        var fertilized = new GreenhouseRecipe(base.getId(), new ModRecipeData(
+                new IngredientItem[] {new IngredientItem(new ItemStack(Items.WHEAT_SEEDS, 2), true),
+                        new IngredientItem(new ItemStack(ItemRegistries.FERTILIZER.get(), 2), true)},
+                new OutputItem[0], new FluidStack[0], new FluidStack[0], 128));
+        helper.assertTrue(GreenhouseHarvestPreparation.harvest(fertilized).count() == 3,
+                "Fertilizer must provide 50 percent more harvests");
+        var catalog = com.nstut.biotech.jei.SlaughterhouseLootSync.catalog(helper.getLevel());
+        helper.assertTrue(catalog.getAsJsonArray("biotech:greenhouse_wheat").toString().contains("minecraft:wheat")
+                        && catalog.getAsJsonArray("biotech:greenhouse_melon").toString().contains("minecraft:melon_slice"),
+                "JEI must expose active mature-crop loot, including melon slices instead of a fabricated whole melon");
+        helper.succeed();
+    }
+
+    public static void controllerDiagnosticScansAreBoundedAndEmptyRecipesAreDistinct(GameTestHelper helper) {
+        var lootCatalog = com.nstut.biotech.jei.SlaughterhouseLootSync.catalog(helper.getLevel());
+        helper.assertTrue(lootCatalog.getAsJsonArray("biotech:slaughterhouse_pig").toString().contains("minecraft:porkchop"),
+                "Server JEI catalog must expose actual pig loot-table products");
+        helper.assertTrue(lootCatalog.getAsJsonArray("biotech:slaughterhouse_cow").toString().contains("minecraft:leather"),
+                "Server JEI catalog must expose actual cow loot-table products");
+        Rig rig = slaughter(helper);
+        var controller = new CountingDiagnosticController(rig.machine.getBlockPos(), rig.machine.getBlockState());
+        helper.getLevel().setBlockEntity(controller);
+        rig.machine = controller;
+        tick(helper, controller, 100);
+        helper.assertTrue(controller.scans == 1, "Repeated actual controller ticks in one world tick must scan once");
+        helper.assertTrue(controller.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS,
+                "Loaded recipes with empty inputs must report missing items");
+        helper.runAfterDelay(19, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 1, "Idle world ticks 1 through 19 must reuse the initial scan");
+        });
+        helper.runAfterDelay(20, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 2, "World tick 20 must perform exactly one new diagnostic scan");
+            controller.emptyRecipes = true;
+        });
+        helper.runAfterDelay(39, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 2, "Second interval must also remain bounded");
+        });
+        helper.runAfterDelay(40, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 3
+                    && controller.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.NO_MATCHING_RECIPE,
+                    "Empty recipe set and empty inventory must report no matching recipe");
+            rig.animals.setStackInSlot(0, new ItemStack(Items.COBBLESTONE));
+        });
+        helper.runAfterDelay(60, () -> {
+            tick(helper, controller, 100);
+            helper.assertTrue(controller.scans == 4
+                    && controller.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.NO_MATCHING_RECIPE,
+                    "Supplying items must not change the empty-recipe-set diagnosis");
+            helper.succeed();
+        });
+    }
+
+    /** Instrument only recipe enumeration; all structure, hatch and transaction ticks remain production code. */
+    private static final class CountingDiagnosticController extends SlaughterhouseBlockEntity {
+        private int scans;
+        private boolean emptyRecipes;
+        CountingDiagnosticController(BlockPos pos, BlockState state) { super(pos, state); }
+        @Override protected <R extends com.nstut.nstutlib.recipes.ModRecipe<R>> List<R> diagnosticRecipes(
+                net.minecraft.world.level.Level level, net.minecraft.world.item.crafting.RecipeType<R> type) {
+            scans++;
+            return emptyRecipes ? List.of() : super.diagnosticRecipes(level, type);
+        }
+    }
+
+    public static void controllerDiagnosticsAndRedstonePreserveCycle(GameTestHelper helper) {
+        Rig rig = slaughter(helper);
+        var machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS, "Empty valid controller must report missing items");
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel());
+        var oldMenu = player.containerMenu;
+        var menu = new com.nstut.biotech.views.machines.menu.SlaughterhouseMenu(91, player.getInventory(), machine);
+        player.setPos(machine.getBlockPos().getX() + 0.5, machine.getBlockPos().getY() + 0.5, machine.getBlockPos().getZ() + 0.5);
+        try {
+            helper.assertTrue(!menu.clickMenuButton(player, 90), "A menu not open for this player must reject mode changes");
+            player.containerMenu = menu;
+            helper.assertTrue(!menu.clickMenuButton(player, -1), "Unknown button IDs must be rejected");
+            helper.assertTrue(menu.clickMenuButton(player, 90) && machine.getRedstoneMode() == com.nstut.biotech.machines.RedstoneMode.HIGH, "Valid open menu must cycle the authoritative mode");
+            player.setPos(machine.getBlockPos().getX() + 40, machine.getBlockPos().getY(), machine.getBlockPos().getZ());
+            helper.assertTrue(!menu.clickMenuButton(player, 90), "Out-of-range player must not change the controller");
+        } finally { player.containerMenu = oldMenu; machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.IGNORE); }
+
+        rig.animals.setStackInSlot(0, animal(ItemRegistries.COW.get(), "cow", -1, "controlled_slaughter"));
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS,
+                "Input changes must retain the cached diagnosis within the refresh interval");
+        helper.runAfterDelay(19, () -> {
+            var idle = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+            tick(helper, idle, 1);
+            helper.assertTrue(idle.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_ITEMS,
+                    "Diagnosis must remain cached through world tick 19");
+        });
+        helper.runAfterDelay(20, () -> {
+            var idle = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+            tick(helper, idle, 1);
+            helper.assertTrue(idle.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.MISSING_FLUID,
+                    "Matching cow without water must refresh to missing fluid after 20 world ticks");
+            finishControllerRedstoneCycle(helper, rig);
+        });
+    }
+
+    private static void finishControllerRedstoneCycle(GameTestHelper helper, Rig rig) {
+        var machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+        rig.water.setFluid(new FluidStack(Fluids.WATER, 200));
+        fill(rig.outputs, new ItemStack(Items.COBBLESTONE, 64));
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.ITEM_OUTPUT_BLOCKED, "Exact prepared loot must report blocked item output");
+        int[] rolls = ((int[]) field(machine, "activeItemOutputIndexes")).clone();
+        ModRecipeData original = snapshot(machine).copy();
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.HIGH);
+        clear(rig.outputs);
+        rig.energy.setEnergy(10000);
+        tick(helper, machine, 3);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.REDSTONE_PAUSED && !rig.animals.getStackInSlot(0).isEmpty(), "Paused unconsumed transaction must retain inputs");
+        rig.machine = reload(helper, machine);
+        machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getRedstoneMode() == com.nstut.biotech.machines.RedstoneMode.HIGH && Arrays.equals(rolls, (int[]) field(machine, "activeItemOutputIndexes")), "Mode and exact output rolls must survive save/load while paused");
+        helper.assertTrue(machine.getDisplayRecipe() != null && machine.getDisplayRecipe().getTotalEnergy() == original.getTotalEnergy()
+                && outputCounts(machine.getDisplayRecipe()).equals(outputCounts(original)), "Paused reload must expose the exact saved recipe to the menu before resuming");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.LOW);
+        rig.energy.setEnergy(0);
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.INSUFFICIENT_ENERGY && rig.animals.getStackInSlot(0).isEmpty(), "Enabled cycle consumes inputs once then reports lack of energy");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.HIGH);
+        rig.energy.setEnergy(10000);
+        tick(helper, machine, 3);
+        helper.assertTrue((int) field(machine, "energyConsumed") == 0 && rig.energy.getInternalEnergyStorage().getEnergyStored() == 10000, "Paused committed cycle must not draw energy");
+        BlockPos signal = machine.getBlockPos().relative(Direction.SOUTH);
+        helper.getLevel().setBlock(signal, Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+        tick(helper, machine, 1);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.PROCESSING && (int) field(machine, "energyConsumed") > 0, "High mode must resume with a real neighbor signal");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.LOW);
+        int progress = (int) field(machine, "energyConsumed");
+        tick(helper, machine, 2);
+        helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.REDSTONE_PAUSED && (int) field(machine, "energyConsumed") == progress, "Low mode must pause while powered");
+        machine.setRedstoneMode(com.nstut.biotech.machines.RedstoneMode.IGNORE);
+        tick(helper, machine, 1);
+        helper.assertTrue((int) field(machine, "energyConsumed") > progress && outputCounts(snapshot(machine)).equals(outputCounts(original)), "Ignore mode resumes the same exact products even while powered");
+        helper.succeed();
+    }
+
+    public static void controllerBalanceSnapshotAndFluidDiagnostics(GameTestHelper helper) {
+        Rig rig = habitat(helper);
+        rig.animals.setStackInSlot(0, animal(ItemRegistries.COW.get(), "cow", -1, null));
+        rig.food.setStackInSlot(0, new ItemStack(Items.WHEAT, 4));
+        rig.water.setFluid(new FluidStack(Fluids.WATER, 1000));
+        rig.milk.setFluid(new FluidStack(Fluids.LAVA, 1000));
+        double oldMultiplier = Config.machineEnergyMultiplier;
+        int oldRate = Config.machineEnergyPerTick;
+        try {
+            Config.machineEnergyMultiplier = 2.0;
+            Config.machineEnergyPerTick = 37;
+            rig.energy.setEnergy(10000);
+            tick(helper, rig.machine, 1);
+            var machine = (com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) rig.machine;
+            helper.assertTrue(machine.getMachineStatus() == com.nstut.biotech.machines.MachineStatus.FLUID_OUTPUT_BLOCKED, "Incompatible milk output tank must report fluid output blocked");
+            int cost = snapshot(machine).getTotalEnergy();
+            helper.assertTrue(cost == 64000 && (int) field(machine, "energyConsumed") == 0, "Blocked output must not consume any energy");
+            Config.machineEnergyMultiplier = 0.5;
+            rig.machine = reload(helper, machine);
+            rig.milk.setFluid(FluidStack.EMPTY);
+            tick(helper, rig.machine, 1);
+            helper.assertTrue(snapshot(rig.machine).getTotalEnergy() == cost && (int) field(rig.machine, "energyConsumed") == 37, "Reload/config change keeps active total cost and obeys configured throughput");
+        } finally { Config.machineEnergyMultiplier = oldMultiplier; Config.machineEnergyPerTick = oldRate; }
+        helper.succeed();
+    }
 
     public static void lootPolicySeedAndStackLimits(GameTestHelper helper) {
         SlaughterhouseRecipe recipe = slaughterRecipe(helper, "cow");
@@ -281,7 +688,7 @@ public final class LivestockProductionGameTests {
         water.setFluid(new FluidStack(Fluids.WATER, 500));
         FluidTank milk = new FluidTank(4000);
         for (int cycle = 0; cycle < 2; cycle++) {
-            var prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs);
+            var prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs, helper.getLevel());
             helper.assertTrue(prepared.recipeMatch(inputs, List.of(water), outputs, List.of(milk)), "The data-driven generic adult goat selector must match without hardcoded species production logic");
             helper.assertTrue(prepared.tryConsumeIngredients(inputs, List.of(water)), "Goat example must consume its authored resources");
             prepared.assemble(outputs, List.of(milk), prepared.rollItemOutputIndexes());
@@ -328,6 +735,7 @@ public final class LivestockProductionGameTests {
         return (SlaughterhouseRecipe) helper.getLevel().recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id("slaughterhouse_" + animal))).orElseThrow().value();
     }
 
+    private static net.minecraft.resources.ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> recipeKey(String path) { return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, id(path)); }
     private static Identifier id(String path) { return Identifier.fromNamespaceAndPath(Biotech.MOD_ID, path); }
     private static boolean same(ItemStack a, ItemStack b) { return ItemStack.matches(a, b); }
     private static void encode(GameTestHelper helper, ModRecipeData data) {
@@ -360,7 +768,7 @@ public final class LivestockProductionGameTests {
         CompoundTag saved = old.saveWithFullMetadata(helper.getLevel().registryAccess());
         helper.assertTrue(saved.contains("activeRecipeSnapshot"), "In-flight recipe snapshot must be present on disk");
         BlockState state = helper.getLevel().getBlockState(old.getBlockPos());
-        MachineBlockEntity reloaded = old instanceof SlaughterhouseBlockEntity ? new SlaughterhouseBlockEntity(old.getBlockPos(), state) : new TerrestrialHabitatBlockEntity(old.getBlockPos(), state);
+        MachineBlockEntity reloaded = old instanceof SlaughterhouseBlockEntity ? new SlaughterhouseBlockEntity(old.getBlockPos(), state) : old instanceof GreenhouseBlockEntity ? new GreenhouseBlockEntity(old.getBlockPos(), state) : new TerrestrialHabitatBlockEntity(old.getBlockPos(), state);
         reloaded.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), saved));
         helper.getLevel().setBlockEntity(reloaded);
         return reloaded;
@@ -375,10 +783,11 @@ public final class LivestockProductionGameTests {
         BlockPos p = machine.getBlockPos();
         return new Rig(machine, block(helper, p.offset(-3, -1, -1), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-3, -1, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(3, -1, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-2, -1, -6), FluidInputHatchBlockEntity.class), block(helper, p.offset(2, -1, -6), FluidOutputHatchBlockEntity.class), block(helper, p.offset(0, -1, -6), EnergyInputHatchBlockEntity.class));
     }
-    private static MachineBlockEntity place(GameTestHelper helper, boolean habitat) {
+    private static MachineBlockEntity place(GameTestHelper helper, boolean habitat) { return place(helper, habitat ? 1 : 0); }
+    private static MachineBlockEntity place(GameTestHelper helper, int kind) {
         BlockPos pos = helper.absolutePos(new BlockPos(8, 2, 8));
-        BlockState controller = (habitat ? MachineRegistries.TERRESTRIAL_HABITAT : MachineRegistries.SLAUGHTERHOUSE).block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.SOUTH);
-        MachineBlockEntity blueprint = habitat ? new TerrestrialHabitatBlockEntity(pos, controller) : new SlaughterhouseBlockEntity(pos, controller);
+        BlockState controller = (kind == 2 ? MachineRegistries.GREENHOUSE : kind == 1 ? MachineRegistries.TERRESTRIAL_HABITAT : MachineRegistries.SLAUGHTERHOUSE).block().get().defaultBlockState().setValue(MachineBlock.FACING, Direction.SOUTH);
+        MachineBlockEntity blueprint = kind == 2 ? new GreenhouseBlockEntity(pos, controller) : kind == 1 ? new TerrestrialHabitatBlockEntity(pos, controller) : new SlaughterhouseBlockEntity(pos, controller);
         MultiblockBlock[][][] pattern = blueprint.getMultiblockPattern().getPattern();
         for (int y = 0; y < pattern.length; y++) for (int z = 0; z < pattern[y].length; z++) for (int x = 0; x < pattern[y][z].length; x++) {
             MultiblockBlock expected = pattern[y][z][x];

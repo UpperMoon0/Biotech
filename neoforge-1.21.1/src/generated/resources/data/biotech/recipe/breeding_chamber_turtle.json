@@ -1,0 +1,55 @@
+{
+  "type": "biotech:breeding_chamber",
+  "energy": 20000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:turtle",
+            "BiotechRecipeLifecycle": "adult"
+          }
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:turtle",
+            "BiotechRecipeLifecycle": "adult"
+          }
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:seagrass",
+        "count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "minecraft:turtle_egg",
+        "count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 200
+    }
+  ],
+  "fluidOutputs": []
+}

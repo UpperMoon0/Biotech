@@ -8,8 +8,8 @@ public final class CapturedEntityState {
     private static final int BABY_START_AGE = -24000;
 
     /**
-     * Newborns are new individuals. Only variant/genetic-style fields are inherited from the
-     * deterministic donor parent; volatile lifecycle, ownership, inventory and world state are not.
+     * Legacy state derivation keeps only supported variant fields from a donor. New breeding
+     * transactions instead sanitize the state of vanilla offspring created from both parents.
      */
     private static final Set<String> OFFSPRING_INHERITED_KEYS = Set.of(
             "Color",

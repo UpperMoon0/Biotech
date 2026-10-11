@@ -34,6 +34,10 @@ Install the file matching both your Minecraft version and loader. A jar built fo
 
 ---
 
+## Factory controls in 2.5
+
+Every controller shows server-authoritative stall diagnostics and has a redstone mode button: Ignore signal (default), Needs signal, or No signal. Pausing keeps the active recipe, consumed inputs, output rolls, and energy progress across reloads. [Factory controls and server balance settings](docs/upgrade-2.5.md) explains the modes, troubleshooting, configuration, and upgrade behavior.
+
 ## Key features
 
 ### Capture livestock instead of moving entities through your factory
@@ -58,8 +62,8 @@ Adult/baby state, variants, custom names, and other persistent gameplay state ar
 
 ### Six multiblock machines
 
-- **Greenhouse** — grows wheat, beetroot, carrots, potatoes, melons, pumpkins, cactus, and sugar cane. Supported crops have higher-yield fertilizer recipes.
-- **Breeding Chamber** — combines two captured adult parents with matching food, water, and energy to produce a baby animal. Parent items are required but not consumed.
+- **Greenhouse** — grows wheat, beetroot, carrots, potatoes, melons, pumpkins, cactus, and sugar cane. Supported crops have higher-yield fertilizer recipes. Default drops follow mature-crop loot tables, with expected quantities shown in JEI; packs can provide explicit outputs.
+- **Breeding Chamber** — combines two captured adult parents with matching food, water, and energy to produce a baby animal. Parent items are required but not consumed. Offspring traits follow Minecraft's breeding rules for both parents.
 - **Terrestrial Habitat** — raises captured babies while retaining each individual's state, or keeps adults as non-consumed inhabitants to produce eggs, colored wool, and milk, with manure as a by-product.
 - **Slaughterhouse** — resolves captured animals' real entity loot tables for its default recipes. Explicit datapack item outputs remain static overrides.
 - **Mixer** — produces animal feeds and supports recipes with item and fluid inputs/outputs.
@@ -193,10 +197,12 @@ NeoForge 1.21.1 and 26.1.2 use lowercase item counts and modern fluid fields:
 ./gradlew gameTestAll
 ```
 
-Generated machine data is deterministic and verified during builds. Each target must generate exactly 70 machine recipes using the schema and datapack layout required by that Minecraft version.
+Generated machine data is deterministic and verified during builds. Targets generate 156 (Forge 1.20.1), 160 (NeoForge 1.21.1), and 165 (NeoForge 26.1.2) machine recipes using the schema and datapack layout required by that Minecraft version.
 
 Draft pull requests normally use the fast CI lane. Add the `full-validation` label to opt into every loader's unit/build and GameTest jobs without changing the pull request's draft status.
 
 ## License
 
 All Rights Reserved. Created by **NsTut**.
+
+Vanilla land animals, land-associated fliers and Nether land animals now have default capture and machine support: 28 types in 1.20.1, 29 in 1.21.1, and 31 in 26.1.2. Fully aquatic creatures are excluded. The creative tab contains named default captured adult/juvenile stacks for the additional species. Captured tooltips show appearance, genes, horns, taming, equipment and saved health/speed/jump traits. See [production datapacks](docs/production-datapacks.md) for lifecycle and breeding exceptions.

@@ -40,7 +40,7 @@ final class PreviewFixtures {
     static List<Preview> all() {
         List<Preview> result = new ArrayList<>();
         for (var kind : MachineUi.Kind.values()) {
-            for (String state : List.of("active", "idle", "invalid")) {
+            for (String state : List.of("active", "idle", "invalid", "paused", "blocked")) {
                 result.add(new Preview(machineId(kind) + "-" + state, BiotechStyle.MACHINE_WIDTH, BiotechStyle.MACHINE_HEIGHT,
                         () -> machine(kind, state)));
             }
@@ -84,10 +84,20 @@ final class PreviewFixtures {
 
     private static UIComponent machine(MachineUi.Kind kind, String state) {
         ModRecipeData recipe = recipe(kind);
-        boolean valid = !state.equals("invalid"), active = state.equals("active");
+        boolean valid = !state.equals("invalid"), active = !state.equals("idle") && valid;
         MachineDisplay data = new MachineDisplay(() -> valid, () -> active, () -> 307200,
                 () -> 614400, () -> recipe.getTotalEnergy() / 2, recipe::getTotalEnergy,
-                () -> kind == MachineUi.Kind.TERRESTRIALHABITAT ? 512 : 64, () -> active ? recipe : null);
+                () -> kind == MachineUi.Kind.TERRESTRIALHABITAT ? 512 : 64, () -> active ? recipe : null,
+                () -> switch (state) {
+                    case "paused" -> com.nstut.biotech.machines.MachineStatus.REDSTONE_PAUSED;
+                    case "blocked" -> com.nstut.biotech.machines.MachineStatus.FLUID_OUTPUT_BLOCKED;
+                    case "invalid" -> com.nstut.biotech.machines.MachineStatus.INVALID_STRUCTURE;
+                    case "idle" -> com.nstut.biotech.machines.MachineStatus.NO_MATCHING_RECIPE;
+                    default -> com.nstut.biotech.machines.MachineStatus.PROCESSING;
+                },
+                () -> state.equals("paused") ? com.nstut.biotech.machines.RedstoneMode.HIGH
+                    : state.equals("blocked") ? com.nstut.biotech.machines.RedstoneMode.LOW
+                    : com.nstut.biotech.machines.RedstoneMode.IGNORE, () -> {});
         if (kind == MachineUi.Kind.TERRESTRIALHABITAT) {
             String products = new RecipeOutputs(data).productDescription();
             if (active && (!products.contains("Milk") || !products.contains("1000 mB per cycle"))) {

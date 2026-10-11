@@ -83,7 +83,7 @@ public final class AnimalTransactionGameTests {
             helper.assertTrue(variants.stream().anyMatch(v -> v.is(Items.RED_WOOL)), "Red wool must be discoverable");
             helper.assertTrue(AnimalRecipeStatePreparation.habitatOutputVariants(recipe, new ItemStack(Items.EGG)).size() == 1,
                     "Non-wool outputs must not gain wool alternatives");
-            ModRecipeData prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs).getRecipe();
+            ModRecipeData prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs, helper.getLevel()).getRecipe();
             var ops = helper.getLevel().registryAccess().createSerializationContext(NbtOps.INSTANCE);
             var encoded = ModRecipeData.CODEC.encodeStart(ops, prepared).result().orElseThrow();
             ModRecipeData restored = ModRecipeData.CODEC.parse(ops, encoded).result().orElseThrow();
@@ -187,7 +187,7 @@ public final class AnimalTransactionGameTests {
         f = reload(helper, f);
         finish(helper, f, ItemRegistries.BABY_SHEEP.get(), 1);
         helper.assertTrue(same(f.inputs.getStackInSlot(0), first) && same(f.inputs.getStackInSlot(1), second), "Completion after reload must preserve both parent payloads");
-        helper.assertTrue(animalStates(f.outputs, ItemRegistries.BABY_SHEEP.get()).equals(List.of(CapturedAnimalStackState.forOffspring(first))), "Newborn must use the deterministic first parent and exclude individual name/inventory state");
+        assertVanillaSheepNewborn(helper, f.outputs);
         helper.assertTrue(f.energy.getInternalEnergyStorage().getEnergyStored() == 0, "Breeding progress must resume and use exactly 20000 FE");
         helper.succeed();
     }
@@ -213,8 +213,8 @@ public final class AnimalTransactionGameTests {
         f.inputs.setStackInSlot(1, second.copy());
         supplyTierOne(f, true);
         finish(helper, f, ItemRegistries.BABY_SHEEP.get(), 1);
-        helper.assertTrue(animalStates(f.outputs, ItemRegistries.BABY_SHEEP.get()).equals(List.of(CapturedAnimalStackState.forOffspring(first))), "Legacy breeding must normalize SheepColor before variant inheritance");
-        assertRedSheepReconstruction(helper, f.outputs, ItemRegistries.BABY_SHEEP.get(), true);
+        assertVanillaSheepNewborn(helper, f.outputs);
+
         helper.assertTrue(same(f.inputs.getStackInSlot(0), first) && same(f.inputs.getStackInSlot(1), second), "Legacy migration must not rewrite retained parent stacks");
         helper.succeed();
     }
@@ -228,7 +228,7 @@ public final class AnimalTransactionGameTests {
                         new OutputItem[] {new OutputItem(new ItemStack(ItemRegistries.SHEEP.get(), 3), 0.5f)}, new FluidStack[0], new FluidStack[0], 0));
         var ops = helper.getLevel().registryAccess().createSerializationContext(NbtOps.INSTANCE);
         for (int trial = 0; trial < 64; trial++) {
-            ModRecipeData prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs).getRecipe();
+            ModRecipeData prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs, helper.getLevel()).getRecipe();
             var encoded = ModRecipeData.CODEC.encodeStart(ops, prepared).result().orElseThrow();
             ModRecipeData restored = ModRecipeData.CODEC.parse(ops, encoded).result().orElseThrow();
             int animalCount = java.util.Arrays.stream(restored.getOutputItems()).mapToInt(output -> output.getItemStack().getCount()).sum();
@@ -261,7 +261,7 @@ public final class AnimalTransactionGameTests {
         }
         TerrestrialHabitatRecipe recipe = new TerrestrialHabitatRecipe(ResourceLocation.fromNamespaceAndPath(Biotech.MOD_ID, "test_large_identical_batch"),
                 new ModRecipeData(ingredients, outputs, new FluidStack[0], new FluidStack[0], 0));
-        ModRecipeData prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs).getRecipe();
+        ModRecipeData prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs, helper.getLevel()).getRecipe();
         helper.assertTrue(prepared.getOutputItems().length == 5, "320 identical adult outputs must aggregate to five legal stacks, not exceed the 256-entry snapshot limit");
         helper.assertTrue(java.util.Arrays.stream(prepared.getOutputItems()).mapToInt(output -> output.getItemStack().getCount()).sum() == 320,
                 "Runtime aggregation must retain all 320 output individuals before encoding");
@@ -289,7 +289,7 @@ public final class AnimalTransactionGameTests {
                 new IngredientItem(new ItemStack(ItemRegistries.BABY_SHEEP.get(), 3), true);
         TerrestrialHabitatRecipe fragmented = recipe.create(recipe.getId(), new ModRecipeData(
                 fragmentedRequirements, new OutputItem[0], new FluidStack[0], new FluidStack[0], 0));
-        ModRecipeData compact = AnimalRecipeStatePreparation.prepareGrowth(fragmented, fragmentedInputs).getRecipe();
+        ModRecipeData compact = AnimalRecipeStatePreparation.prepareGrowth(fragmented, fragmentedInputs, helper.getLevel()).getRecipe();
         helper.assertTrue(compact.getIngredientItems().length == 12, "264 allocation fragments must coalesce into twelve legal same-state bindings");
         var compactTag = ModRecipeData.CODEC.encodeStart(ops, compact).result().orElseThrow();
         ModRecipeData compactReload = ModRecipeData.CODEC.parse(ops, compactTag).result().orElseThrow();
@@ -310,7 +310,7 @@ public final class AnimalTransactionGameTests {
         inputs.setStackInSlot(1, adult.copy());
         TerrestrialHabitatRecipe recipe = overlapRecipe();
         helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()), "Fixture must pass provider input preflight");
-        TerrestrialHabitatRecipe prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs);
+        TerrestrialHabitatRecipe prepared = AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs, helper.getLevel());
         helper.assertTrue(prepared.getItemIngredients().size() == 2, "Both concrete donors must be bound");
         helper.assertTrue(prepared.matchesAnimalInput(prepared.getItemIngredients().get(0).getItemStack(), adult)
                         && prepared.matchesAnimalInput(prepared.getItemIngredients().get(1).getItemStack(), baby),
@@ -331,7 +331,7 @@ public final class AnimalTransactionGameTests {
         helper.assertTrue(recipe.recipeMatch(inputs, List.of(), null, List.of()), "Regression fixture must exercise the provider's overlapping-selector false positive");
         boolean failedSafely = false;
         try {
-            AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs);
+            AnimalRecipeStatePreparation.prepareGrowth(recipe, inputs, helper.getLevel());
         } catch (com.nstut.nstutlib.recipes.RecipeTransactionException expected) {
             failedSafely = true;
         }
@@ -446,6 +446,18 @@ public final class AnimalTransactionGameTests {
         return stack;
     }
 
+    private static void assertVanillaSheepNewborn(GameTestHelper helper, IItemHandler inventory) {
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            ItemStack stack = inventory.getStackInSlot(i);
+            if (!stack.is(ItemRegistries.BABY_SHEEP.get())) continue;
+            Sheep child = (Sheep) ((MobItem) stack.getItem()).createMob(helper.getLevel(), stack);
+            helper.assertTrue(child.isBaby() && child.getColor() == DyeColor.PURPLE && child.getCustomName() == null,
+                    "Both parents must determine vanilla purple offspring without inheriting their names, including after reload");
+            return;
+        }
+        throw new AssertionError("Missing newborn output");
+    }
+
     private static void assertRedSheepReconstruction(GameTestHelper helper, IItemHandler inventory, Item item, boolean baby) {
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
             ItemStack stack = inventory.getStackInSlot(slot);
@@ -500,6 +512,8 @@ public final class AnimalTransactionGameTests {
         for (int tick = 0; tick < 260 && count(f.outputs, animal) < expected; tick++) tick(helper, f);
         helper.assertTrue(count(f.outputs, animal) == expected, "Actual livestock machine must finish with exactly " + expected + " animal outputs");
         helper.assertTrue(!save(helper, f.machine).contains("activeRecipeSnapshot"), "Finished transaction must clear its snapshot");
+        helper.assertTrue(((com.nstut.biotech.blocks.entites.machines.ControlledMachineBlockEntity) f.machine).getDisplayRecipe() == null,
+                "Completed reloaded cycle must clear the menu recipe view as well");
     }
 
     private static void tick(GameTestHelper helper, Fixture f) {

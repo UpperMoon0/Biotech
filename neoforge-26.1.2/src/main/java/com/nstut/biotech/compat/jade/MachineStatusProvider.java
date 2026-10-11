@@ -31,19 +31,23 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+        if (accessor.getServerData().contains("BiotechStatus")) {
+            tooltip.add(Component.translatable("jade.biotech.machine.status", Component.translatable(
+                    com.nstut.biotech.machines.MachineStatus.fromId(accessor.getServerData().getIntOr("BiotechStatus", 0)).translationKey())));
+        }
         CompoundTag data = accessor.getServerData();
         boolean structureValid = data.getBooleanOr("StructureValid", true);
         boolean operating = data.getBooleanOr("Operating",
                 accessor.getBlockState().hasProperty(MachineBlock.OPERATING)
                         && accessor.getBlockState().getValue(MachineBlock.OPERATING));
 
-        if (!structureValid) {
+        if (!structureValid && !data.contains("BiotechStatus")) {
             tooltip.add(Component.literal("\u2022 ").withStyle(ChatFormatting.RED)
                     .append(Component.translatable("jade.biotech.machine.invalid").withStyle(ChatFormatting.WHITE)));
             return;
         }
 
-        tooltip.add(Component.literal("\u2022 ").withStyle(operating ? ChatFormatting.GREEN : ChatFormatting.YELLOW)
+        if (!data.contains("BiotechStatus")) tooltip.add(Component.literal("\u2022 ").withStyle(operating ? ChatFormatting.GREEN : ChatFormatting.YELLOW)
                 .append(Component.translatable(operating
                         ? "jade.biotech.machine.operating"
                         : "jade.biotech.machine.idle").withStyle(ChatFormatting.WHITE)));
@@ -55,7 +59,7 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
             String value = accessor.showDetails()
                     ? compact(energyStored) + "/" + compact(energyCapacity) + " FE"
                     : compact(energyStored) + " FE";
-            addLabeledBar(tooltip, "Energy", ratio, value, ENERGY_COLOR);
+            addLabeledBar(tooltip, Component.translatable("ui.biotech.energy").getString(), ratio, value, ENERGY_COLOR);
         }
 
         int fluidCount = data.getIntOr("FluidCount", 0);
@@ -70,7 +74,7 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
             String value = accessor.showDetails()
                     ? compact(amount) + "/" + compact(capacity) + " mB"
                     : compact(amount) + " mB";
-            String label = output ? fluidName + " Out" : fluidName;
+            String label = output ? Component.translatable("ui.biotech.fluid.output_name", fluidName).getString() : fluidName;
             addLabeledBar(tooltip, label, ratio, value,
                     output ? FLUID_OUTPUT_COLOR : FLUID_INPUT_COLOR);
         }
@@ -83,7 +87,7 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
             String value = accessor.showDetails()
                     ? percent + "%  " + compact(consumed) + "/" + compact(recipeCost) + " FE"
                     : percent + "%";
-            addLabeledBar(tooltip, "Progress", ratio, value, PROGRESS_COLOR);
+            addLabeledBar(tooltip, Component.translatable("ui.biotech.progress").getString(), ratio, value, PROGRESS_COLOR);
         }
     }
 

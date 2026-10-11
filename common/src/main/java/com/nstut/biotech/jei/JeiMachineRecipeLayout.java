@@ -16,7 +16,8 @@ import net.minecraft.network.chat.Component;
 
 /** Shared JEI API wiring. Item and fluid slots stay searchable, even outside the scrolling window. */
 final class JeiMachineRecipeLayout {
-    private static final int THROUGHPUT = EnergyInputHatchBlockEntity.ENERGY_THROUGHPUT;
+    private static int throughput() { return com.nstut.biotech.Config.machineEnergyPerTick; }
+    private static int cost(int base) { return com.nstut.biotech.machines.MachineBalance.energyCost(base, com.nstut.biotech.Config.machineEnergyMultiplier); }
     private JeiMachineRecipeLayout() { }
 
     static void addSlots(IRecipeLayoutBuilder builder, ModRecipe<?> recipe) {
@@ -30,6 +31,14 @@ final class JeiMachineRecipeLayout {
                 slot.addRichTooltipCallback((view, tooltip) -> {
                     tooltip.add(Component.translatable(ingredient.isConsumable()
                             ? "jei.biotech.input.consumed" : "jei.biotech.input.catalyst"));
+                    if (recipe instanceof com.nstut.biotech.recipes.BreedingChamberRecipe) {
+                        String type = com.nstut.biotech.items.CapturedAnimalStackState.entityTypeId(stack);
+                        if (java.util.Set.of("minecraft:horse", "minecraft:donkey", "minecraft:llama", "minecraft:trader_llama", "minecraft:camel").contains(type)) {
+                            tooltip.add(Component.translatable("jei.biotech.breeding.tame_healthy"));
+                        } else if (type.equals("minecraft:cat") || type.equals("minecraft:wolf")) {
+                            tooltip.add(Component.translatable("jei.biotech.breeding.tame"));
+                        }
+                    }
                     if (stack.getItem() instanceof MobItem mob) {
                         tooltip.add(Component.translatable(mob.isBabyVariant()
                                 ? "tooltip.biotech.captured_animal.baby" : "tooltip.biotech.captured_animal.adult"));
@@ -56,6 +65,10 @@ final class JeiMachineRecipeLayout {
                         .setStandardSlotBackground().addItemStacks(recipe instanceof TerrestrialHabitatRecipe habitat
                                 ? AnimalRecipeStatePreparation.habitatOutputVariants(habitat, output.getItemStack())
                                 : java.util.List.of(output.getItemStack()));
+                if (recipe instanceof TerrestrialHabitatRecipe
+                        && output.getItemStack().is(net.minecraft.tags.ItemTags.WOOL)) {
+                    slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable("jei.biotech.habitat.wool_color")));
+                }
                 JeiOutputChanceHelper.addChance(slot, output.getChance());
                 addRate(slot, output.getItemStack().getCount(), output.getChance(), recipe.getTotalEnergy(), false);
             } else {
@@ -66,13 +79,27 @@ final class JeiMachineRecipeLayout {
                 addRate(slot, fluid.getAmount(), 1.0f, recipe.getTotalEnergy(), true);
             }
         }
+        if ((recipe instanceof SlaughterhouseRecipe slaughter && slaughter.usesEntityLoot())
+                || (recipe instanceof com.nstut.biotech.recipes.GreenhouseRecipe greenhouse && greenhouse.usesBlockLoot())) {
+            var possible = SlaughterhouseLootPreview.outputs(recipe.getId().toString());
+            for (int i = 0; i < possible.size(); i++) {
+                double mean = SlaughterhouseLootPreview.estimate(recipe.getId().toString(), i);
+                int multiplier = recipe instanceof SlaughterhouseRecipe ? SlaughterhouseLootPreparation.getYieldMultiplier() : 1;
+                builder.addSlot(RecipeIngredientRole.OUTPUT).setSlotName("loot-item-" + i)
+                        .setStandardSlotBackground().addItemStack(possible.get(i))
+                        .setOverlay(JeiOutputChanceHelper.label(LootQuantityEstimate.label(mean, multiplier), 0xFFFFFFFF), 0, 11)
+                        .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable(
+                                mean > 0 ? "jei.biotech.slaughterhouse.estimated_loot" : "jei.biotech.loot.unsampled",
+                                LootQuantityEstimate.precise(mean, multiplier))));
+            }
+        }
     }
 
     private static void addRate(IRecipeSlotBuilder slot, int count, float chance, int energy, boolean fluid) {
         slot.addRichTooltipCallback((view, tooltip) -> {
             tooltip.add(Component.translatable(fluid ? "jei.biotech.output.fluid_per_cycle" : "jei.biotech.output.per_cycle", count));
             tooltip.add(Component.translatable(fluid ? "jei.biotech.output.fluid_rate" : "jei.biotech.output.rate",
-                    JeiProductionMath.expectedPerMinute(count, chance, energy, THROUGHPUT)));
+                    JeiProductionMath.expectedPerMinute(count, chance, cost(energy), throughput())));
             tooltip.add(Component.translatable("jei.biotech.rate.conditions"));
         });
     }
@@ -88,17 +115,11 @@ final class JeiMachineRecipeLayout {
         builder.addRecipeArrow().setPosition(78, 31);
         builder.addText(Component.translatable("jei.biotech.inputs"), 70, 10).setPosition(0, 0);
         builder.addText(Component.translatable("jei.biotech.outputs"), 70, 10).setPosition(110, 0);
-        text(builder, Component.translatable("jei.biotech.energy", recipe.getTotalEnergy()), JeiRecipeLayout.ENERGY_Y, 10);
+        text(builder, Component.translatable("jei.biotech.energy", cost(recipe.getTotalEnergy())), JeiRecipeLayout.ENERGY_Y, 10);
         text(builder, Component.translatable("jei.biotech.cycle",
-                JeiProductionMath.seconds(recipe.getTotalEnergy(), THROUGHPUT), THROUGHPUT), JeiRecipeLayout.CYCLE_Y, 20);
+                JeiProductionMath.seconds(cost(recipe.getTotalEnergy()), throughput()), throughput()), JeiRecipeLayout.CYCLE_Y, 20);
         if (recipe.getItemIngredients().stream().anyMatch(ingredient -> !ingredient.isConsumable())) {
             text(builder, Component.translatable("jei.biotech.catalyst.legend"), JeiRecipeLayout.CATALYST_Y, 10);
-        }
-        if (recipe instanceof SlaughterhouseRecipe slaughter && slaughter.usesEntityLoot()) {
-            text(builder, Component.translatable("jei.biotech.slaughterhouse.dynamic_loot",
-                    SlaughterhouseLootPreparation.getYieldMultiplier()), JeiRecipeLayout.DETAILS_Y, 20);
-        } else if (recipe instanceof TerrestrialHabitatRecipe) {
-            text(builder, Component.translatable("jei.biotech.habitat.production"), JeiRecipeLayout.DETAILS_Y, 20);
         }
     }
 

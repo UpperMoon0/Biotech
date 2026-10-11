@@ -65,6 +65,7 @@ public abstract class DataGenerator {
         createAndClearDirectory(GEN_RECIPES_PATH);
 
         new RecipeGenerator().generate();
+        new TerrestrialRecipeGenerator().generate();
         new MachineGenerator().generate();
     }
 }

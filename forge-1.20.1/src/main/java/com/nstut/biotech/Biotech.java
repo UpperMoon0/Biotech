@@ -45,6 +45,7 @@ public class Biotech {
         ItemRegistries.ITEMS.register(modEventBus);
         CreativeTabRegistries.CREATIVE_MODE_TABS.register(modEventBus);
         MenuRegistries.MENUS.register(modEventBus);
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(com.nstut.biotech.jei.SlaughterhouseLootSync::sync);
 
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         context.registerConfig(ModConfig.Type.SERVER, Config.SERVER_SPEC);

@@ -1,0 +1,51 @@
+{
+  "type": "biotech:breeding_chamber",
+  "energy": 20000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:sniffer",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "Count": 1,
+        "tag": {
+          "EntityType": "minecraft:sniffer",
+          "BiotechRecipeLifecycle": "adult"
+        }
+      },
+      "isConsumable": false
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:torchflower_seeds",
+        "Count": 2
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "minecraft:sniffer_egg",
+        "Count": 1
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "FluidName": "minecraft:water",
+      "Amount": 200
+    }
+  ],
+  "fluidOutputs": []
+}

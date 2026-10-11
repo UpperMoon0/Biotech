@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.5
+
+Add controller redstone modes, server-authoritative stall diagnostics, bounded server balance settings, and translated factory controls. See [the complete 2.5 changelog](CHANGELOG-2.5.md) and [upgrade notes](docs/upgrade-2.5.md).
+
+## 2.4
+
+Stateful livestock transactions, renewable production, and dynamic entity loot. See [the complete 2.4 changelog](CHANGELOG-2.4.md).
+
 ## 2.3
 
 Biotech 2.3 introduces Captured Animal v2: Net Trap capture is now data-driven, the default capturable set expands to nine species, and non-legacy species use a generic captured-animal carrier while existing five-species items and machine recipes remain compatible.

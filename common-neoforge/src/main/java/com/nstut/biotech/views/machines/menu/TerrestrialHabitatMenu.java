@@ -45,6 +45,7 @@ public class TerrestrialHabitatMenu extends MachineMenu {
         this.level = inventory.player.level();
         this.blockEntity = (TerrestrialHabitatBlockEntity) blockEntity;
         this.pos = blockEntity.getBlockPos();
+        bindController(this.blockEntity);
     }
     @Override public @NotNull ItemStack quickMoveStack(@NotNull Player pPlayer, int pIndex) { return ItemStack.EMPTY; }
     @Override public boolean stillValid(@NotNull Player player) { return stillValid(ContainerLevelAccess.create(level, pos), player, MachineRegistries.TERRESTRIAL_HABITAT.block().get()); }

@@ -1,5 +1,6 @@
 package com.nstut.biotech;
 
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnimalItemRenderingContractTest {
@@ -25,6 +27,13 @@ class AnimalItemRenderingContractTest {
         Path models = root.resolve("common/src/main/resources/assets/biotech/models/item");
         String base = Files.readString(models.resolve("animal_model.json"));
         assertTrue(base.contains("\"parent\": \"builtin/entity\""));
+        var guiRotation = JsonParser.parseString(base).getAsJsonObject()
+                .getAsJsonObject("display").getAsJsonObject("gui").getAsJsonArray("rotation");
+        assertEquals(30, guiRotation.get(0).getAsInt());
+        // LivingEntityRenderer adds 180 degrees at zero body yaw. Compensate so the
+        // animal's front follows the same 225-degree inventory view as block fronts.
+        assertEquals(225, (guiRotation.get(1).getAsInt() + 180) % 360);
+        assertEquals(0, guiRotation.get(2).getAsInt());
 
         for (String item : ANIMAL_ITEMS) {
             String json = Files.readString(models.resolve(item + ".json"));

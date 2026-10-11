@@ -1,0 +1,55 @@
+{
+  "type": "biotech:terrestrial_habitat",
+  "energy": 48000,
+  "itemInputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:happy_ghast",
+            "BiotechRecipeLifecycle": "baby"
+          }
+        }
+      },
+      "isConsumable": true
+    },
+    {
+      "itemStack": {
+        "id": "minecraft:snowball",
+        "count": 4
+      },
+      "isConsumable": true
+    }
+  ],
+  "itemOutputs": [
+    {
+      "itemStack": {
+        "id": "biotech:captured_animal",
+        "count": 1,
+        "components": {
+          "minecraft:custom_data": {
+            "EntityType": "minecraft:happy_ghast",
+            "BiotechRecipeLifecycle": "adult"
+          }
+        }
+      },
+      "chance": 1.0
+    },
+    {
+      "itemStack": {
+        "id": "biotech:manure",
+        "count": 2
+      },
+      "chance": 1.0
+    }
+  ],
+  "fluidInputs": [
+    {
+      "id": "minecraft:water",
+      "amount": 400
+    }
+  ],
+  "fluidOutputs": []
+}

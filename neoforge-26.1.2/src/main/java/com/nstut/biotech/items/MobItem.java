@@ -95,6 +95,8 @@ public class MobItem extends Item {
                                 @NotNull TooltipDisplay display, @NotNull Consumer<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
         super.appendHoverText(stack, context, display, tooltip, flag);
+        CapturedAnimalTraitTooltip.append(stack, context.level(), tooltip);
+        if (CapturedAnimalStackState.read(stack).contains("Color")) return;
         if (type != 7 && type != 8) return;
         DyeColor color = DyeColor.WHITE;
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
