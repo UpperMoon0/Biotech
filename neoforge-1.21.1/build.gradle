@@ -337,7 +337,7 @@ tasks.register('renderMachineGallery') {
         def names = images.collect { it.file }.toSet()
         ['before-2.6-entrance-eye-level', 'after-2.7-entrance-eye-level', 'after-2.7-interior-eye-level',
          'after-2.7-service-pipe-held', 'after-2.7-service-pipe-inventory'].each { view ->
-            if (!names.contains("terrestrial_habitat-${view}.png")) throw new GradleException("Missing habitat/pipe evidence: ${view}")
+            if (!names.contains("terrestrial_habitat-${view}.png".toString())) throw new GradleException("Missing habitat/pipe evidence: ${view}")
         }
         images.each { entry ->
             def png = javax.imageio.ImageIO.read(new File(output, entry.file))
