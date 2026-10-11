@@ -1,0 +1,43 @@
+plugins { id 'java-library'; id 'net.neoforged.moddev' version '2.0.141' }
+java { toolchain.languageVersion = JavaLanguageVersion.of(21) }
+version = '1.0'
+def binary = file(providers.gradleProperty('biotechJar').get())
+def evidence = file(providers.gradleProperty('fixtureDir').get())
+def phase = providers.gradleProperty('fixturePhase').get()
+if (!binary.isFile() || !(phase in ['seed','verify'])) throw new GradleException('Supply a released Biotech JAR, fixtureDir and seed/verify phase')
+neoForge {
+    version = '21.1.240'
+    mods { upgrade_fixture { sourceSet(sourceSets.main) } }
+    runs {
+        server {
+            server()
+            gameDirectory = new File(evidence, 'server')
+            programArgument '--nogui'
+            systemProperty 'biotech.upgrade.phase', phase
+            systemProperty 'biotech.upgrade.evidence', evidence.absolutePath
+            systemProperty 'biotech.upgrade.jar', binary.absolutePath
+        }
+    }
+}
+repositories {
+    mavenLocal()
+    maven { url = 'https://www.cursemaven.com'; content { includeGroup 'curse.maven' } }
+}
+dependencies {
+    // The only Biotech gameplay code on either compile/runtime path is this unmodified release JAR.
+    implementation files(binary)
+    implementation 'com.nstut.nstutlib:nstutlib-neoforge-1.21.1:0.8.1'
+    runtimeOnly 'com.nstut:openui-mc-neoforge-1.21.1:0.0.10'
+    runtimeOnly 'curse.maven:patchouli-306770:7730942'
+}
+tasks.named('runServer').configure {
+    doFirst {
+        def run = new File(evidence, 'server'); run.mkdirs()
+        // Standard disposable CI server, never an existing user world.
+        new File(run, 'eula.txt').text = 'eula=true\n'
+        new File(run, 'server.properties').text = 'online-mode=false\nserver-ip=127.0.0.1\nlevel-name=world\nlevel-type=minecraft:flat\ngenerate-structures=false\nview-distance=2\nsimulation-distance=2\nmax-tick-time=120000\n'
+    }
+    doLast {
+        if (!new File(evidence, "${phase}-success.json").isFile()) throw new GradleException("Missing ${phase} success evidence")
+    }
+}
