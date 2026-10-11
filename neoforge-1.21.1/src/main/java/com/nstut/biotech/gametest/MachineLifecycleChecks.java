@@ -35,20 +35,21 @@ public final class MachineLifecycleChecks {
         Config.machineEnergyPerTick = 128;
         Config.machineEnergyMultiplier = 1.0;
         try {
-            for (String id : MachineStructures.ids()) for (boolean legacy : new boolean[] {false, true}) for (boolean customFluids : new boolean[] {false,true}) {
+            for (String id : MachineStructures.ids()) for (int layout = 0; layout < (id.equals("terrestrial_habitat") ? 3 : 2); layout++) for (boolean customFluids : new boolean[] {false,true}) {
                 if(customFluids&&!id.equals("mixer"))continue;
                 List<BlockPos> touched = new ArrayList<>();
-                try { runCycle(helper, id, legacy, touched, customFluids); }
+                try { runCycle(helper, id, layout, touched, customFluids); }
                 finally { for (BlockPos pos : touched) helper.getLevel().setBlock(pos, Blocks.AIR.defaultBlockState(), 2); }
             }
         } finally { Config.machineEnergyPerTick = oldRate; Config.machineEnergyMultiplier = oldMultiplier; }
         helper.succeed();
     }
 
-    private static void runCycle(GameTestHelper helper, String id, boolean legacy, List<BlockPos> touched, boolean customFluids) {
+    private static void runCycle(GameTestHelper helper, String id, int layout, List<BlockPos> touched, boolean customFluids) {
+        boolean legacy = layout == 1;
         var level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(16, 2, 16));
-        String context = id + (legacy ? "/2.5 upgrade" : "/redesigned") + (customFluids ? "/saved three-fluid datapack cycle" : "");
+        String context = id + (layout == 2 ? "/2.6 upgrade" : legacy ? "/2.5 upgrade" : "/redesigned") + (customFluids ? "/saved three-fluid datapack cycle" : "");
         int[] origin = MachineStructures.origin(id);
         MultiblockPattern pattern = MachineStructures.pattern(id);
         var array = pattern.getPattern();
@@ -59,6 +60,7 @@ public final class MachineLifecycleChecks {
         try {
             if (legacy) pattern = (MultiblockPattern) machine.getClass().getMethod("getLegacyMultiblockPattern").invoke(machine);
         } catch (ReflectiveOperationException ex) { throw new AssertionError(ex); }
+        if (layout == 2) pattern = MachineStructures.habitat26Pattern();
         array = pattern.getPattern();
         List<BlockPos> hatchPositions = new ArrayList<>();
         BlockPos shell = null;

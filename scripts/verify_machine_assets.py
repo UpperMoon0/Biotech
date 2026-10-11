@@ -48,3 +48,18 @@ for target in ['forge-1.20.1','neoforge-1.21.1','neoforge-26.1.2']:
  # Additions must not collide with common resources (Gradle Copy rejects duplicates).
  for name in [f'data/minecraft/tags/{"blocks" if target.startswith("forge") else "block"}/mineable/pickaxe.json',f'data/minecraft/tags/{"blocks" if target.startswith("forge") else "block"}/needs_stone_tool.json']:
   assert not ((common/name).exists() and (local/name).exists()),(target,name,'duplicate resource')
+
+# Service Pipe is geometry, not a generated sprite. Vanilla block display transforms
+# make all GUI/hand/ground views recognizably three-dimensional.
+pipe=json.loads((assets/'models/block/biotech_pipe.json').read_text())
+assert pipe['parent']=='minecraft:block/block'
+assert len(pipe['elements'])==3
+assert 'layer0' not in pipe['textures']
+old=json.loads((ROOT/'design/terrestrial-habitat-2.6.json').read_text())
+new=json.loads((ROOT/'design/machines.json').read_text())['terrestrial_habitat']
+assert old['origin']==new['origin'] and old['ports']==new['ports']
+def ports(d):
+ return {c:(x,len(d['layers'])-y-1,z) for y,layer in enumerate(d['layers']) for z,row in enumerate(layer) for x,c in enumerate(row) if c.isdigit()}
+assert ports(old)==ports(new), '2.6 hatch compatibility requires identical offsets'
+print('Verified Service Pipe 3D model chain and exact 2.6 habitat port compatibility.')
+assert hashlib.sha256((ROOT/'design/terrestrial-habitat-2.6.json').read_bytes()).hexdigest()=='c2c2b6c97e550c629750e2d0182400cb4cda24902cb2b78786f4f3ca7620c2a4', 'Frozen 2.6 habitat changed'

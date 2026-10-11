@@ -232,3 +232,14 @@ tasks.register('verifyMachineStructures', Exec) {
 }
 tasks.named('buildAll') { dependsOn 'verifyMachineStructures' }
 tasks.named('testAllVersions') { dependsOn 'verifyMachineStructures' }
+
+// Release classification travels inside every produced JAR, not only its upload metadata.
+def releaseVersion = rootProject.mod_version.toString()
+def releaseMatch = (releaseVersion =~ /^[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-(alpha|beta)\.[1-9][0-9]*)?$/)
+if (!releaseMatch.matches()) throw new GradleException("Invalid release version: ${releaseVersion}")
+def releaseChannel = releaseMatch.group(1) ?: 'release'
+subprojects {
+    tasks.withType(Jar).configureEach {
+        manifest.attributes('Biotech-Release-Version': releaseVersion, 'Biotech-Release-Channel': releaseChannel)
+    }
+}

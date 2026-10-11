@@ -7,6 +7,7 @@ from collections import Counter
 import argparse,json,re,sys
 ROOT=Path(__file__).resolve().parents[1]
 D=json.loads((ROOT/'design/machines.json').read_text())
+HABITAT_26=json.loads((ROOT/'design/terrestrial-habitat-2.6.json').read_text())
 PALETTE={'F':'biotech:biotech_frame','P':'biotech:biotech_panel','V':'biotech:biotech_vent','T':'biotech:biotech_vessel','D':'biotech:biotech_drive','L':'biotech:biotech_grow_light','G':'biotech:biotech_framed_glass','R':'biotech:biotech_pipe','C':'biotech:biotech_machine_casing','h':'minecraft:grass_block[snowy=false]','f':'minecraft:farmland[moisture=7]','w':'minecraft:water[level=0]','.':'minecraft:air'}
 JAVA={'F':'BlockRegistries.BIOTECH_FRAME.get()','P':'BlockRegistries.BIOTECH_PANEL.get()','V':'BlockRegistries.BIOTECH_VENT.get()','T':'BlockRegistries.BIOTECH_VESSEL.get()','D':'BlockRegistries.BIOTECH_DRIVE.get()','L':'BlockRegistries.BIOTECH_GROW_LIGHT.get()','G':'BlockRegistries.BIOTECH_FRAMED_GLASS.get()','R':'BlockRegistries.BIOTECH_PIPE.get()','C':'BlockRegistries.BIOTECH_MACHINE_CASING.get()','h':'Blocks.GRASS_BLOCK','f':'Blocks.FARMLAND','w':'Blocks.WATER','.':'Blocks.AIR'}
 check=argparse.ArgumentParser();check.add_argument('--check',action='store_true');args=check.parse_args();stale=[]
@@ -32,7 +33,17 @@ public final class MachineStructures {
     private MachineStructures() {}
     public static String[] ids() { return new String[] { IDS }; }
     public static MultiblockPattern pattern(String id) {
-        String[][] layers = layers(id);
+        return pattern(id, layers(id));
+    }
+    public static MultiblockPattern habitat26Pattern() {
+        return pattern("terrestrial_habitat", habitat26Layers());
+    }
+    public static String[][] habitat26Layers() {
+        return new String[][] {
+HABITAT26
+        };
+    }
+    private static MultiblockPattern pattern(String id, String[][] layers) {
         MultiblockBlock[][][] result = new MultiblockBlock[layers.length][][];
         for (int y = 0; y < layers.length; y++) {
             result[y] = new MultiblockBlock[layers[y].length][];
@@ -86,6 +97,9 @@ LAYERS
     }; }
 }
 '''
+java=java.replace('HABITAT26', ',\n'.join('            { '+', '.join(json.dumps(row) for row in layer)+' }' for layer in HABITAT_26['layers']))
+assert HABITAT_26['origin']==D['terrestrial_habitat']['origin']
+assert HABITAT_26['ports']==D['terrestrial_habitat']['ports']
 java=java.replace('IDS',', '.join(json.dumps(i) for i in D))
 java=java.replace('CONTROLLERS','\n'.join(f'            case "{id}" -> MachineRegistries.{id.upper()}.block().get();' for id in D))
 java=java.replace('BLOCKS','\n'.join(f"            case '{c}' -> {block_java(c)};" for c in JAVA))
@@ -118,7 +132,7 @@ for id,d in D.items():
   if page.get('type')=='patchouli:multiblock':page['multiblock']=preview
  entry['pages']=[p for p in entry['pages'] if p.get('anchor')!='construction']
  materials=', '.join(f'{n} {PALETTE[c].split(":")[1].split("[")[0].replace("biotech_", "").replace("_", " ")}' for c,n in sorted(counts.items()) if c in PALETTE)
- entry['pages'].append({'type':'patchouli:text','anchor':'construction','title':'Construction','text':d['rationale']+'$(br)$(br)'+materials+'. Plus the controller and '+str(len(d['ports']))+' hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding.'})
+ entry['pages'].append({'type':'patchouli:text','anchor':'construction','title':'Construction','text':d['rationale']+'$(br)$(br)'+materials+'. Plus the controller and '+str(len(d['ports']))+' hatches shown in the preview.$(br)$(br)'+('Original 2.5 builds and 2.6 habitats still form unchanged.' if id=='terrestrial_habitat' else 'Original 2.5 builds still form unchanged.')+' Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding.'})
  emit(p.relative_to(ROOT),json.dumps(entry,indent=2)+'\n')
  title=id.replace('_',' ').title();report+=['## '+title,'',d['rationale'],'',f'New size: **{w} × {depth} × {h}**. New placed blocks (including controller, hatches, floors and water; excluding air): **{sum(counts.values())}**.','', '| Part | Count |','| --- | ---: |']
  for c,n in sorted(counts.items()):report.append(f'| {mapping.get("0" if c=="@" else c,c)} | {n} |')

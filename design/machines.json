@@ -114,22 +114,40 @@
     ],
     "layers": [
       [
-        "FVVVVVF",
-        "PPPPPPP",
-        "PPPPPPP",
-        "FPPPPPF",
+        "  FVF  ",
+        "  PLP  ",
+        "  PGP  ",
+        "  FPF  ",
         "       ",
         "       ",
         "       "
       ],
       [
-        "FPPPPPF",
-        "G.L.L.G",
+        "FPPVPPF",
+        "PP...PP",
+        "PP...PP",
+        "FP...PF",
+        ".......",
+        ".......",
+        "   FPPF"
+      ],
+      [
+        "FPPVPPF",
         "G.....G",
+        "G.....G",
+        "F.....F",
+        ".......",
+        "PVP....",
+        "FPPF..F"
+      ],
+      [
         "FPPPPPF",
-        " ..... ",
-        " ..... ",
-        " F   F "
+        "G.....G",
+        "G.....G",
+        "F.....F",
+        ".......",
+        "FVP....",
+        "FGPF..F"
       ],
       [
         "FPPVPPF",
@@ -137,8 +155,8 @@
         "G.....G",
         "F.....F",
         "G.....G",
-        "G.....G",
-        "FGG@GGF"
+        "FGP...G",
+        "FPG@..F"
       ],
       [
         "FP6P5P7",
@@ -146,7 +164,7 @@
         "FhhPhhF",
         "2hhPhh4",
         "FhhPhhF",
-        "3hhPhhF",
+        "3PPPPPF",
         "FPPPPPF"
       ]
     ],
@@ -159,7 +177,7 @@
       "fluid_input_hatch:north",
       "fluid_output_hatch:east"
     ],
-    "rationale": "7 \u00d7 7 \u00d7 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls."
+    "rationale": "7 \u00d7 7 \u00d7 6 animal-care habitat with three distinct masses: a raised stepped-roof rear shelter, an airy low-glass exercise run, and a lower offset feeding/service pod. A freestanding entrance arch beside the controller provides a two-block-wide, three-block-high opening. The open run has no overhead box frame; the level path leads into the illuminated shelter. Seven exposed ports retain their 2.6 positions."
   },
   "slaughterhouse": {
     "origin": [

@@ -333,7 +333,12 @@ tasks.register('renderMachineGallery') {
         def manifest = new File(output, 'manifest.json')
         if (!manifest.isFile()) throw new GradleException('Machine gallery did not finish')
         def images = new groovy.json.JsonSlurper().parse(manifest)
-        if (images.size() != 24 || images.collect { it.file }.toSet().size() != 24) throw new GradleException('Expected 24 actual in-game comparisons')
+        if (images.size() != 30 || images.collect { it.file }.toSet().size() != 30) throw new GradleException('Expected 30 actual in-game captures')
+        def names = images.collect { it.file }.toSet()
+        ['before-2.6-entrance-eye-level', 'after-2.7-entrance-eye-level', 'after-2.7-interior-eye-level',
+         'after-2.7-service-pipe-held', 'after-2.7-service-pipe-inventory', 'after-2.7-silhouette-front-right'].each { view ->
+            if (!names.contains("terrestrial_habitat-${view}.png".toString())) throw new GradleException("Missing habitat/pipe evidence: ${view}")
+        }
         images.each { entry ->
             def png = javax.imageio.ImageIO.read(new File(output, entry.file))
             if (!entry.formed || png == null || png.width != 1280 || png.height != 960) throw new GradleException("Invalid machine gallery capture: ${entry.file}")

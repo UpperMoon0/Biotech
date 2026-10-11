@@ -27,7 +27,8 @@ public final class MachineStructureChecks {
         BlockPos anchor = helper.absolutePos(new BlockPos(16, 2, 16));
         for (String id : MachineStructures.ids()) {
             for (Direction facing : new Direction[] {Direction.SOUTH, Direction.WEST, Direction.NORTH, Direction.EAST}) {
-                for (boolean legacy : new boolean[] {false, true}) {
+                for (int layout = 0; layout < (id.equals("terrestrial_habitat") ? 3 : 2); layout++) {
+                    boolean legacy = layout == 1;
                     List<BlockPos> touched = new ArrayList<>();
                     try {
                         int[] origin = MachineStructures.origin(id);
@@ -40,6 +41,7 @@ public final class MachineStructureChecks {
                         MachineBlockEntity machine = (MachineBlockEntity) level.getBlockEntity(anchor);
                         helper.assertTrue(machine != null, id + " controller exists");
                         if (legacy) design = (MultiblockPattern) machine.getClass().getMethod("getLegacyMultiblockPattern").invoke(machine);
+                        if (layout == 2) design = MachineStructures.habitat26Pattern();
                         List<BlockPos> ports = new ArrayList<>();
                         BlockPos requiredPart = null;
                         var array = design.getPattern();
@@ -59,8 +61,26 @@ public final class MachineStructureChecks {
                             if (!pos.equals(anchor) && level.getBlockEntity(pos) != null) ports.add(pos);
                             if (requiredPart == null && !pos.equals(anchor) && !state.isAir() && level.getBlockEntity(pos) == null) requiredPart = pos;
                         }
-                        String context = id + "/" + facing + "/" + (legacy ? "2.5" : "redesigned");
+                        String context = id + "/" + facing + "/" + (layout == 2 ? "2.6" : legacy ? "2.5" : "redesigned");
                         helper.assertTrue(machine.checkMultiblock(level, anchor, controllerState), context + " must form");
+                        if (id.equals("terrestrial_habitat") && layout == 0) {
+                            // Doorway (x=4..5) and route into the rear shelter have three full
+                            // blocks of clear air over a level solid floor, in every rotation.
+                            for (int z = 1; z <= 6; z++) for (int x = 4; x <= 5; x++) {
+                                BlockPos floor = MultiblockPattern.rotateBlockPos(anchor, origin[0], origin[1], origin[2],
+                                        array.length, array[0].length, x, array.length-1, z, controllerState);
+                                helper.assertTrue(!level.getBlockState(floor).getCollisionShape(level, floor).isEmpty(), context + " walkable floor");
+                                for (int y = 1; y <= 3; y++) {
+                                    BlockPos air = floor.above(y);
+                                    helper.assertTrue(level.getBlockState(air).isAir(), context + " three-block entrance/interior clearance");
+                                    // Required air cannot be filled while retaining a valid new layout.
+                                    level.setBlock(air, Blocks.STONE.defaultBlockState(), 2);
+                                    helper.assertTrue(!machine.checkMultiblock(level, anchor, controllerState), context + " obstruction invalidates entrance/interior");
+                                    level.setBlock(air, Blocks.AIR.defaultBlockState(), 2);
+                                }
+                            }
+                            helper.assertTrue(machine.checkMultiblock(level, anchor, controllerState), context + " reforms after clearing entrance");
+                        }
                         var discover = machine.getClass().getDeclaredMethod("setHatches", BlockPos.class, Level.class);
                         discover.setAccessible(true);
                         discover.invoke(machine, anchor, level);

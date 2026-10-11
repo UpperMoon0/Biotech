@@ -12,7 +12,20 @@ public final class MachineStructures {
     private MachineStructures() {}
     public static String[] ids() { return new String[] { "greenhouse", "breeding_chamber", "terrestrial_habitat", "slaughterhouse", "mixer", "fermenter" }; }
     public static MultiblockPattern pattern(String id) {
-        String[][] layers = layers(id);
+        return pattern(id, layers(id));
+    }
+    public static MultiblockPattern habitat26Pattern() {
+        return pattern("terrestrial_habitat", habitat26Layers());
+    }
+    public static String[][] habitat26Layers() {
+        return new String[][] {
+            { "FVVVVVF", "PPPPPPP", "PPPPPPP", "FPPPPPF", "       ", "       ", "       " },
+            { "FPPPPPF", "G.L.L.G", "G.....G", "FPPPPPF", " ..... ", " ..... ", " F   F " },
+            { "FPPVPPF", "G.....G", "G.....G", "F.....F", "G.....G", "G.....G", "FGG@GGF" },
+            { "FP6P5P7", "1hhPhhF", "FhhPhhF", "2hhPhh4", "FhhPhhF", "3hhPhhF", "FPPPPPF" }
+        };
+    }
+    private static MultiblockPattern pattern(String id, String[][] layers) {
         MultiblockBlock[][][] result = new MultiblockBlock[layers.length][][];
         for (int y = 0; y < layers.length; y++) {
             result[y] = new MultiblockBlock[layers[y].length][];
@@ -107,10 +120,12 @@ public final class MachineStructures {
             { "FP6P5PF", "1hhPhhF", "FPPhPP4", "2hhPhhF", "FPPPPPF" }
         };
         case "terrestrial_habitat" -> new String[][] {
-            { "FVVVVVF", "PPPPPPP", "PPPPPPP", "FPPPPPF", "       ", "       ", "       " },
-            { "FPPPPPF", "G.L.L.G", "G.....G", "FPPPPPF", " ..... ", " ..... ", " F   F " },
-            { "FPPVPPF", "G.....G", "G.....G", "F.....F", "G.....G", "G.....G", "FGG@GGF" },
-            { "FP6P5P7", "1hhPhhF", "FhhPhhF", "2hhPhh4", "FhhPhhF", "3hhPhhF", "FPPPPPF" }
+            { "  FVF  ", "  PLP  ", "  PGP  ", "  FPF  ", "       ", "       ", "       " },
+            { "FPPVPPF", "PP...PP", "PP...PP", "FP...PF", ".......", ".......", "   FPPF" },
+            { "FPPVPPF", "G.....G", "G.....G", "F.....F", ".......", "PVP....", "FPPF..F" },
+            { "FPPPPPF", "G.....G", "G.....G", "F.....F", ".......", "FVP....", "FGPF..F" },
+            { "FPPVPPF", "G.....G", "G.....G", "F.....F", "G.....G", "FGP...G", "FPG@..F" },
+            { "FP6P5P7", "1hhPhhF", "FhhPhhF", "2hhPhh4", "FhhPhhF", "3PPPPPF", "FPPPPPF" }
         };
         case "slaughterhouse" -> new String[][] {
             { " FVF ", "PPVPP", " PLP ", " PLP ", " PLP ", " PLP ", " FPF " },
