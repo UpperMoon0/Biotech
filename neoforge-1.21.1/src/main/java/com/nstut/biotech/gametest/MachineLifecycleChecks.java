@@ -35,19 +35,20 @@ public final class MachineLifecycleChecks {
         Config.machineEnergyPerTick = 128;
         Config.machineEnergyMultiplier = 1.0;
         try {
-            for (String id : MachineStructures.ids()) for (boolean legacy : new boolean[] {false, true}) {
+            for (String id : MachineStructures.ids()) for (boolean legacy : new boolean[] {false, true}) for (boolean customFluids : new boolean[] {false,true}) {
+                if(customFluids&&!id.equals("mixer"))continue;
                 List<BlockPos> touched = new ArrayList<>();
-                try { runCycle(helper, id, legacy, touched); }
+                try { runCycle(helper, id, legacy, touched, customFluids); }
                 finally { for (BlockPos pos : touched) helper.getLevel().setBlock(pos, Blocks.AIR.defaultBlockState(), 2); }
             }
         } finally { Config.machineEnergyPerTick = oldRate; Config.machineEnergyMultiplier = oldMultiplier; }
         helper.succeed();
     }
 
-    private static void runCycle(GameTestHelper helper, String id, boolean legacy, List<BlockPos> touched) {
+    private static void runCycle(GameTestHelper helper, String id, boolean legacy, List<BlockPos> touched, boolean customFluids) {
         var level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(16, 2, 16));
-        String context = id + (legacy ? "/2.5 upgrade" : "/redesigned");
+        String context = id + (legacy ? "/2.5 upgrade" : "/redesigned") + (customFluids ? "/saved three-fluid datapack cycle" : "");
         int[] origin = MachineStructures.origin(id);
         MultiblockPattern pattern = MachineStructures.pattern(id);
         var array = pattern.getPattern();
@@ -82,6 +83,13 @@ public final class MachineLifecycleChecks {
             default -> throw new AssertionError(id);
         };
         ModRecipe<?> recipe = (ModRecipe<?>) level.getRecipeManager().byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("biotech",recipeName)).orElseThrow().value();
+        // Stock Mixer recipes have no fluids. This additional persisted datapack snapshot
+        // exercises all existing fluid ports without adding a gameplay recipe to the mod.
+        if(customFluids) recipe=new com.nstut.biotech.recipes.MixerRecipe(recipe.getId(),new ModRecipeData(
+            new com.nstut.nstutlib.recipes.IngredientItem[]{new com.nstut.nstutlib.recipes.IngredientItem(new ItemStack(Items.PAPER),true)},
+            new com.nstut.nstutlib.recipes.OutputItem[]{new com.nstut.nstutlib.recipes.OutputItem(new ItemStack(Items.DIAMOND),1.0f)},
+            new FluidStack[]{new FluidStack(net.minecraft.world.level.material.Fluids.WATER,100),new FluidStack(net.minecraft.world.level.material.Fluids.LAVA,200),new FluidStack(net.neoforged.neoforge.common.NeoForgeMod.MILK.get(),300)},
+            new FluidStack[]{new FluidStack(net.minecraft.world.level.material.Fluids.WATER,400)},1024));
         ModRecipeData data = recipe.getRecipe();
         List<ItemInputHatchBlockEntity> inputs = hatches(level, hatchPositions, ItemInputHatchBlockEntity.class);
         var outputs = hatches(level, hatchPositions, ItemOutputHatchBlockEntity.class).get(0).getInternalItemStorage();
@@ -114,6 +122,10 @@ public final class MachineLifecycleChecks {
         var power = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,energy.getBlockPos(),facing);
         helper.assertTrue(power != null && power.receiveEnergy(128, false)==128, context + " accepts FE through exposed side");
         for (int i=0; i<outputs.getSlots(); i++) outputs.setStackInSlot(i,new ItemStack(Items.COBBLESTONE,64));
+        if(customFluids){
+            setField(machine,"activeRecipeId",recipe.getId());setField(machine,"activeRecipeSnapshot",data.copy());
+            setField(machine,"activeItemOutputIndexes",new int[]{0});setField(machine,"recipeEnergyCost",1024);
+        }
         tick(helper,machine,1);
         ModRecipeData prepared = (ModRecipeData) field(machine,"activeRecipeSnapshot");
         helper.assertTrue(prepared != null, context + " prepares a real loaded recipe while output is blocked");
@@ -130,6 +142,17 @@ public final class MachineLifecycleChecks {
         energy = hatches(level,hatchPositions,EnergyInputHatchBlockEntity.class).get(0);
         outputs = hatches(level,hatchPositions,ItemOutputHatchBlockEntity.class).get(0).getInternalItemStorage();
         for(int i=0;i<outputs.getSlots();i++)outputs.setStackInSlot(i,ItemStack.EMPTY);
+        if(customFluids){
+            var fluidOutput=hatches(level,hatchPositions,FluidOutputHatchBlockEntity.class).get(0);
+            for(FluidStack obstruction:List.of(new FluidStack(net.minecraft.world.level.material.Fluids.LAVA,100),new FluidStack(net.minecraft.world.level.material.Fluids.WATER,32000))){
+                fluidOutput.setFluid(obstruction);tick(helper,machine,2);
+                helper.assertTrue((int)field(machine,"energyConsumed")==0 && energy.getInternalEnergyStorage().getEnergyStored()==128,context+" wrong/full fluid output does not spend FE");
+                helper.assertTrue(inputs.get(0).getInternalItemStorage().getStackInSlot(0).getCount()==1,context+" wrong/full fluid output does not consume input");
+                helper.assertTrue(fluids.stream().mapToInt(h->h.getInternalTank().getFluidInTank(0).getAmount()).sum()==600,context+" all three input fluids retained while fluid output blocked");
+                helper.assertTrue(fluidOutput.getInternalTank().getFluidInTank(0).getAmount()==obstruction.getAmount(),context+" obstruction is not overwritten");
+            }
+            fluidOutput.setFluid(FluidStack.EMPTY);
+        }
         tick(helper,machine,1);
         helper.assertTrue((int)field(machine,"energyConsumed")==128,context+" resumes exact saved cycle through the production tick");
         BlockState originalShell=level.getBlockState(shell);
@@ -160,7 +183,29 @@ public final class MachineLifecycleChecks {
         }
         tick(helper,machine,3);assertExactOutputs(helper,outputs,expected,context+" no replay");
         for(int i=0;i<prepared.getFluidOutputs().length;i++)helper.assertTrue(fluidOutputs.get(i).getInternalTank().getFluidInTank(0).getAmount()==prepared.getFluidOutputs()[i].getAmount(),context+" no fluid output replay");
+        var outputHatch=hatches(level,hatchPositions,ItemOutputHatchBlockEntity.class).get(0);
+        for(int i=0;i<outputs.getSlots();i++){
+            ItemStack stack=outputs.getStackInSlot(i).copy();if(stack.isEmpty())continue;
+            var extracted=extractSide(level,outputHatch,i,stack.getCount());
+            helper.assertTrue(ItemStack.matches(stack,extracted),context+" facing-side item output extraction preserves exact payload");
+        }
+        for(int i=0;i<prepared.getFluidOutputs().length;i++){
+            var expectedFluid=prepared.getFluidOutputs()[i];var drained=drainSide(level,fluidOutputs.get(i),expectedFluid.getAmount());
+            helper.assertTrue(drained.getFluid()==expectedFluid.getFluid()&&drained.getAmount()==expectedFluid.getAmount(),context+" facing-side fluid output extraction works");
+        }
+        tick(helper,machine,3);
+        for(int i=0;i<outputs.getSlots();i++)helper.assertTrue(outputs.getStackInSlot(i).isEmpty(),context+" extracted item outputs do not replay");
+        for(var hatch:fluidOutputs)helper.assertTrue(hatch.getInternalTank().getFluidInTank(0).isEmpty(),context+" extracted fluids do not replay");
     }
+    private static ItemStack extractSide(net.minecraft.world.level.Level level,ItemOutputHatchBlockEntity hatch,int slot,int amount){
+        var side=hatch.getBlockState().getValue(MachineBlock.FACING);var capability=level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,hatch.getBlockPos(),side);
+        return capability.extractItem(slot,amount,false);
+    }
+    private static FluidStack drainSide(net.minecraft.world.level.Level level,FluidOutputHatchBlockEntity hatch,int amount){
+        var side=hatch.getBlockState().getValue(MachineBlock.FACING);var capability=level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,hatch.getBlockPos(),side);
+        return capability.drain(amount,net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+    }
+    private static void setField(MachineBlockEntity machine,String name,Object value){try{Field f=MachineBlockEntity.class.getDeclaredField(name);f.setAccessible(true);f.set(machine,value);}catch(ReflectiveOperationException ex){throw new AssertionError(ex);}}
     private static MachineBlockEntity reloadStored(GameTestHelper helper,List<BlockPos> hatchPositions,BlockPos pos,String context) {
         var level=helper.getLevel();
         List<BlockPos> persisted = new ArrayList<>(hatchPositions); persisted.add(pos);

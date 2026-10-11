@@ -66,6 +66,11 @@ public final class BiotechGameTests {
         MachineLifecycleChecks.allMachineCycles(helper);
     }
 
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 1200)
+    public static void legacyActiveCycleChunkUpgrade(GameTestHelper helper) {
+        MachineChunkUpgradeChecks.legacyActiveCycleSurvivesChunkUnload(helper);
+    }
+
     private BiotechGameTests() {
     }
 

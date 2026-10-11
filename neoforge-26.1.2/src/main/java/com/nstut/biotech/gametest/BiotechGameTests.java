@@ -71,9 +71,10 @@ import java.util.function.Consumer;
 public final class BiotechGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
     private static final int MAX_TICKS = 100;
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> CHUNK_UPGRADE = register("legacy_active_cycle_chunk_upgrade", MachineChunkUpgradeChecks::legacyActiveCycleSurvivesChunkUnload);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> STRUCTURE_CYCLES = register("all_machine_cycles_and_reload", MachineLifecycleChecks::allMachineCycles);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> STRUCTURE_LAYOUTS = register("all_machine_layouts_and_rotations", MachineStructureChecks::allLayoutsAndRotations);
-    private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 186;
+    private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 194;
 
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION = register("hatches_enforce_external_io_direction", BiotechGameTests::hatchesEnforceExternalIoDirection);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION = register("invalid_structure_and_reload_preserve_active_machine_transaction", BiotechGameTests::invalidStructureAndReloadPreserveActiveMachineTransaction);
@@ -94,6 +95,7 @@ public final class BiotechGameTests {
         var environment = event.registerEnvironment(Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "hardening"));
         Identifier emptyStructure = Identifier.withDefaultNamespace("empty");
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(
+                CHUNK_UPGRADE,
                 STRUCTURE_CYCLES,
                 STRUCTURE_LAYOUTS,
                 HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
@@ -104,7 +106,7 @@ public final class BiotechGameTests {
                 CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES,
                 GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_LIFECYCLE_SELECTORS,
                 ANIMAL_MACHINE_PREPARATION_PRESERVES_AND_INHERITS_STATE)) {
-            event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, (test == STRUCTURE_LAYOUTS || test == STRUCTURE_CYCLES) ? Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "machine_lab") : emptyStructure, MAX_TICKS, 0, true)));
+            event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, (test == STRUCTURE_LAYOUTS || test == STRUCTURE_CYCLES) ? Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "machine_lab") : emptyStructure, test == CHUNK_UPGRADE ? 1200 : MAX_TICKS, 0, true)));
         }
     }
 
@@ -276,8 +278,8 @@ public final class BiotechGameTests {
 
         ItemInputHatchBlockEntity itemInput = requireBlockEntity(helper, controllerPos.offset(-3, 0, -3), ItemInputHatchBlockEntity.class);
         ItemOutputHatchBlockEntity itemOutput = requireBlockEntity(helper, controllerPos.offset(3, 0, -3), ItemOutputHatchBlockEntity.class);
-        EnergyInputHatchBlockEntity energyInput = requireBlockEntity(helper, controllerPos.offset(0, 0, -6), EnergyInputHatchBlockEntity.class);
-        FluidInputHatchBlockEntity fluidInput = requireBlockEntity(helper, controllerPos.offset(-2, 0, -6), FluidInputHatchBlockEntity.class);
+        EnergyInputHatchBlockEntity energyInput = requireBlockEntity(helper, controllerPos.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("greenhouse")[2]), EnergyInputHatchBlockEntity.class);
+        FluidInputHatchBlockEntity fluidInput = requireBlockEntity(helper, controllerPos.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("greenhouse")[3]), FluidInputHatchBlockEntity.class);
 
         itemInput.getInternalItemStorage().setStackInSlot(0, new ItemStack(Items.BEETROOT_SEEDS, 2));
         fluidInput.setFluid(new FluidStack(Fluids.WATER, 400));
