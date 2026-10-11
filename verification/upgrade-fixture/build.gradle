@@ -32,7 +32,15 @@ dependencies {
 }
 tasks.named('runServer').configure {
     doFirst {
-        def run = new File(evidence, 'server'); run.mkdirs()
+        def run = new File(evidence, 'server')
+        if (phase == 'seed' && new File(run, 'world/level.dat').exists()) {
+            throw new GradleException('Seed phase refuses to overwrite an existing world; use a new fixtureDir')
+        }
+        if (phase == 'verify' && !new File(evidence, 'seed-success.json').isFile()) {
+            throw new GradleException('Verify phase requires a successful old-binary seed')
+        }
+        delete new File(evidence, "${phase}-success.json")
+        run.mkdirs()
         // Standard disposable CI server, never an existing user world.
         new File(run, 'eula.txt').text = 'eula=true\n'
         new File(run, 'server.properties').text = 'online-mode=false\nserver-ip=127.0.0.1\nlevel-name=world\nlevel-type=minecraft:flat\ngenerate-structures=false\nview-distance=2\nsimulation-distance=2\nmax-tick-time=120000\n'
