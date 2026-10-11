@@ -37,6 +37,15 @@ neoForge {
             programArguments.addAll '--width', '1024', '--height', '832', '--quickPlaySingleplayer', 'world'
             systemProperty 'biotech.uiPreview.output', layout.buildDirectory.dir('ui-previews').get().asFile.absolutePath
         }
+        machineGallery {
+            client()
+            sourceSet = sourceSets.uiPreview
+            loadedMods = [mods.biotech, mods.biotech_ui_preview]
+            gameDirectory = layout.buildDirectory.dir('machine-gallery-run').get().asFile
+            programArguments.addAll '--width', '1280', '--height', '960', '--quickPlaySingleplayer', 'world'
+            systemProperty 'biotech.machineGallery.enabled', 'true'
+            systemProperty 'biotech.machineGallery.output', layout.buildDirectory.dir('machine-gallery').get().asFile.absolutePath
+        }
         jeiPreview {
             client()
             sourceSet = sourceSets.uiPreview
@@ -312,5 +321,39 @@ tasks.named('runJeiPreview').configure {
             exclude 'session.lock'
         }
         new File(runDir, 'options.txt').text = 'guiScale:2\nmaxFps:60\nenableVsync:false\nlang:en_us\n'
+    }
+}
+
+// Actual placed-world before/after screenshots, using only the isolated copied test save.
+tasks.register('renderMachineGallery') {
+    group = 'verification'
+    dependsOn 'runMachineGallery'
+    doLast {
+        def output = layout.buildDirectory.dir('machine-gallery').get().asFile
+        def manifest = new File(output, 'manifest.json')
+        if (!manifest.isFile()) throw new GradleException('Machine gallery did not finish')
+        def images = new groovy.json.JsonSlurper().parse(manifest)
+        if (images.size() != 24 || images.collect { it.file }.toSet().size() != 24) throw new GradleException('Expected 24 actual in-game comparisons')
+        images.each { entry ->
+            def png = javax.imageio.ImageIO.read(new File(output, entry.file))
+            if (!entry.formed || png == null || png.width != 1280 || png.height != 960) throw new GradleException("Invalid machine gallery capture: ${entry.file}")
+        }
+    }
+}
+def cleanMachineGallery = tasks.register('cleanMachineGallery') {
+    outputs.upToDateWhen { false }
+    doLast { delete layout.buildDirectory.dir('machine-gallery-run') }
+}
+tasks.named('prepareMachineGalleryRun').configure { dependsOn cleanMachineGallery }
+tasks.named('runMachineGallery').configure {
+    dependsOn 'runGameTestServer'
+    doFirst {
+        delete layout.buildDirectory.dir('machine-gallery')
+        def runDir = layout.buildDirectory.dir('machine-gallery-run').get().asFile
+        runDir.mkdirs()
+        def sourceWorld = file('run/world')
+        if (!new File(sourceWorld, 'level.dat').isFile()) throw new GradleException('Machine gallery requires the GameTest world')
+        copy { from sourceWorld; into new File(runDir, 'saves/world'); exclude 'session.lock' }
+        new File(runDir, 'options.txt').text = 'guiScale:2\nmaxFps:60\nenableVsync:false\nlang:en_us\nrenderDistance:8\nbobView:false\ngamma:1.0\n'
     }
 }

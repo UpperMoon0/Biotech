@@ -99,20 +99,26 @@ public final class MachineLifecycleChecks {
             originalInputs.add(stack.copy());
             var input = inputs.get(slot / 9);
             var facing = input.getBlockState().getValue(MachineBlock.FACING);
-            var capability = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK,input.getBlockPos(),facing);
+            var nativeCapability = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Item.BLOCK,input.getBlockPos(),facing);
+            var capability = nativeCapability == null ? null : net.neoforged.neoforge.items.IItemHandler.of(nativeCapability);
             helper.assertTrue(capability != null && capability.insertItem(slot % 9, stack, false).isEmpty(), context + " accepts ingredient through exposed side");
             slot++;
         }
         for (int i=0; i<data.getFluidIngredients().length; i++) {
             var input = fluids.get(i);
             var facing = input.getBlockState().getValue(MachineBlock.FACING);
-            var capability = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,input.getBlockPos(),facing);
+            var nativeCapability = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Fluid.BLOCK,input.getBlockPos(),facing);
+            var capability = nativeCapability == null ? null : net.neoforged.neoforge.fluids.capability.IFluidHandler.of(nativeCapability);
             FluidStack fluid = data.getFluidIngredients()[i].copy();
             helper.assertTrue(capability != null && capability.fill(fluid, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE)==fluid.getAmount(), context + " accepts fluid through exposed side");
         }
         var facing = energy.getBlockState().getValue(MachineBlock.FACING);
-        var power = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK,energy.getBlockPos(),facing);
-        helper.assertTrue(power != null && power.receiveEnergy(128, false)==128, context + " accepts FE through exposed side");
+        var power = level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.Energy.BLOCK,energy.getBlockPos(),facing);
+        helper.assertTrue(power != null, context + " exposes FE capability");
+        try (var transaction = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+            helper.assertTrue(power.insert(128, transaction)==128, context + " accepts FE through exposed side");
+            transaction.commit();
+        }
         for (int i=0; i<outputs.getSlots(); i++) outputs.setStackInSlot(i,new ItemStack(Items.COBBLESTONE,64));
         tick(helper,machine,1);
         ModRecipeData prepared = (ModRecipeData) field(machine,"activeRecipeSnapshot");

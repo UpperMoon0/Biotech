@@ -59,6 +59,16 @@ jobs:
         run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderUiPreviews --no-daemon --stacktrace
       - name: Verify and render actual JEI recipe layouts
         run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderJeiPreviews --no-daemon --stacktrace
+      - name: Capture actual before and after machine structures
+        run: timeout 10m xvfb-run -a --server-args='-screen 0 1280x1024x24' ./gradlew :neoforge-1.21.1:renderMachineGallery --no-daemon --stacktrace
+      - name: Upload placed-world machine comparisons
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: biotech-machine-gallery
+          path: neoforge-1.21.1/build/machine-gallery/
+          if-no-files-found: warn
+          retention-days: 30
       - name: Upload PNGs and browsable gallery
         if: always()
         uses: actions/upload-artifact@v7
@@ -85,4 +95,6 @@ jobs:
             neoforge-1.21.1/build/ui-preview-run/crash-reports/
             neoforge-1.21.1/build/jei-preview-run/logs/
             neoforge-1.21.1/build/jei-preview-run/crash-reports/
+            neoforge-1.21.1/build/machine-gallery-run/logs/
+            neoforge-1.21.1/build/machine-gallery-run/crash-reports/
           if-no-files-found: warn
