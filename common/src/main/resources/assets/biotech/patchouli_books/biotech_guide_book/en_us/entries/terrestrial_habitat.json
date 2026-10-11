@@ -18,73 +18,59 @@
     {
       "multiblock": {
         "mapping": {
-          "b": "minecraft:yellow_concrete",
-          "c": "minecraft:yellow_stained_glass",
-          "d": "minecraft:glowstone",
-          "e": "biotech:biotech_machine_casing",
-          "f": "biotech:terrestrial_habitat[facing=east, operating=false]",
-          "g": "biotech:energy_input_hatch[facing=west]",
-          "h": "biotech:fluid_input_hatch[facing=west]",
-          "i": "minecraft:grass_block[snowy=false]",
-          "j": "biotech:item_input_hatch[facing=south]",
-          "k": "biotech:item_output_hatch[facing=north]",
-          "l": "biotech:fluid_output_hatch[facing=west]"
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "L": "biotech:biotech_grow_light",
+          "P": "biotech:biotech_panel",
+          "V": "biotech:biotech_vent",
+          "h": "minecraft:grass_block[snowy=false]",
+          ".": "minecraft:air",
+          "0": "biotech:terrestrial_habitat[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_input_hatch[facing=west]",
+          "3": "biotech:item_input_hatch[facing=west]",
+          "4": "biotech:item_output_hatch[facing=east]",
+          "5": "biotech:energy_input_hatch[facing=north]",
+          "6": "biotech:fluid_input_hatch[facing=north]",
+          "7": "biotech:fluid_output_hatch[facing=east]"
         },
-        "symmetrical": true,
+        "symmetrical": false,
         "pattern": [
           [
-            "   bccb",
-            "   cddc",
-            "   cddc",
-            "   bccb",
+            "FVVVVVF",
+            "PPPPPPP",
+            "PPPPPPP",
+            "FPPPPPF",
             "       ",
             "       ",
             "       "
           ],
           [
-            "   eeee",
-            "   edde",
-            "   edde",
-            "   eeee",
-            "       ",
-            "       ",
-            "       "
+            "FPPPPPF",
+            "G.L.L.G",
+            "G.....G",
+            "FPPPPPF",
+            " ..... ",
+            " ..... ",
+            " F   F "
           ],
           [
-            "   eeee",
-            "   e  e",
-            "   e  e",
-            "   eeee",
-            "       ",
-            "       ",
-            "       "
+            "FPPVPPF",
+            "G.....G",
+            "G.....G",
+            "F.....F",
+            "G.....G",
+            "G.....G",
+            "FGG0GGF"
           ],
           [
-            "bcceeee",
-            "c  e  e",
-            "c  e  e",
-            "c  e  e",
-            "c     c",
-            "c     c",
-            "bcccccb"
-          ],
-          [
-            "eeeeeee",
-            "e  e  e",
-            "e  e  e",
-            "e  e  e",
-            "e  0  e",
-            "e     e",
-            "eeefeee"
-          ],
-          [
-            "elegehe",
-            "eiieeej",
-            "eiieeee",
-            "kiieeej",
-            "eiiiiie",
-            "eiiiiij",
-            "eeeeeee"
+            "FP6P5P7",
+            "1hhPhhF",
+            "FhhPhhF",
+            "2hhPhh4",
+            "FhhPhhF",
+            "3hhPhhF",
+            "FPPPPPF"
           ]
         ]
       },
@@ -93,6 +79,12 @@
     {
       "type": "patchouli:crafting",
       "recipe": "biotech:terrestrial_habitat"
+    },
+    {
+      "type": "patchouli:text",
+      "anchor": "construction",
+      "title": "Construction",
+      "text": "7 \u00d7 7 \u00d7 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls.$(br)$(br)25 frame, 16 framed glass, 2 grow light, 46 panel, 6 vent, 20 grass block. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
     }
   ],
   "sortnum": 90

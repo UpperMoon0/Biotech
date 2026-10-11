@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "biotech:biotech_machine_casing",
+    "biotech:biotech_machine_casing",
+    "minecraft:iron_bars"
+  ],
+  "result": {
+    "id": "biotech:biotech_vent",
+    "count": 4
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/MixerBlockEntity.java": {
+    "pattern_sha256": "60d880bc16e8acf45d605c4156952502f303dd3a345f8d4a793608dc020e9b01",
+    "hatches_sha256": "3e70a9b8f6469d3a4d034bf5eb0c65ad89c682e28cae1fa75fabf73edf8dc54f"
+  },
+  "common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/BreedingChamberBlockEntity.java": {
+    "pattern_sha256": "6fa5c871f849095fbd5d86679bbf372db7407ed24984b7f3910cf7100c96d52f",
+    "hatches_sha256": "22f0d69bd0768ed7c93bc8c323f8f9db16edee689c0331a340bd2e673b938724"
+  },
+  "common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/TerrestrialHabitatBlockEntity.java": {
+    "pattern_sha256": "feb6fdd435b1e814bf03a2745de06ae5a3b9480b3c4d8ebf215aa9b1ae0b651c",
+    "hatches_sha256": "5968a4021448f83decf608681c1b7b7af2306f4b127f6e2c79ffb18d6b68dbdf"
+  },
+  "common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/SlaughterhouseBlockEntity.java": {
+    "pattern_sha256": "dfc663552318bfdd0ad06d90ad3babeafe7e3f48ad33015ef48c93ed98cd3d6f",
+    "hatches_sha256": "dd1c727c820f898946050e18f5c32e831471721e30806db7b5be67ff7a45123a"
+  },
+  "common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/FermenterBlockEntity.java": {
+    "pattern_sha256": "fe3a17ec3c93eb7c35a66f8539712f358fc1e55396df32c816f7589e9a400919",
+    "hatches_sha256": "c42430c5b99ca1ce1f9f29eccfb7e99ffe21aa7b9bd4a59beef37ccc69fd1c04"
+  },
+  "common-neoforge/src/main/java/com/nstut/biotech/blocks/entites/machines/GreenhouseBlockEntity.java": {
+    "pattern_sha256": "c6f1a8f7798be0a38f0ed93ef7c0e7c217a7ad685e9b5c4e0356c141fda19747",
+    "hatches_sha256": "bcf8dbb9c0f3e941a9255d661eeccf5f415b1518d9be1b9a385a7e14e82175d5"
+  },
+  "forge-1.20.1/src/main/java/com/nstut/biotech/blocks/entites/machines/MixerBlockEntity.java": {
+    "pattern_sha256": "60d880bc16e8acf45d605c4156952502f303dd3a345f8d4a793608dc020e9b01",
+    "hatches_sha256": "3e70a9b8f6469d3a4d034bf5eb0c65ad89c682e28cae1fa75fabf73edf8dc54f"
+  },
+  "forge-1.20.1/src/main/java/com/nstut/biotech/blocks/entites/machines/BreedingChamberBlockEntity.java": {
+    "pattern_sha256": "6fa5c871f849095fbd5d86679bbf372db7407ed24984b7f3910cf7100c96d52f",
+    "hatches_sha256": "22f0d69bd0768ed7c93bc8c323f8f9db16edee689c0331a340bd2e673b938724"
+  },
+  "forge-1.20.1/src/main/java/com/nstut/biotech/blocks/entites/machines/TerrestrialHabitatBlockEntity.java": {
+    "pattern_sha256": "feb6fdd435b1e814bf03a2745de06ae5a3b9480b3c4d8ebf215aa9b1ae0b651c",
+    "hatches_sha256": "5968a4021448f83decf608681c1b7b7af2306f4b127f6e2c79ffb18d6b68dbdf"
+  },
+  "forge-1.20.1/src/main/java/com/nstut/biotech/blocks/entites/machines/SlaughterhouseBlockEntity.java": {
+    "pattern_sha256": "dfc663552318bfdd0ad06d90ad3babeafe7e3f48ad33015ef48c93ed98cd3d6f",
+    "hatches_sha256": "dd1c727c820f898946050e18f5c32e831471721e30806db7b5be67ff7a45123a"
+  },
+  "forge-1.20.1/src/main/java/com/nstut/biotech/blocks/entites/machines/FermenterBlockEntity.java": {
+    "pattern_sha256": "fe3a17ec3c93eb7c35a66f8539712f358fc1e55396df32c816f7589e9a400919",
+    "hatches_sha256": "c42430c5b99ca1ce1f9f29eccfb7e99ffe21aa7b9bd4a59beef37ccc69fd1c04"
+  },
+  "forge-1.20.1/src/main/java/com/nstut/biotech/blocks/entites/machines/GreenhouseBlockEntity.java": {
+    "pattern_sha256": "c6f1a8f7798be0a38f0ed93ef7c0e7c217a7ad685e9b5c4e0356c141fda19747",
+    "hatches_sha256": "bcf8dbb9c0f3e941a9255d661eeccf5f415b1518d9be1b9a385a7e14e82175d5"
+  }
+}

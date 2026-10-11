@@ -38,6 +38,21 @@ public final class BiotechGameTests {
     private static final String TEMPLATE_NAMESPACE = Biotech.MOD_ID;
     private static final String EMPTY_TEMPLATE = "empty";
 
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void allMachineLayoutsAndRotations(GameTestHelper helper) {
+        MachineStructureChecks.allLayoutsAndRotations(helper);
+    }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 400)
+    public static void allMachineCyclesAndReload(GameTestHelper helper) {
+        MachineLifecycleChecks.allMachineCycles(helper);
+    }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 1200)
+    public static void legacyActiveCycleChunkUpgrade(GameTestHelper helper) {
+        MachineChunkUpgradeChecks.legacyActiveCycleSurvivesChunkUnload(helper);
+    }
+
     private BiotechGameTests() {
     }
 

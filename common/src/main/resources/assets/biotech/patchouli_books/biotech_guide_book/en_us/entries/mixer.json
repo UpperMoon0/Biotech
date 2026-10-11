@@ -10,107 +10,66 @@
     {
       "multiblock": {
         "mapping": {
-          "b": "biotech:biotech_machine_casing",
-          "c": "biotech:fluid_input_hatch[facing=south]",
-          "d": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_left, facing=south]",
-          "e": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=east]",
-          "f": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_right, facing=north]",
-          "g": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=south]",
-          "h": "minecraft:warped_planks",
-          "i": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=north]",
-          "j": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_right, facing=south]",
-          "k": "minecraft:warped_stairs[half=top, waterlogged=false, shape=straight, facing=west]",
-          "l": "minecraft:warped_stairs[half=top, waterlogged=false, shape=outer_left, facing=north]",
-          "m": "minecraft:iron_block",
-          "n": "minecraft:mud_bricks",
-          "o": "biotech:energy_input_hatch[facing=west]",
-          "p": "minecraft:glowstone",
-          "q": "biotech:item_input_hatch[facing=south]",
-          "r": "minecraft:purple_concrete",
-          "s": "minecraft:purple_stained_glass",
-          "t": "biotech:mixer[facing=east, operating=false]",
-          "u": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_left, facing=south]",
-          "v": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=east]",
-          "w": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_left, facing=east]",
-          "x": "biotech:fluid_output_hatch[facing=north]",
-          "y": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=south]",
-          "z": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=north]",
-          "{": "biotech:item_output_hatch[facing=north]",
-          "|": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_right, facing=south]",
-          "}": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=straight, facing=west]",
-          "~": "minecraft:warped_stairs[half=bottom, waterlogged=false, shape=outer_left, facing=north]"
+          "D": "biotech:biotech_drive",
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "P": "biotech:biotech_panel",
+          "R": "biotech:biotech_pipe",
+          "T": "biotech:biotech_vessel",
+          "V": "biotech:biotech_vent",
+          ".": "minecraft:air",
+          "0": "biotech:mixer[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_output_hatch[facing=east]",
+          "3": "biotech:energy_input_hatch[facing=north]",
+          "4": "biotech:fluid_input_hatch[facing=west]",
+          "5": "biotech:fluid_input_hatch[facing=west]",
+          "6": "biotech:fluid_input_hatch[facing=west]",
+          "7": "biotech:fluid_output_hatch[facing=east]"
         },
-        "symmetrical": true,
+        "symmetrical": false,
         "pattern": [
           [
-            "            ",
-            "bbbbbbbbbbbc",
-            "bbbbbbbbbbbc",
-            "bbbbbbbbbbbc",
-            "            "
+            "     ",
+            "     ",
+            "  V  ",
+            "     ",
+            "     "
           ],
           [
-            "deeeeeeeeeef",
-            "ghhhhhhhhhhi",
-            "gh        hi",
-            "ghhhhhhhhhhi",
-            "jkkkkkkkkkkl"
+            "  R  ",
+            "  R  ",
+            "  D  ",
+            "     ",
+            "     "
           ],
           [
-            "            ",
-            " bbbbbbbbbb ",
-            " bbbbbbbbbb ",
-            " bbbbbbbbbb ",
-            "            "
+            " FVF ",
+            " TDT ",
+            "4TRTT",
+            "5TRTT",
+            "6TRTT"
           ],
           [
-            "            ",
-            "        b b ",
-            "   m        ",
-            "        b b ",
-            "            "
+            "FTTTF",
+            "T...T",
+            "G.R.G",
+            "FTTTF",
+            "     "
           ],
           [
-            "            ",
-            "        b b ",
-            "   m        ",
-            "        b b ",
-            "            "
+            "FTTTF",
+            "T...T",
+            "G.R.G",
+            "FP0PF",
+            "     "
           ],
           [
-            " nnnnn      ",
-            " nm mn  b b ",
-            " n m n      ",
-            " nm mn  b b ",
-            " nnnnn      "
-          ],
-          [
-            " nnnnn      ",
-            " nm mn  bob ",
-            " n m n  bpq ",
-            " nm mn  bbb ",
-            " nnnnn      "
-          ],
-          [
-            " rrrrr      ",
-            " rm mr  bsb ",
-            " r   r  s s ",
-            " rm mr  bsb ",
-            " rrrrr      "
-          ],
-          [
-            " nnnnn      ",
-            " n   n  bsb ",
-            " n   n  s0s ",
-            " n   n  btb ",
-            " nnnnn      "
-          ],
-          [
-            " nnnnn uvvvw",
-            " xnnnn ybbbz",
-            " nnpnn ybpbz",
-            " {nnnn ybbbz",
-            " nnnnn |}}}~"
+            "FP3PF",
+            "FPTP7",
+            "1PTP2",
+            "FPPPF",
+            "     "
           ]
         ]
       },
@@ -119,6 +78,12 @@
     {
       "type": "patchouli:crafting",
       "recipe": "biotech:mixer"
+    },
+    {
+      "type": "patchouli:text",
+      "anchor": "construction",
+      "title": "Construction",
+      "text": "5 \u00d7 5 \u00d7 6 compact driven vessel, replacing a 12 \u00d7 5 \u00d7 10 gantry. A top drive and central service shaft read as an agitator. Three distinct fluid feeds face west; low east item/fluid discharge stays accessible. The controller sits in a one-block front recess.$(br)$(br)2 drive, 15 frame, 4 framed glass, 11 panel, 7 pipe, 26 vessel, 2 vent. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
     }
   ],
   "sortnum": 60

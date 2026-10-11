@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "biotech:block/biotech_framed_glass"
+  },
+  "render_type": "minecraft:cutout"
+}

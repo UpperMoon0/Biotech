@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "biotech:biotech_frame",
+    "biotech:biotech_panel",
+    "biotech:biotech_vent",
+    "biotech:biotech_vessel",
+    "biotech:biotech_drive",
+    "biotech:biotech_grow_light",
+    "biotech:biotech_framed_glass",
+    "biotech:biotech_pipe"
+  ]
+}

@@ -6,12 +6,19 @@
     "biotech:greenhouse",
     "biotech:fermenter",
     "biotech:mixer",
-
     "biotech:biotech_machine_casing",
     "biotech:item_input_hatch",
     "biotech:item_output_hatch",
     "biotech:fluid_input_hatch",
     "biotech:fluid_output_hatch",
-    "biotech:energy_input_hatch"
+    "biotech:energy_input_hatch",
+    "biotech:biotech_frame",
+    "biotech:biotech_panel",
+    "biotech:biotech_vent",
+    "biotech:biotech_vessel",
+    "biotech:biotech_drive",
+    "biotech:biotech_grow_light",
+    "biotech:biotech_framed_glass",
+    "biotech:biotech_pipe"
   ]
 }

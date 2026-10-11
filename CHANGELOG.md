@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6
+
+Redesign all six multiblocks with eight purpose-built Biotech parts and generated industrial textures, preserving complete 2.5 layouts and existing machine processing. See [the complete 2.6 changelog](CHANGELOG-2.6.md) and [compatibility and verification notes](docs/machine-upgrade.md).
+
 ## 2.5
 
 Add controller redstone modes, server-authoritative stall diagnostics, bounded server balance settings, and translated factory controls. See [the complete 2.5 changelog](CHANGELOG-2.5.md) and [upgrade notes](docs/upgrade-2.5.md).

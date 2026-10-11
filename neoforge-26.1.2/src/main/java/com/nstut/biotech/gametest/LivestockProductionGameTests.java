@@ -279,8 +279,8 @@ public final class LivestockProductionGameTests {
         BlockPos p = machine.getBlockPos();
         var input = block(helper, p.offset(-3, 0, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage();
         var output = block(helper, p.offset(3, 0, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage();
-        var water = block(helper, p.offset(-2, 0, -6), FluidInputHatchBlockEntity.class);
-        var energy = block(helper, p.offset(0, 0, -6), EnergyInputHatchBlockEntity.class);
+        var water = block(helper, p.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("greenhouse")[3]), FluidInputHatchBlockEntity.class);
+        var energy = block(helper, p.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("greenhouse")[2]), EnergyInputHatchBlockEntity.class);
         input.setStackInSlot(0, new ItemStack(Items.WHEAT_SEEDS, 2));
         water.setFluid(new FluidStack(Fluids.WATER, 400));
         energy.setEnergy(128000);
@@ -776,12 +776,14 @@ public final class LivestockProductionGameTests {
     private static Rig slaughter(GameTestHelper helper) {
         MachineBlockEntity machine = place(helper, false);
         BlockPos p = machine.getBlockPos();
-        return new Rig(machine, block(helper, p.offset(-2, -1, -1), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-2, -1, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(2, -1, -2), ItemOutputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-1, -1, -4), FluidInputHatchBlockEntity.class), null, block(helper, p.offset(1, -1, -4), EnergyInputHatchBlockEntity.class));
+        var ports = com.nstut.biotech.machines.MachineStructures.hatchOffsets("slaughterhouse");
+        return new Rig(machine, block(helper, p.offset(ports[0]), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(ports[1]), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(ports[2]), ItemOutputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(ports[4]), FluidInputHatchBlockEntity.class), null, block(helper, p.offset(ports[3]), EnergyInputHatchBlockEntity.class));
     }
     private static Rig habitat(GameTestHelper helper) {
         MachineBlockEntity machine = place(helper, true);
         BlockPos p = machine.getBlockPos();
-        return new Rig(machine, block(helper, p.offset(-3, -1, -1), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-3, -1, -3), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(3, -1, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(-2, -1, -6), FluidInputHatchBlockEntity.class), block(helper, p.offset(2, -1, -6), FluidOutputHatchBlockEntity.class), block(helper, p.offset(0, -1, -6), EnergyInputHatchBlockEntity.class));
+        var ports = com.nstut.biotech.machines.MachineStructures.hatchOffsets("terrestrial_habitat");
+        return new Rig(machine, block(helper, p.offset(ports[0]), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(ports[1]), ItemInputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(ports[3]), ItemOutputHatchBlockEntity.class).getInternalItemStorage(), block(helper, p.offset(ports[5]), FluidInputHatchBlockEntity.class), block(helper, p.offset(ports[6]), FluidOutputHatchBlockEntity.class), block(helper, p.offset(ports[4]), EnergyInputHatchBlockEntity.class));
     }
     private static MachineBlockEntity place(GameTestHelper helper, boolean habitat) { return place(helper, habitat ? 1 : 0); }
     private static MachineBlockEntity place(GameTestHelper helper, int kind) {

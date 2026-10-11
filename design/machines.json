@@ -1,0 +1,348 @@
+{
+  "greenhouse": {
+    "origin": [
+      3,
+      0,
+      0
+    ],
+    "layers": [
+      [
+        "  FVF  ",
+        "  GPG  ",
+        "  GPG  ",
+        "  GPG  ",
+        "  GPG  ",
+        "  GPG  ",
+        "  FVF  "
+      ],
+      [
+        " FGLGF ",
+        " G.L.G ",
+        " G.L.G ",
+        " G.L.G ",
+        " G.L.G ",
+        " G.L.G ",
+        " FGLGF "
+      ],
+      [
+        "FPGGGPF",
+        "G.....G",
+        "G.....G",
+        "G.....G",
+        "G.....G",
+        "G.....G",
+        "FPGGGPF"
+      ],
+      [
+        "FGGGGGF",
+        "G.....G",
+        "G.....G",
+        "G.....G",
+        "G.....G",
+        "G.....G",
+        "FGGGGGF"
+      ],
+      [
+        "FP4P3PF",
+        "PffwffP",
+        "PffwffP",
+        "1ffwff2",
+        "PffwffP",
+        "PffwffP",
+        "FPP@PPF"
+      ]
+    ],
+    "ports": [
+      "item_input_hatch:west",
+      "item_output_hatch:east",
+      "energy_input_hatch:north",
+      "fluid_input_hatch:north"
+    ],
+    "rationale": "7 \u00d7 7 growing bed with a five-block pitched glazed roof. Twenty farmland cells flank a water channel; roof lights and ridge ventilation explain the growing function. All four ports stay at ground level."
+  },
+  "breeding_chamber": {
+    "origin": [
+      3,
+      1,
+      0
+    ],
+    "layers": [
+      [
+        " FPLPF ",
+        " PLLLP ",
+        " PVVVP ",
+        " PLLLP ",
+        " FPLPF "
+      ],
+      [
+        "FPPPPPF",
+        "G..G..G",
+        "G..G..G",
+        "G..G..G",
+        "FPGGGPF"
+      ],
+      [
+        "FPVVVPF",
+        "G..P..G",
+        "G..P..G",
+        "3..P..G",
+        "FGG@GGF"
+      ],
+      [
+        "FP6P5PF",
+        "1hhPhhF",
+        "FPPhPP4",
+        "2hhPhhF",
+        "FPPPPPF"
+      ]
+    ],
+    "ports": [
+      "item_input_hatch:west",
+      "item_input_hatch:west",
+      "item_input_hatch:west",
+      "item_output_hatch:east",
+      "energy_input_hatch:north",
+      "fluid_input_hatch:north"
+    ],
+    "rationale": "7 \u00d7 5 \u00d7 4 paired incubation bays with a center partition and two roof light banks. West inputs remain ordered parent A, parent B, food; east collects offspring. The compact clinical enclosure is distinct from the open habitat."
+  },
+  "terrestrial_habitat": {
+    "origin": [
+      3,
+      1,
+      0
+    ],
+    "layers": [
+      [
+        "FVVVVVF",
+        "PPPPPPP",
+        "PPPPPPP",
+        "FPPPPPF",
+        "       ",
+        "       ",
+        "       "
+      ],
+      [
+        "FPPPPPF",
+        "G.L.L.G",
+        "G.....G",
+        "FPPPPPF",
+        " ..... ",
+        " ..... ",
+        " F   F "
+      ],
+      [
+        "FPPVPPF",
+        "G.....G",
+        "G.....G",
+        "F.....F",
+        "G.....G",
+        "G.....G",
+        "FGG@GGF"
+      ],
+      [
+        "FP6P5P7",
+        "1hhPhhF",
+        "FhhPhhF",
+        "2hhPhh4",
+        "FhhPhhF",
+        "3hhPhhF",
+        "FPPPPPF"
+      ]
+    ],
+    "ports": [
+      "item_input_hatch:west",
+      "item_input_hatch:west",
+      "item_input_hatch:west",
+      "item_output_hatch:east",
+      "energy_input_hatch:north",
+      "fluid_input_hatch:north",
+      "fluid_output_hatch:east"
+    ],
+    "rationale": "7 \u00d7 7 \u00d7 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls."
+  },
+  "slaughterhouse": {
+    "origin": [
+      2,
+      1,
+      0
+    ],
+    "layers": [
+      [
+        " FVF ",
+        "PPVPP",
+        " PLP ",
+        " PLP ",
+        " PLP ",
+        " PLP ",
+        " FPF "
+      ],
+      [
+        "FPPPF",
+        "P...P",
+        "PG.GP",
+        "P...P",
+        "PG.GP",
+        "P...P",
+        "FPPPF"
+      ],
+      [
+        "FPVPF",
+        "V...V",
+        "P.D.P",
+        "V...V",
+        "P.D.P",
+        "P...P",
+        "FG@GF"
+      ],
+      [
+        "F5P4F",
+        "1PPPF",
+        "PPPP3",
+        "2PPPF",
+        "PPPPP",
+        "PPPPP",
+        "FPPPF"
+      ]
+    ],
+    "ports": [
+      "item_input_hatch:west",
+      "item_input_hatch:west",
+      "item_output_hatch:east",
+      "energy_input_hatch:north",
+      "fluid_input_hatch:north"
+    ],
+    "rationale": "5 \u00d7 7 \u00d7 4 sealed processing line. West intake, internal drive units and east discharge communicate the flow. Narrow inspection windows and a vented spine replace the old red glass tower; no decorative gore."
+  },
+  "mixer": {
+    "origin": [
+      2,
+      1,
+      1
+    ],
+    "layers": [
+      [
+        "     ",
+        "     ",
+        "  V  ",
+        "     ",
+        "     "
+      ],
+      [
+        "  R  ",
+        "  R  ",
+        "  D  ",
+        "     ",
+        "     "
+      ],
+      [
+        " FVF ",
+        " TDT ",
+        "4TRTT",
+        "5TRTT",
+        "6TRTT"
+      ],
+      [
+        "FTTTF",
+        "T...T",
+        "G.R.G",
+        "FTTTF",
+        "     "
+      ],
+      [
+        "FTTTF",
+        "T...T",
+        "G.R.G",
+        "FP@PF",
+        "     "
+      ],
+      [
+        "FP3PF",
+        "FPTP7",
+        "1PTP2",
+        "FPPPF",
+        "     "
+      ]
+    ],
+    "ports": [
+      "item_input_hatch:west",
+      "item_output_hatch:east",
+      "energy_input_hatch:north",
+      "fluid_input_hatch:west",
+      "fluid_input_hatch:west",
+      "fluid_input_hatch:west",
+      "fluid_output_hatch:east"
+    ],
+    "rationale": "5 \u00d7 5 \u00d7 6 compact driven vessel, replacing a 12 \u00d7 5 \u00d7 10 gantry. A top drive and central service shaft read as an agitator. Three distinct fluid feeds face west; low east item/fluid discharge stays accessible. The controller sits in a one-block front recess."
+  },
+  "fermenter": {
+    "origin": [
+      3,
+      1,
+      0
+    ],
+    "layers": [
+      [
+        "  R R  ",
+        "  R R  ",
+        "  V V  ",
+        "       ",
+        "       ",
+        "       ",
+        "       "
+      ],
+      [
+        " FVVVF ",
+        " PPLPP ",
+        " PPVPP ",
+        " PPLPP ",
+        " FPPPF ",
+        "       ",
+        "       "
+      ],
+      [
+        " FPPPF ",
+        " T.G.T ",
+        " T.G.T ",
+        " T.G.T ",
+        " FPPPF ",
+        "       ",
+        "       "
+      ],
+      [
+        " FPPPF ",
+        " T.G.T ",
+        " T.G.T ",
+        " T.G.T ",
+        " FPPPF ",
+        " P   P ",
+        " FPPPF "
+      ],
+      [
+        " FPPPF ",
+        " T.G.T ",
+        " T.G.T ",
+        " T.G.T ",
+        " FPPPF ",
+        " P   P ",
+        " FP@PF "
+      ],
+      [
+        "FPP3P4F",
+        "PTTPTTP",
+        "PTTPTTP",
+        "PTTPTTP",
+        "PPPPPPP",
+        "1PPPPP2",
+        "FPPPPPF"
+      ]
+    ],
+    "ports": [
+      "item_input_hatch:west",
+      "item_output_hatch:east",
+      "energy_input_hatch:north",
+      "fluid_input_hatch:north"
+    ],
+    "rationale": "7 \u00d7 7 \u00d7 6 twin tall sealed fermentation chambers with inspection strip and two passive vent stacks. A short front service vestibule distinguishes it from the single driven Mixer vessel. Feed/output hatches sit at ground level, avoiding the old raised connections."
+  }
+}

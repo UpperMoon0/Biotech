@@ -35,7 +35,7 @@ public final class UiPreviewRunner {
     public UiPreviewRunner() { }
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
-        if (Boolean.getBoolean("biotech.jeiPreview.enabled")) return;
+        if (Boolean.getBoolean("biotech.jeiPreview.enabled") || Boolean.getBoolean("biotech.machineGallery.enabled")) return;
         Minecraft mc = Minecraft.getInstance();
         try {
             if (previews == null && mc.level != null && mc.player != null && mc.screen == null && mc.getOverlay() == null) {

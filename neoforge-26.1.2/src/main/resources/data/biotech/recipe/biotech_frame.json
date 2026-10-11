@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "biotech:biotech_machine_casing",
+    "biotech:biotech_machine_casing",
+    "minecraft:iron_nugget"
+  ],
+  "result": {
+    "id": "biotech:biotech_frame",
+    "count": 4
+  }
+}

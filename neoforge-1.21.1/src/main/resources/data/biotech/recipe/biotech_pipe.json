@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "biotech:biotech_machine_casing"
+    },
+    {
+      "item": "biotech:biotech_machine_casing"
+    },
+    {
+      "item": "minecraft:copper_ingot"
+    }
+  ],
+  "result": {
+    "id": "biotech:biotech_pipe",
+    "count": 4
+  }
+}

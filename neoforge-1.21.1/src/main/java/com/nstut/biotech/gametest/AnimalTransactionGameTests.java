@@ -559,11 +559,12 @@ public final class AnimalTransactionGameTests {
         }
         MachineBlockEntity machine = require(helper, pos, MachineBlockEntity.class);
         helper.assertTrue(machine.checkMultiblock(helper.getLevel(), pos, controller), "Test must build a valid actual livestock multiblock");
+        var ports = com.nstut.biotech.machines.MachineStructures.hatchOffsets(breeding ? "breeding_chamber" : "terrestrial_habitat");
         return new Fixture(machine,
-                require(helper, pos.offset(-3, -1, -1), ItemInputHatchBlockEntity.class).getInternalItemStorage(),
-                require(helper, pos.offset(3, -1, -3), ItemOutputHatchBlockEntity.class).getInternalItemStorage(),
-                require(helper, pos.offset(-2, -1, -6), FluidInputHatchBlockEntity.class),
-                require(helper, pos.offset(0, -1, -6), EnergyInputHatchBlockEntity.class));
+                require(helper, pos.offset(ports[0]), ItemInputHatchBlockEntity.class).getInternalItemStorage(),
+                require(helper, pos.offset(ports[3]), ItemOutputHatchBlockEntity.class).getInternalItemStorage(),
+                require(helper, pos.offset(ports[5]), FluidInputHatchBlockEntity.class),
+                require(helper, pos.offset(ports[4]), EnergyInputHatchBlockEntity.class));
     }
 
     private static <T extends Comparable<T>> BlockState property(BlockState state, Property<T> property, String value) {

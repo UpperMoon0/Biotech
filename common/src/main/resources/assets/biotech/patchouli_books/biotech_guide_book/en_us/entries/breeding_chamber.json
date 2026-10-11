@@ -10,63 +10,50 @@
     {
       "multiblock": {
         "mapping": {
-          "b": "minecraft:pink_stained_glass",
-          "c": "biotech:biotech_machine_casing",
-          "d": "minecraft:glowstone",
-          "e": "minecraft:pink_concrete",
-          "f": "biotech:breeding_chamber[facing=east, operating=false]",
-          "g": "biotech:energy_input_hatch[facing=west]",
-          "h": "biotech:fluid_input_hatch[facing=west]",
-          "i": "minecraft:grass_block[snowy=false]",
-          "j": "biotech:item_input_hatch[facing=south]",
-          "k": "biotech:item_output_hatch[facing=north]"
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "L": "biotech:biotech_grow_light",
+          "P": "biotech:biotech_panel",
+          "V": "biotech:biotech_vent",
+          "h": "minecraft:grass_block[snowy=false]",
+          ".": "minecraft:air",
+          "0": "biotech:breeding_chamber[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_input_hatch[facing=west]",
+          "3": "biotech:item_input_hatch[facing=west]",
+          "4": "biotech:item_output_hatch[facing=east]",
+          "5": "biotech:energy_input_hatch[facing=north]",
+          "6": "biotech:fluid_input_hatch[facing=north]"
         },
-        "symmetrical": true,
+        "symmetrical": false,
         "pattern": [
           [
-            "  bcb  ",
-            "  bdb  ",
-            "  bdb  ",
-            "  bdb  ",
-            "  bdb  ",
-            "  bdb  ",
-            "  bcb  "
+            " FPLPF ",
+            " PLLLP ",
+            " PVVVP ",
+            " PLLLP ",
+            " FPLPF "
           ],
           [
-            " ebcbe ",
-            " e   e ",
-            " e   e ",
-            " e   e ",
-            " e   e ",
-            " e   e ",
-            " ebcbe "
+            "FPPPPPF",
+            "G..G..G",
+            "G..G..G",
+            "G..G..G",
+            "FPGGGPF"
           ],
           [
-            " ccccc ",
-            " c   c ",
-            " c   c ",
-            " c   c ",
-            " c   c ",
-            " c   c ",
-            " ccccc "
+            "FPVVVPF",
+            "G..P..G",
+            "G..P..G",
+            "3..P..G",
+            "FGG0GGF"
           ],
           [
-            "ccccccc",
-            "c     c",
-            "c     c",
-            "c  0  c",
-            "c     c",
-            "c     c",
-            "cccfccc"
-          ],
-          [
-            "cccgchc",
-            "cciiicj",
-            "cciiicc",
-            "kciiicj",
-            "cciiicc",
-            "cciiicj",
-            "ccccccc"
+            "FP6P5PF",
+            "1hhPhhF",
+            "FPPhPP4",
+            "2hhPhhF",
+            "FPPPPPF"
           ]
         ]
       },
@@ -75,6 +62,12 @@
     {
       "type": "patchouli:crafting",
       "recipe": "biotech:breeding_chamber"
+    },
+    {
+      "type": "patchouli:text",
+      "anchor": "construction",
+      "title": "Construction",
+      "text": "7 \u00d7 5 \u00d7 4 paired incubation bays with a center partition and two roof light banks. West inputs remain ordered parent A, parent B, food; east collects offspring. The compact clinical enclosure is distinct from the open habitat.$(br)$(br)19 frame, 21 framed glass, 8 grow light, 36 panel, 6 vent, 9 grass block. Plus the controller and 6 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
     }
   ],
   "sortnum": 80

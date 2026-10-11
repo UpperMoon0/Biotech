@@ -100,6 +100,8 @@ public class SlaughterhouseBlockEntity extends ControlledMachineBlockEntity {
                 new Vec3i(-1, -1, -4)
         };
 
+        if (redesignedStructure) southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("slaughterhouse");
+
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
             BlockPos hatchPos = blockPos.offset(rotatedOffset);
@@ -114,8 +116,16 @@ public class SlaughterhouseBlockEntity extends ControlledMachineBlockEntity {
         }
     }
 
+    private boolean redesignedStructure;
+
     @Override
     public MultiblockPattern getMultiblockPattern() {
+        return new com.nstut.biotech.machines.CompatibleMachinePattern("slaughterhouse",
+                getLegacyMultiblockPattern(), selected -> redesignedStructure = selected);
+    }
+
+    /** Exact 2.5 pattern retained for existing-world compatibility. */
+    public MultiblockPattern getLegacyMultiblockPattern() {
         MultiblockBlock a = new MultiblockBlock(MachineRegistries.SLAUGHTERHOUSE.block().get(), Map.of("facing", "south")),
                 b = new MultiblockBlock(BlockRegistries.BIOTECH_MACHINE_CASING.get(), Map.of()),
                 c = new MultiblockBlock(BlockRegistries.ITEM_INPUT_HATCH.get(), Map.of("facing", "west")),

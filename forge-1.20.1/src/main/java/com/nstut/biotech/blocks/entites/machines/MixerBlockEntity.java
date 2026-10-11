@@ -102,6 +102,8 @@ public class MixerBlockEntity extends ControlledMachineBlockEntity {
                 new Vec3i(8, -1, -2),
         };
 
+        if (redesignedStructure) southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("mixer");
+
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
             BlockPos hatchPos = blockPos.offset(rotatedOffset);
@@ -118,8 +120,16 @@ public class MixerBlockEntity extends ControlledMachineBlockEntity {
         }
     }
 
+    private boolean redesignedStructure;
+
     @Override
     public MultiblockPattern getMultiblockPattern() {
+        return new com.nstut.biotech.machines.CompatibleMachinePattern("mixer",
+                getLegacyMultiblockPattern(), selected -> redesignedStructure = selected);
+    }
+
+    /** Exact 2.5 pattern retained for existing-world compatibility. */
+    public MultiblockPattern getLegacyMultiblockPattern() {
         MultiblockBlock b = new MultiblockBlock(Blocks.MUD_BRICKS, Map.of()),
                         c = new MultiblockBlock(Blocks.WARPED_STAIRS, Map.of("half", "bottom", "waterlogged", "false", "facing", "west")),
                         d = new MultiblockBlock(Blocks.WARPED_STAIRS, Map.of("half", "bottom", "waterlogged", "false", "facing", "south")),
