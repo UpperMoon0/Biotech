@@ -56,6 +56,11 @@ public final class BiotechGameTests {
     private static final String TEST_TEMPLATE_NAMESPACE = Biotech.MOD_ID;
     private static final String EMPTY_TEMPLATE = "empty";
 
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void allMachineLayoutsAndRotations(GameTestHelper helper) {
+        MachineStructureChecks.allLayoutsAndRotations(helper);
+    }
+
     private BiotechGameTests() {
     }
 

@@ -94,6 +94,8 @@ public class GreenhouseBlockEntity extends ControlledMachineBlockEntity {
                 new Vec3i(-2, 0, -6)
         };
 
+        if (redesignedStructure) southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("greenhouse");
+
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
             BlockPos hatchPos = blockPos.offset(rotatedOffset);
@@ -107,8 +109,16 @@ public class GreenhouseBlockEntity extends ControlledMachineBlockEntity {
         }
     }
 
+    private boolean redesignedStructure;
+
     @Override
     public MultiblockPattern getMultiblockPattern() {
+        return new com.nstut.biotech.machines.CompatibleMachinePattern("greenhouse",
+                getLegacyMultiblockPattern(), selected -> redesignedStructure = selected);
+    }
+
+    /** Exact 2.5 pattern retained for existing-world compatibility. */
+    public MultiblockPattern getLegacyMultiblockPattern() {
         MultiblockBlock b = new MultiblockBlock(Blocks.PRISMARINE_BRICK_SLAB, Map.of("waterlogged", "false", "type", "bottom"));
         MultiblockBlock c = new MultiblockBlock(Blocks.LIME_CONCRETE);
         MultiblockBlock d = new MultiblockBlock(Blocks.GLOWSTONE);

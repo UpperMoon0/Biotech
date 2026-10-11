@@ -71,6 +71,7 @@ import java.util.function.Consumer;
 public final class BiotechGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> TEST_FUNCTIONS = DeferredRegister.create(BuiltInRegistries.TEST_FUNCTION, Biotech.MOD_ID);
     private static final int MAX_TICKS = 100;
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> STRUCTURE_LAYOUTS = register("all_machine_layouts_and_rotations", MachineStructureChecks::allLayoutsAndRotations);
     private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 186;
 
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION = register("hatches_enforce_external_io_direction", BiotechGameTests::hatchesEnforceExternalIoDirection);
@@ -92,6 +93,7 @@ public final class BiotechGameTests {
         var environment = event.registerEnvironment(Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "hardening"));
         Identifier emptyStructure = Identifier.withDefaultNamespace("empty");
         for (DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> test : List.of(
+                STRUCTURE_LAYOUTS,
                 HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
                 INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION,
                 RECIPE_TYPES_ARE_REGISTRY_BACKED,
@@ -100,7 +102,7 @@ public final class BiotechGameTests {
                 CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES,
                 GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_LIFECYCLE_SELECTORS,
                 ANIMAL_MACHINE_PREPARATION_PRESERVES_AND_INHERITS_STATE)) {
-            event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, emptyStructure, MAX_TICKS, 0, true)));
+            event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, test == STRUCTURE_LAYOUTS ? Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "machine_lab") : emptyStructure, MAX_TICKS, 0, true)));
         }
     }
 

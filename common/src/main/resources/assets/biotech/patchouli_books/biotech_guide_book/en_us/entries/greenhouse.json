@@ -10,80 +10,66 @@
     {
       "multiblock": {
         "mapping": {
-          "b": "minecraft:prismarine_brick_slab[waterlogged=false, type=bottom]",
-          "c": "minecraft:lime_concrete",
-          "d": "minecraft:glowstone",
-          "e": "biotech:biotech_machine_casing",
-          "f": "minecraft:prismarine_brick_slab[waterlogged=false, type=top]",
-          "g": "minecraft:lime_stained_glass",
-          "h": "minecraft:diorite_wall[east=none, waterlogged=false, south=none, north=none, west=none, up=true]",
-          "i": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=north]",
-          "j": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=south]",
-          "k": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=west]",
-          "l": "minecraft:prismarine_brick_stairs[half=bottom, waterlogged=false, shape=straight, facing=east]",
-          "m": "biotech:energy_input_hatch[facing=west]",
-          "n": "biotech:fluid_input_hatch[facing=west]",
-          "o": "minecraft:farmland[moisture=0]",
-          "p": "biotech:item_output_hatch[facing=north]",
-          "q": "minecraft:water[level=0]",
-          "r": "biotech:item_input_hatch[facing=south]",
-          "s": "biotech:greenhouse[facing=east, operating=false]"
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "L": "biotech:biotech_grow_light",
+          "P": "biotech:biotech_panel",
+          "V": "biotech:biotech_vent",
+          "f": "minecraft:farmland[moisture=7]",
+          "w": "minecraft:water[level=0]",
+          ".": "minecraft:air",
+          "0": "biotech:greenhouse[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_output_hatch[facing=east]",
+          "3": "biotech:energy_input_hatch[facing=north]",
+          "4": "biotech:fluid_input_hatch[facing=north]"
         },
-        "symmetrical": true,
+        "symmetrical": false,
         "pattern": [
           [
-            "       ",
-            "   b   ",
-            "  ccc  ",
-            " bcdcb ",
-            "  ccc  ",
-            "   b   ",
-            "       "
+            "  FVF  ",
+            "  GPG  ",
+            "  GPG  ",
+            "  GPG  ",
+            "  GPG  ",
+            "  GPG  ",
+            "  FVF  "
           ],
           [
-            "  bbb  ",
-            " eeeee ",
-            "be   eb",
-            "be   eb",
-            "be   eb",
-            " eeeee ",
-            "  bbb  "
+            " FGLGF ",
+            " G.L.G ",
+            " G.L.G ",
+            " G.L.G ",
+            " G.L.G ",
+            " G.L.G ",
+            " FGLGF "
           ],
           [
-            "bf   fb",
-            "fegggef",
-            " g   g ",
-            " g   g ",
-            " g   g ",
-            "fegggef",
-            "bf   fb"
+            "FPGGGPF",
+            "G.....G",
+            "G.....G",
+            "G.....G",
+            "G.....G",
+            "G.....G",
+            "FPGGGPF"
           ],
           [
-            "h     h",
-            " eggge ",
-            " g   g ",
-            " g   g ",
-            " g   g ",
-            " eggge ",
-            "h     h"
+            "FGGGGGF",
+            "G.....G",
+            "G.....G",
+            "G.....G",
+            "G.....G",
+            "G.....G",
+            "FGGGGGF"
           ],
           [
-            "ci   jc",
-            "kegggek",
-            " g   g ",
-            " g 0 g ",
-            " g   g ",
-            "legggel",
-            "ci   jc"
-          ],
-          [
-            "eeemene",
-            "eeeeeee",
-            "eeoooee",
-            "peoqoer",
-            "eeoooee",
-            "eeeeeee",
-            "eeeseee"
+            "FP4P3PF",
+            "PffwffP",
+            "PffwffP",
+            "1ffwff2",
+            "PffwffP",
+            "PffwffP",
+            "FPP0PPF"
           ]
         ]
       },
@@ -92,6 +78,12 @@
     {
       "type": "patchouli:crafting",
       "recipe": "biotech:greenhouse"
+    },
+    {
+      "type": "patchouli:text",
+      "anchor": "construction",
+      "title": "Construction",
+      "text": "7 \u00d7 7 growing bed with a five-block pitched glazed roof. Twenty farmland cells flank a water channel; roof lights and ridge ventilation explain the growing function. All four ports stay at ground level.$(br)$(br)20 frame, 60 framed glass, 7 grow light, 24 panel, 2 vent, 20 farmland, 5 water. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
     }
   ],
   "sortnum": 50

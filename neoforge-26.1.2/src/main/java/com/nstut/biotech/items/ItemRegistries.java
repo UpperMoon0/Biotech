@@ -16,6 +16,14 @@ public final class ItemRegistries {
 
     public static final DeferredItem<BlockItem> NET_TRAP_ITEM = ITEMS.registerSimpleBlockItem(BlockRegistries.NET_TRAP);
     public static final DeferredItem<BlockItem> BIOTECH_MACHINE_CASING = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_MACHINE_CASING);
+    public static final DeferredItem<BlockItem> BIOTECH_FRAME = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_FRAME);
+    public static final DeferredItem<BlockItem> BIOTECH_PANEL = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_PANEL);
+    public static final DeferredItem<BlockItem> BIOTECH_VENT = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_VENT);
+    public static final DeferredItem<BlockItem> BIOTECH_VESSEL = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_VESSEL);
+    public static final DeferredItem<BlockItem> BIOTECH_DRIVE = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_DRIVE);
+    public static final DeferredItem<BlockItem> BIOTECH_GROW_LIGHT = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_GROW_LIGHT);
+    public static final DeferredItem<BlockItem> BIOTECH_FRAMED_GLASS = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_FRAMED_GLASS);
+    public static final DeferredItem<BlockItem> BIOTECH_PIPE = ITEMS.registerSimpleBlockItem(BlockRegistries.BIOTECH_PIPE);
     public static final DeferredItem<BlockItem> ITEM_INPUT_HATCH = ITEMS.registerSimpleBlockItem(BlockRegistries.ITEM_INPUT_HATCH);
     public static final DeferredItem<BlockItem> ITEM_OUTPUT_HATCH = ITEMS.registerSimpleBlockItem(BlockRegistries.ITEM_OUTPUT_HATCH);
     public static final DeferredItem<BlockItem> FLUID_INPUT_HATCH = ITEMS.registerSimpleBlockItem(BlockRegistries.FLUID_INPUT_HATCH);

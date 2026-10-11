@@ -10,151 +10,75 @@
     {
       "multiblock": {
         "mapping": {
-          "b": "biotech:biotech_machine_casing",
-          "c": "minecraft:glowstone",
-          "d": "minecraft:brown_stained_glass",
-          "e": "minecraft:brown_terracotta",
-          "f": "minecraft:iron_block",
-          "g": "biotech:item_output_hatch[facing=north]",
-          "h": "biotech:item_input_hatch[facing=south]",
-          "i": "minecraft:smooth_stone_slab[waterlogged=false, type=bottom]",
-          "j": "biotech:fermenter[facing=east, operating=false]",
-          "k": "biotech:energy_input_hatch[facing=west]",
-          "l": "biotech:fluid_input_hatch[facing=west]"
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "L": "biotech:biotech_grow_light",
+          "P": "biotech:biotech_panel",
+          "R": "biotech:biotech_pipe",
+          "T": "biotech:biotech_vessel",
+          "V": "biotech:biotech_vent",
+          ".": "minecraft:air",
+          "0": "biotech:fermenter[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_output_hatch[facing=east]",
+          "3": "biotech:energy_input_hatch[facing=north]",
+          "4": "biotech:fluid_input_hatch[facing=north]"
         },
-        "symmetrical": true,
+        "symmetrical": false,
         "pattern": [
           [
+            "  R R  ",
+            "  R R  ",
+            "  V V  ",
             "       ",
             "       ",
             "       ",
-            "       ",
-            "  bbb  ",
-            " bbbbb ",
-            " bbcbb ",
-            " bbbbb ",
-            "  bbb  ",
             "       "
           ],
           [
+            " FVVVF ",
+            " PPLPP ",
+            " PPVPP ",
+            " PPLPP ",
+            " FPPPF ",
             "       ",
+            "       "
+          ],
+          [
+            " FPPPF ",
+            " T.G.T ",
+            " T.G.T ",
+            " T.G.T ",
+            " FPPPF ",
             "       ",
-            "       ",
-            "       ",
-            "  ddd  ",
-            " deeed ",
-            " deeed ",
-            " deeed ",
-            "  ddd  ",
             "       "
           ],
           [
-            " bb bb ",
-            "bbbbbbb",
-            "bbbbbbb",
-            " bb bb ",
-            "  ddd  ",
-            " deeed ",
-            " deeed ",
-            " deeed ",
-            "  ddd  ",
-            "       "
+            " FPPPF ",
+            " T.G.T ",
+            " T.G.T ",
+            " T.G.T ",
+            " FPPPF ",
+            " P   P ",
+            " FPPPF "
           ],
           [
-            " dd dd ",
-            "deedeed",
-            "deedeed",
-            " dd dd ",
-            "  ddd  ",
-            " deeed ",
-            " deeed ",
-            " deeed ",
-            "  ddd  ",
-            "       "
+            " FPPPF ",
+            " T.G.T ",
+            " T.G.T ",
+            " T.G.T ",
+            " FPPPF ",
+            " P   P ",
+            " FP0PF "
           ],
           [
-            " dd dd ",
-            "deedeed",
-            "deedeed",
-            " dd dd ",
-            "  ddd  ",
-            " deeed ",
-            " deeed ",
-            " deeed ",
-            "  ddd  ",
-            "       "
-          ],
-          [
-            " dd dd ",
-            "deedeed",
-            "deedeed",
-            " dd dd ",
-            "  ddd  ",
-            " deeed ",
-            " deeed ",
-            " deeed ",
-            "  ddd  ",
-            "       "
-          ],
-          [
-            " bb bb ",
-            "bbbbbbb",
-            "bbbbbbb",
-            " bb bb ",
-            "  bbb  ",
-            " bbbbb ",
-            " bbbbb ",
-            " bbbbb ",
-            "  bbb  ",
-            "       "
-          ],
-          [
-            " bb bb ",
-            "bbbcbbb",
-            "bcbbbcb",
-            " cbbbc ",
-            " bbbbb ",
-            " cbbbc ",
-            " cbbbc ",
-            " bbbbb ",
-            "  bbb  ",
-            "       "
-          ],
-          [
-            "       ",
-            " bbcbb ",
-            "fbbbbbf",
-            "fbbbbbf",
-            " gbbbh ",
-            "fbbbbbf",
-            "fbbbbbf",
-            " bbbbb ",
-            " bbbbb ",
-            "       "
-          ],
-          [
-            "       ",
-            "fbbcbbf",
-            "ib   bi",
-            "ib   bi",
-            "fb   bf",
-            "ib 0 bi",
-            "ib   bi",
-            "fb   bf",
-            " bbbbb ",
-            " bbjbb "
-          ],
-          [
-            "       ",
-            "fbkblbf",
-            "ibbbbbi",
-            "ibbbbbi",
-            "fbbbbbf",
-            "ibbbbbi",
-            "ibbbbbi",
-            "fbbbbbf",
-            " bbbbb ",
-            " bbbbb "
+            "FPP3P4F",
+            "PTTPTTP",
+            "PTTPTTP",
+            "PTTPTTP",
+            "PPPPPPP",
+            "1PPPPP2",
+            "FPPPPPF"
           ]
         ]
       },
@@ -163,6 +87,12 @@
     {
       "type": "patchouli:crafting",
       "recipe": "biotech:fermenter"
+    },
+    {
+      "type": "patchouli:text",
+      "anchor": "construction",
+      "title": "Construction",
+      "text": "7 \u00d7 7 \u00d7 6 twin tall sealed fermentation chambers with inspection strip and two passive vent stacks. A short front service vestibule distinguishes it from the single driven Mixer vessel. Feed/output hatches sit at ground level, avoiding the old raised connections.$(br)$(br)24 frame, 9 framed glass, 2 grow light, 71 panel, 4 pipe, 30 vessel, 6 vent. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
     }
   ],
   "sortnum": 70

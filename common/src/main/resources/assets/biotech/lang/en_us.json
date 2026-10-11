@@ -146,5 +146,13 @@
   "tooltip.biotech.trait.name": "Name: %s",
   "tooltip.biotech.trait.equipment": "Equipment: %s",
   "jei.biotech.breeding.tame_healthy": "Parents must be tame and healthy.",
-  "jei.biotech.breeding.tame": "Parents must be tame."
+  "jei.biotech.breeding.tame": "Parents must be tame.",
+  "block.biotech.biotech_frame": "Biotech Structural Frame",
+  "block.biotech.biotech_panel": "Biotech Enamel Panel",
+  "block.biotech.biotech_vent": "Biotech Vent Grille",
+  "block.biotech.biotech_vessel": "Biotech Vessel Wall",
+  "block.biotech.biotech_drive": "Biotech Drive Unit",
+  "block.biotech.biotech_grow_light": "Biotech Grow Light",
+  "block.biotech.biotech_framed_glass": "Biotech Framed Inspection Glass",
+  "block.biotech.biotech_pipe": "Biotech Service Pipe"
 }

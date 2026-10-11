@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "biotech:biotech_machine_casing",
+    "biotech:biotech_machine_casing",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "id": "biotech:biotech_grow_light",
+    "count": 4
+  }
+}

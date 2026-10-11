@@ -222,3 +222,13 @@ tasks.register('publishAllToMavenLocal') {
     group = 'publishing'
     dependsOn ':forge-1.20.1:publishToMavenLocal', ':neoforge-1.21.1:publishToMavenLocal', ':neoforge-26.1.2:publishToMavenLocal'
 }
+
+// Single-source structure/guide/asset contract. Python 3 is available in CI.
+tasks.register('verifyMachineStructures', Exec) {
+    group = 'verification'
+    description = 'Checks all new structure previews, exposed ports, material budgets, assets and frozen 2.5 patterns.'
+    workingDir rootProject.projectDir
+    commandLine 'python3', 'scripts/verify_machine_assets.py'
+}
+tasks.named('buildAll') { dependsOn 'verifyMachineStructures' }
+tasks.named('testAllVersions') { dependsOn 'verifyMachineStructures' }

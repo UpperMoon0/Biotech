@@ -17,6 +17,14 @@ public class ItemRegistries {
 
     public static final RegistryObject<Item> NET_TRAP_ITEM = ITEMS.register("net_trap", () -> new BlockItem(BlockRegistries.NET_TRAP.get(), new Item.Properties()));
     public static final RegistryObject<Item> BIOTECH_MACHINE_CASING = ITEMS.register("biotech_machine_casing", () -> new BlockItem(BlockRegistries.BIOTECH_MACHINE_CASING.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_FRAME = ITEMS.register("biotech_frame", () -> new BlockItem(BlockRegistries.BIOTECH_FRAME.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_PANEL = ITEMS.register("biotech_panel", () -> new BlockItem(BlockRegistries.BIOTECH_PANEL.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_VENT = ITEMS.register("biotech_vent", () -> new BlockItem(BlockRegistries.BIOTECH_VENT.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_VESSEL = ITEMS.register("biotech_vessel", () -> new BlockItem(BlockRegistries.BIOTECH_VESSEL.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_DRIVE = ITEMS.register("biotech_drive", () -> new BlockItem(BlockRegistries.BIOTECH_DRIVE.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_GROW_LIGHT = ITEMS.register("biotech_grow_light", () -> new BlockItem(BlockRegistries.BIOTECH_GROW_LIGHT.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_FRAMED_GLASS = ITEMS.register("biotech_framed_glass", () -> new BlockItem(BlockRegistries.BIOTECH_FRAMED_GLASS.get(), new Item.Properties()));
+    public static final RegistryObject<Item> BIOTECH_PIPE = ITEMS.register("biotech_pipe", () -> new BlockItem(BlockRegistries.BIOTECH_PIPE.get(), new Item.Properties()));
     public static final RegistryObject<Item> ITEM_INPUT_HATCH = ITEMS.register("item_input_hatch", () -> new BlockItem(BlockRegistries.ITEM_INPUT_HATCH.get(), new Item.Properties()));
     public static final RegistryObject<Item> ITEM_OUTPUT_HATCH = ITEMS.register("item_output_hatch", () -> new BlockItem(BlockRegistries.ITEM_OUTPUT_HATCH.get(), new Item.Properties()));
     public static final RegistryObject<Item> FLUID_INPUT_HATCH = ITEMS.register("fluid_input_hatch", () -> new BlockItem(BlockRegistries.FLUID_INPUT_HATCH.get(), new Item.Properties()));
