@@ -7,6 +7,6 @@
 - Add native tests for new/legacy formation, rotations, interrupted active cycles, blocked item/fluid outputs, all Mixer fluid paths, facing-side extraction and real disk chunk persistence.
 - Add an actual client before/after gallery for all six machines with front and rear views.
 
-See [safe rebuilding, evidence and verification limits](docs/machine-upgrade.md). The disk-persistence test uses a legacy-layout fixture created under the new binary; an actual 2.5-binary saved-world upgrade has not been separately tested. Back up existing worlds before updating.
+See [safe rebuilding, evidence and verification limits](docs/machine-upgrade.md). A separate test-only NeoForge 1.21.1 harness now verifies all six active legacy machines across actual published 2.5 and 2.6 binaries; the other targets retain native lifecycle/disk-persistence tests. Back up existing worlds before updating.
 
 Targets: Forge 1.20.1, NeoForge 1.21.1 and NeoForge 26.1.2. Existing NsTut Lib and OpenUI dependency requirements are unchanged.

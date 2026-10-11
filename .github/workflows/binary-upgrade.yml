@@ -44,7 +44,7 @@ jobs:
         run: |
           bash .ci/nstut-lib/gradlew -p .ci/nstut-lib :neoforge-1.21.1:publishToMavenLocal --no-daemon --stacktrace
           bash .ci/openui/gradlew -p .ci/openui :neoforge-1.21.1:publishToMavenLocal --no-daemon --stacktrace
-      - name: Download immutable release inputs and record digests
+      - name: Download pinned release inputs and verify provenance
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -55,6 +55,15 @@ jobs:
           sha256sum build/binary-upgrade/inputs/*.jar | tee build/binary-upgrade/release-sha256.txt
           gh api repos/UpperMoon0/Biotech/releases/tags/v2.5 > build/binary-upgrade/release-2.5.json
           gh api repos/UpperMoon0/Biotech/releases/tags/v2.6 > build/binary-upgrade/release-2.6.json
+          echo 'b305e67e4b03a2c1fe894fd1e6297891a50a3e5b1a0cde77f463226a99f094d1  build/binary-upgrade/inputs/biotech-neoforge-1.21.1-2.5.jar' | sha256sum --check -
+          echo 'e1155b768889d767fb637926a8d82845d46636913aff9b167f5377bc996d52c0  build/binary-upgrade/inputs/biotech-neoforge-1.21.1-2.6.jar' | sha256sum --check -
+          jq -e '.assets[] | select(.id == 630772315 and .digest == "sha256:b305e67e4b03a2c1fe894fd1e6297891a50a3e5b1a0cde77f463226a99f094d1")' build/binary-upgrade/release-2.5.json
+          jq -e '.assets[] | select(.id == 631107304 and .digest == "sha256:e1155b768889d767fb637926a8d82845d46636913aff9b167f5377bc996d52c0")' build/binary-upgrade/release-2.6.json
+          gh api repos/UpperMoon0/Biotech/git/ref/tags/v2.5 > build/binary-upgrade/tag-2.5.json
+          gh api repos/UpperMoon0/Biotech/git/ref/tags/v2.6 > build/binary-upgrade/tag-2.6.json
+          jq -e '.object.type == "commit" and .object.sha == "9adbba7a111e475493b7b57333ac16c87f9231a4"' build/binary-upgrade/tag-2.5.json
+          jq -e '.object.type == "commit" and .object.sha == "e08f67892b9471544559b4b8e9841a56207cc004"' build/binary-upgrade/tag-2.6.json
+          jq -n --arg nstut "$(git -C .ci/nstut-lib rev-parse HEAD)" --arg openui "$(git -C .ci/openui rev-parse HEAD)" '{nstut_commit: $nstut, openui_commit: $openui}' > build/binary-upgrade/provider-commits.json
       - name: Create and save active world under unmodified 2.5
         run: |
           set -o pipefail
