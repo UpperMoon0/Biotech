@@ -255,14 +255,16 @@ public final class BiotechGameTests {
 
         var harvest = com.nstut.biotech.recipes.GreenhouseHarvestPreparation.harvest(recipe);
         helper.assertTrue(harvest.count() == 2, "Two planted seeds must resolve exactly two mature harvests");
-        boolean sawEightSeedHarvest = false;
-        for (long seed = 1; seed <= 256 && !sawEightSeedHarvest; seed++) {
-            int seedsPerPlant = com.nstut.biotech.recipes.GreenhouseHarvestPreparation
-                    .roll(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), harvest.state(), seed).stream()
+        // Seed -1 gives LegacyRandomSource bonus draws 0.2689426, 0.4395620,
+        // 0.0122700, all below vanilla's 0.5714286 threshold. Exercise the actual
+        // loaded loot table twice instead of assuming nearby seeds are independent.
+        int highSeedHarvest = 0;
+        for (int plant = 0; plant < harvest.count(); plant++) {
+            highSeedHarvest += com.nstut.biotech.recipes.GreenhouseHarvestPreparation
+                    .roll(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), harvest.state(), -1L).stream()
                     .filter(stack -> stack.is(Items.BEETROOT_SEEDS)).mapToInt(ItemStack::getCount).sum();
-            sawEightSeedHarvest = seedsPerPlant * harvest.count() == 8;
         }
-        helper.assertTrue(sawEightSeedHarvest, "Deterministic vanilla loot samples must cover the valid eight-seed two-harvest outcome");
+        helper.assertTrue(highSeedHarvest == 8, "The fixed native loot fixture must produce eight seeds from two mature harvests");
 
         BlockPos controllerRelative = new BlockPos(8, 1, 8);
         GreenhouseBlockEntity machine = placeGreenhouseStructure(helper, controllerRelative);
