@@ -184,7 +184,7 @@ public final class MobItemStateGameTests {
                         new FluidStack[0],
                         0));
         TerrestrialHabitatRecipe preparedGrowth =
-                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs);
+                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs, helper.getLevel());
         ItemStack adult = preparedGrowth.getItemOutputs().get(0).getItemStack();
         CompoundTag adultState = CapturedAnimalStackState.read(adult);
         helper.assertTrue(adultState.getInt("Age") == 0 && adultState.getInt("ForcedAge") == 0,
@@ -240,7 +240,7 @@ public final class MobItemStateGameTests {
                         new IngredientItem[] {new IngredientItem(new ItemStack(ItemRegistries.SHEEP.get()), false)},
                         new OutputItem[] {new OutputItem(new ItemStack(Items.WHITE_WOOL), 1.0f)},
                         new FluidStack[0], new FluidStack[0], 0));
-        TerrestrialHabitatRecipe preparedWool = AnimalRecipeStatePreparation.prepareHabitat(woolRecipe, sheepInputs);
+        TerrestrialHabitatRecipe preparedWool = AnimalRecipeStatePreparation.prepareHabitat(woolRecipe, sheepInputs, helper.getLevel());
         helper.assertTrue(preparedWool.getItemOutputs().get(0).getItemStack().is(Items.RED_WOOL),
                 "Renewable sheep production must preserve captured wool color");
         helper.assertTrue(sheepInputs.getStackInSlot(0).getCount() == 1,
@@ -254,7 +254,7 @@ public final class MobItemStateGameTests {
                         new FluidStack[0],
                         new FluidStack[] {new FluidStack(net.minecraftforge.common.ForgeMod.MILK.get(), 1000)},
                         0));
-        TerrestrialHabitatRecipe preparedMilk = AnimalRecipeStatePreparation.prepareHabitat(milkRecipe, cowInputs);
+        TerrestrialHabitatRecipe preparedMilk = AnimalRecipeStatePreparation.prepareHabitat(milkRecipe, cowInputs, helper.getLevel());
         helper.assertTrue(!preparedMilk.getItemIngredients().get(0).isConsumable()
                         && preparedMilk.getFluidOutputs().get(0).getAmount() == 1000,
                 "Renewable cow production must retain the adult catalyst and expose milk as fluid output");

@@ -74,7 +74,7 @@ class LivestockProcessingContractTest {
                     "/src/main/java/com/nstut/biotech/blocks/entites/machines/TerrestrialHabitatBlockEntity.java"));
             assertTrue(machine.contains("FluidOutputHatchBlockEntity"), target);
             assertTrue(machine.contains("List.of(outputFluid)"), target);
-            assertTrue(machine.contains("prepareHabitat(recipe, inputItems)"), target);
+            assertTrue(machine.contains("prepareHabitat(recipe, inputItems, (ServerLevel) level)"), target);
         }
     }
 

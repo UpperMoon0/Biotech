@@ -268,7 +268,7 @@ public final class BiotechGameTests {
                         new FluidStack[0],
                         0));
         TerrestrialHabitatRecipe preparedGrowth =
-                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs);
+                AnimalRecipeStatePreparation.prepareGrowth(growth, growthInputs, helper.getLevel());
         ItemStack adult = preparedGrowth.getItemOutputs().get(0).getItemStack();
         CompoundTag adultState = CapturedAnimalStackState.read(adult);
         helper.assertTrue(adultState.getInt("Age") == 0 && adultState.getInt("ForcedAge") == 0,

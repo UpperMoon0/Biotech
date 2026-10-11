@@ -60,6 +60,8 @@ public final class AnimalRecipeStatePreparation {
                     throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Vanilla breeding did not produce a matching offspring");
                 }
                 try {
+                    // Vanilla breeding applies species-specific baby state before publishing the child.
+                    child.setBaby(true);
                     CompoundTag state = child.saveWithoutId(new CompoundTag());
                     ItemStack newborn = template.copy();
                     newborn.setCount(1);
@@ -82,11 +84,11 @@ public final class AnimalRecipeStatePreparation {
         return entity instanceof net.minecraft.world.entity.animal.Animal animal ? animal : null;
     }
 
-    public static TerrestrialHabitatRecipe prepareGrowth(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
-        return prepareHabitat(recipe, inputs);
+    public static TerrestrialHabitatRecipe prepareGrowth(TerrestrialHabitatRecipe recipe, IItemHandler inputs, net.minecraft.server.level.ServerLevel level) {
+        return prepareHabitat(recipe, inputs, level);
     }
 
-    public static TerrestrialHabitatRecipe prepareHabitat(TerrestrialHabitatRecipe recipe, IItemHandler inputs) {
+    public static TerrestrialHabitatRecipe prepareHabitat(TerrestrialHabitatRecipe recipe, IItemHandler inputs, net.minecraft.server.level.ServerLevel level) {
         PreparedAnimalInputs.Selection selection = PreparedAnimalInputs.select(recipe, inputs);
         if (selection.animals().isEmpty()) return recipe;
         ModRecipeData prepared = selection.applyTo(recipe.getRecipe());
@@ -118,7 +120,7 @@ public final class AnimalRecipeStatePreparation {
                 for (int index = 0; index < individuals.size(); index++) {
                     ItemStack source = individuals.get(index);
                     if (!isAnimalOutputFor(grown, CapturedAnimalStackState.entityTypeId(source))) continue;
-                    CapturedAnimalStackState.writeDerived(grown, source, CapturedAnimalStackState.forAdult(source));
+                    CapturedAnimalStackState.writeDerived(grown, source, matureState(source, level));
                     individuals.remove(index);
                     break;
                 }
@@ -130,6 +132,33 @@ public final class AnimalRecipeStatePreparation {
         ItemStack donor = selection.animals().get(0).getItemStack();
         applySheepWoolColor(prepared, donor, CapturedAnimalStackState.read(donor));
         return recipe.create(recipe.getId(), prepared);
+    }
+
+    /** Apply native age-boundary hooks without publishing maturation drops or rewriting unrelated data. */
+    private static CompoundTag matureState(ItemStack source, net.minecraft.server.level.ServerLevel level) {
+        var animal = breedingParent(level, source);
+        if (animal == null) throw new com.nstut.nstutlib.recipes.RecipeTransactionException("Growth requires a reconstructable animal");
+        var previousDrops = animal.captureDrops(new ArrayList<>());
+        try {
+            CompoundTag before = saveAnimal(animal);
+            animal.setBaby(false);
+            CompoundTag after = saveAnimal(animal);
+            CompoundTag state = CapturedAnimalStackState.read(source).copy();
+            // Preserve pack/mod payload fields that vanilla does not round-trip. Only transplant
+            // changes made by the lifecycle hook (for example goat horns and attack damage).
+            for (String key : before.getAllKeys()) if (!after.contains(key)) state.remove(key);
+            for (String key : after.getAllKeys()) {
+                if (!java.util.Objects.equals(before.get(key), after.get(key))) state.put(key, after.get(key).copy());
+            }
+            return com.nstut.biotech.items.CapturedEntityState.asAdult(state);
+        } finally {
+            animal.captureDrops(previousDrops);
+            animal.discard();
+        }
+    }
+
+    private static CompoundTag saveAnimal(net.minecraft.world.entity.animal.Animal animal) {
+        return animal.saveWithoutId(new CompoundTag());
     }
 
     /** Merge only identical complete payloads after resolving their original chance groups. */

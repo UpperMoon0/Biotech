@@ -78,7 +78,7 @@ public class TerrestrialHabitatBlockEntity extends ControlledMachineBlockEntity 
                 energy,
                 com.nstut.biotech.Config.machineEnergyPerTick,
                 null,
-                recipe -> AnimalRecipeStatePreparation.prepareHabitat(recipe, inputItems));
+                recipe -> AnimalRecipeStatePreparation.prepareHabitat(recipe, inputItems, (ServerLevel) level));
 
         if (level instanceof ServerLevel serverLevel && level.getGameTime() % 5L == 0L) {
             PacketRegistries.sendToTrackingChunk(serverLevel, blockPos, new TerrestrialHabitatPacket(

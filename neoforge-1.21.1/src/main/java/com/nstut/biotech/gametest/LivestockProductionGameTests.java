@@ -129,6 +129,106 @@ public final class LivestockProductionGameTests {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "livestock", timeoutTicks = 400)
+    public static void goatLifecycleSurvivesBreedingAndBlockedGrowthReload(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var first = net.minecraft.world.entity.EntityType.GOAT.create(level);
+        var second = net.minecraft.world.entity.EntityType.GOAT.create(level);
+        first.setScreamingGoat(true); second.setScreamingGoat(true);
+        ItemStack firstStack = captureLifecycle(first), secondStack = captureLifecycle(second);
+        var inputs = new net.neoforged.neoforge.items.ItemStackHandler(3);
+        inputs.setStackInSlot(0, firstStack.copy()); inputs.setStackInSlot(1, secondStack.copy());
+        inputs.setStackInSlot(2, new ItemStack(Items.WHEAT, 2));
+        var recipe = (BreedingChamberRecipe) level.getServer().getRecipeManager().byKey(id("breeding_chamber_goat")).orElseThrow().value();
+        var prepared = AnimalRecipeStatePreparation.prepareBreeding(recipe, inputs, level);
+        var ops = level.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+        var encoded = ModRecipeData.CODEC.encodeStart(ops, prepared.getRecipe()).result().orElseThrow();
+        var restored = ModRecipeData.CODEC.parse(ops, encoded).result().orElseThrow();
+        var newbornStack = restored.getOutputItems()[0].getItemStack();
+        var newborn = (net.minecraft.world.entity.animal.goat.Goat) ((com.nstut.biotech.items.CapturedAnimalItem) newbornStack.getItem()).createCapturedEntity(level, newbornStack);
+        var vanilla = first.getBreedOffspring(level, second);
+        vanilla.setBaby(true);
+        assertGoatLifecycle(helper, newborn, vanilla);
+        helper.assertTrue(same(firstStack, inputs.getStackInSlot(0)) && same(secondStack, inputs.getStackInSlot(1)), "Native baby initialization must not mutate retained parents");
+        newborn.discard(); first.discard(); second.discard();
+
+        // Capture an actual native baby, including its age-dependent attributes and horn flags.
+        vanilla.setCustomName(net.minecraft.network.chat.Component.literal("Growing goat"));
+        ItemStack captured = captureLifecycle(vanilla);
+        CompoundTag payload = CapturedAnimalStackState.read(captured);
+        payload.putString("PackGrowthMarker", "preserve me");
+        CapturedAnimalStackState.write(captured, payload);
+        vanilla.setAge(-1);
+        vanilla.aiStep();
+        helper.assertTrue(!vanilla.isBaby(), "Control goat must naturally cross the age boundary");
+        Rig rig = habitat(helper);
+        rig.animals.setStackInSlot(0, captured.copy());
+        rig.food.setStackInSlot(0, new ItemStack(Items.WHEAT, 4));
+        rig.water.setFluid(new FluidStack(Fluids.WATER, 400));
+        rig.energy.setEnergy(48000);
+        fill(rig.outputs, new ItemStack(Items.COBBLESTONE, 64));
+        tick(helper, rig.machine, 1);
+        helper.assertTrue(snapshot(rig.machine) != null && same(captured, rig.animals.getStackInSlot(0)), "Blocked growth must prepare without consuming the captured baby");
+        rig.machine = reload(helper, rig.machine);
+        clear(rig.outputs);
+        tick(helper, rig.machine, 500);
+        ItemStack grownStack = ItemStack.EMPTY;
+        for (int slot = 0; slot < rig.outputs.getSlots(); slot++) {
+            var candidate = rig.outputs.getStackInSlot(slot);
+            if (CapturedAnimalStackState.entityTypeId(candidate).equals("minecraft:goat")) grownStack = candidate;
+        }
+        helper.assertTrue(!grownStack.isEmpty(), "Reloaded growth must complete with an adult goat");
+        var grown = (net.minecraft.world.entity.animal.goat.Goat) ((com.nstut.biotech.items.CapturedAnimalItem) grownStack.getItem()).createCapturedEntity(level, grownStack);
+        assertGoatLifecycle(helper, grown, vanilla);
+        helper.assertTrue(grown.isScreamingGoat() && grown.getCustomName().getString().equals("Growing goat")
+                        && CapturedAnimalStackState.read(grownStack).getString("PackGrowthMarker").equals("preserve me"),
+                "Growth must retain the same individual's unrelated traits and pack fields");
+        helper.assertTrue(rig.animals.getStackInSlot(0).isEmpty() && rig.food.getStackInSlot(0).isEmpty()
+                        && rig.water.getInternalTank().getFluidInTank(0).isEmpty() && rig.energy.getInternalEnergyStorage().getEnergyStored() == 0,
+                "Growth reload must consume the baby, food, water and energy exactly once");
+        grown.discard(); vanilla.discard();
+        helper.succeed();
+    }
+
+    private static void assertGoatLifecycle(GameTestHelper helper, net.minecraft.world.entity.animal.goat.Goat actual,
+                                           net.minecraft.world.entity.animal.goat.Goat expected) {
+        helper.assertTrue(actual.isBaby() == expected.isBaby()
+                        && actual.hasLeftHorn() == expected.hasLeftHorn() && actual.hasRightHorn() == expected.hasRightHorn()
+                        && actual.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
+                        == expected.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE),
+                "Persisted goat age, horns and attack damage must match this version's native lifecycle");
+    }
+
+    private static ItemStack captureLifecycle(net.minecraft.world.entity.animal.Animal animal) {
+        CompoundTag state = animal.saveWithoutId(new CompoundTag());
+        ItemStack stack = new ItemStack(ItemRegistries.CAPTURED_ANIMAL.get());
+        CapturedAnimalStackState.writeCapture(stack, state, net.minecraft.world.entity.EntityType.getKey(animal.getType()).toString(), -1);
+        return stack;
+    }
+
+    @GameTest(templateNamespace = Biotech.MOD_ID, template = "livestock", timeoutTicks = 400)
+    public static void turtleGrowthDoesNotPublishPreparationDrops(GameTestHelper helper) {
+        var level = helper.getLevel();
+        level.getChunk(0, 0);
+        var bounds = new net.minecraft.world.phys.AABB(-4, -4, -4, 4, 8, 4);
+        int before = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, bounds).size();
+        var turtle = net.minecraft.world.entity.EntityType.TURTLE.create(level);
+        turtle.setBaby(true);
+        var source = captureLifecycle(turtle);
+        turtle.discard();
+        var inputs = new net.neoforged.neoforge.items.ItemStackHandler(2);
+        inputs.setStackInSlot(0, source.copy()); inputs.setStackInSlot(1, new ItemStack(Items.SEAGRASS, 4));
+        var recipe = (TerrestrialHabitatRecipe) level.getServer().getRecipeManager().byKey(id("terrestrial_habitat_turtle_growth")).orElseThrow().value();
+        for (int attempt = 0; attempt < 3; attempt++) {
+            var prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs, level);
+            helper.assertTrue(outputCounts(prepared.getRecipe()).get(Items.TURTLE_SCUTE) == 1, "Turtle scute must remain an explicit transaction output");
+        }
+        helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, bounds).size() == before
+                        && same(source, inputs.getStackInSlot(0)),
+                "Preparing or retrying temporary turtle maturation must never publish world drops or consume inputs");
+        helper.succeed();
+    }
+
     private static ItemStack statHorse(GameTestHelper helper, net.minecraft.world.entity.EntityType<?> type, double speed, double jump, double health) {
         var entity = (net.minecraft.world.entity.animal.horse.AbstractHorse) type.create(helper.getLevel());
         entity.setTamed(true); entity.setCustomName(net.minecraft.network.chat.Component.literal("Parent"));
@@ -566,7 +666,7 @@ public final class LivestockProductionGameTests {
         water.setFluid(new FluidStack(Fluids.WATER, 500));
         FluidTank milk = new FluidTank(4000);
         for (int cycle = 0; cycle < 2; cycle++) {
-            var prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs);
+            var prepared = AnimalRecipeStatePreparation.prepareHabitat(recipe, inputs, helper.getLevel());
             helper.assertTrue(prepared.recipeMatch(inputs, List.of(water), outputs, List.of(milk)), "The data-driven generic adult goat selector must match without hardcoded species production logic");
             helper.assertTrue(prepared.tryConsumeIngredients(inputs, List.of(water)), "Goat example must consume its authored resources");
             prepared.assemble(outputs, List.of(milk), prepared.rollItemOutputIndexes());
