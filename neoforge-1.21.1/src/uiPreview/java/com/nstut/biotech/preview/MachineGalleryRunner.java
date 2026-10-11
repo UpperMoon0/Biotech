@@ -44,11 +44,11 @@ public final class MachineGalleryRunner {
         if (!Boolean.getBoolean("biotech.machineGallery.enabled") || stopped) return;
         Minecraft mc=Minecraft.getInstance();
         if(failure!=null)throw new IllegalStateException("Machine gallery failed",failure);
-        if(mc.level==null||mc.player==null||mc.getSingleplayerServer()==null||mc.screen!=null||mc.getOverlay()!=null)return;
+        if(mc.level==null||mc.player==null||mc.getSingleplayerServer()==null||(mc.screen!=null && index < 28)||mc.getOverlay()!=null)return;
         try {
             if(output==null){output=Path.of(System.getProperty("biotech.machineGallery.output"));Files.createDirectories(output);mc.options.hideGui=true;}
             if(!pending){
-                if(index==24){finish();stopped=true;mc.stop();return;}
+                if(index==29){finish();stopped=true;mc.setScreen(null);mc.stop();return;}
                 pending=true;ready=false;settledTicks=0;
                 int scene=index;
                 mc.getSingleplayerServer().execute(()->prepare(mc,scene));
@@ -56,9 +56,9 @@ public final class MachineGalleryRunner {
                 var be=mc.level.getBlockEntity(controllerPos);
                 if(!(be instanceof MachineBlockEntity machine)||!machine.checkMultiblock(mc.level,controllerPos,mc.level.getBlockState(controllerPos)))
                     throw new IllegalStateException("Rendered client structure is missing or invalid: "+controllerPos);
-                String id=MachineStructures.ids()[index/4];
-                String layout=index%4<2?"before-2.5":"after-redesign";
-                String view=index%2==0?"front-left":"rear-right";
+                String id=index>=24?"terrestrial_habitat":MachineStructures.ids()[index/4];
+                String layout=index>=24?(index==24?"before-2.6":"after-2.7"):index%4<2?"before-2.5":"after-redesign";
+                String view=index>=24?switch(index){case 24,25 -> "entrance-eye-level";case 26 -> "interior-eye-level";case 27 -> "service-pipe-held";default -> "service-pipe-inventory";}:index%2==0?"front-left":"rear-right";
                 String name=id+"-"+layout+"-"+view+".png";
                 try(NativeImage frame=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
                     frame.writeToFile(output.resolve(name));
@@ -79,18 +79,18 @@ public final class MachineGalleryRunner {
             level.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false,server);
             level.getGameRules().getRule(GameRules.RULE_RANDOMTICKING).set(0,server);
             level.setDayTime(6000);level.setWeatherParameters(100000,0,false,false);
-            String id=MachineStructures.ids()[scene/4];
+            String id=scene>=24?"terrestrial_habitat":MachineStructures.ids()[scene/4];
             int[] origin=MachineStructures.origin(id);
             var modern=MachineStructures.pattern(id);
             var a=modern.getPattern();
             BlockState state=a[a.length-origin[1]-1][a[0].length-origin[2]-1][origin[0]].getBlock().defaultBlockState().setValue(MachineBlock.FACING,Direction.SOUTH);
             MachineBlockEntity blueprint=(MachineBlockEntity)((net.minecraft.world.level.block.EntityBlock)state.getBlock()).newBlockEntity(BlockPos.ZERO,state);
             MultiblockPattern legacy=(MultiblockPattern)blueprint.getClass().getMethod("getLegacyMultiblockPattern").invoke(blueprint);
-            var chosen=(scene%4<2?legacy:modern).getPattern();
+            var chosen=(scene==24?MachineStructures.habitat26Pattern():scene>=25?modern:scene%4<2?legacy:modern).getPattern();
             int h=chosen.length,d=chosen[0].length,w=chosen[0][0].length;
             int sx=16-w/2,sz=16-d/2;
             BlockPos anchor=new BlockPos(sx+origin[0],80+origin[1],sz+d-origin[2]-1);
-            if(scene%2==0){
+            if(scene%2==0 || scene>=24){
                 // Blank fixed studio pad in a copied test world. No user save is touched.
                 for(int x=-8;x<=40;x++)for(int z=-8;z<=40;z++){
                     level.setBlock(new BlockPos(x,79,z),Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState(),2);
@@ -117,12 +117,39 @@ public final class MachineGalleryRunner {
             float pitch=(float)Math.toDegrees(Math.atan2(eyeY-targetY,Math.sqrt(dx*dx+dz*dz)));
             player.setGameMode(GameType.SPECTATOR);
             player.teleportTo(level,16+dx,eyeY-player.getEyeHeight(),16+dz,yaw,pitch);
+            if (scene>=24) {
+                // Actual player eye height at the entrance, then inside the shelter.
+                // Front door occupies local x=4..5, with a floor at y=80.
+                player.teleportTo(level,sx+5.0,81,scene==26?sz+5.5:sz+11,180,0);
+                if(scene==27){
+                    player.setGameMode(GameType.CREATIVE);
+                    player.getAbilities().flying=true;
+                    player.onUpdateAbilities();
+                    player.getInventory().selected=0;
+                    player.getInventory().setItem(0,new net.minecraft.world.item.ItemStack(com.nstut.biotech.blocks.BlockRegistries.BIOTECH_PIPE.get()));
+                    player.containerMenu.broadcastChanges();
+                    mc.execute(()->mc.options.hideGui=false);
+                }
+                if(scene==28) mc.execute(()->mc.setScreen(new PipeInventoryScreen()));
+            }
             ready=true;
         }catch(Throwable ex){failure=ex;}
     }
     private static <T extends Comparable<T>> BlockState property(BlockState state,String name,String value){
         @SuppressWarnings("unchecked") Property<T> p=(Property<T>)state.getBlock().getStateDefinition().getProperty(name);
         return state.setValue(p,p.getValue(value).orElseThrow());
+    }
+    private static final class PipeInventoryScreen extends net.minecraft.client.gui.screens.Screen {
+        PipeInventoryScreen(){super(net.minecraft.network.chat.Component.literal("Service Pipe: actual GUI item model"));}
+        @Override public void render(net.minecraft.client.gui.GuiGraphics gui,int mouseX,int mouseY,float partialTick){
+            gui.fill(0,0,width,height,0xFF182024);
+            gui.drawCenteredString(font,"Service Pipe: vanilla GUI item renderer",width/2,20,0xFFFFFF);
+            gui.pose().pushPose();
+            gui.pose().translate(width/2.0f-64,height/2.0f-64,0);
+            gui.pose().scale(8,8,1);
+            gui.renderItem(new net.minecraft.world.item.ItemStack(com.nstut.biotech.blocks.BlockRegistries.BIOTECH_PIPE.get()),0,0);
+            gui.pose().popPose();
+        }
     }
     private static void finish()throws Exception{
         StringBuilder html=new StringBuilder("<!doctype html><meta charset=utf-8><title>Biotech placed-world comparison</title><style>body{background:#182024;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%}figure{margin:0}</style><h1>Actual in-game multiblocks</h1><p>NeoForge 1.21.1, noon, fixed lens and matching camera distance per machine; front-left and rear-right show controller and automation faces. Both old and new layouts were placed and validated in the integrated server and client world.</p><main>");

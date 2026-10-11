@@ -55,19 +55,8 @@ public class MachineGenerator extends DataGenerator {
             BufferedImage overlayOnImage = ImageIO.read(new File(BLOCK_TEXTURE_PATH + "/" + machineId + "_on_overlay.png"));
 
             // Create the combined images
-            BufferedImage combinedOffImage = new BufferedImage(baseImage.getWidth(), baseImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            BufferedImage combinedOnImage = new BufferedImage(baseImage.getWidth(), baseImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-            // Draw the base and overlay images
-            Graphics gOff = combinedOffImage.getGraphics();
-            gOff.drawImage(baseImage, 0, 0, null);
-            gOff.drawImage(overlayOffImage, 0, 0, null);
-            gOff.dispose();
-
-            Graphics gOn = combinedOnImage.getGraphics();
-            gOn.drawImage(baseImage, 0, 0, null);
-            gOn.drawImage(overlayOnImage, 0, 0, null);
-            gOn.dispose();
+            BufferedImage combinedOffImage = combineTexture(baseImage, overlayOffImage);
+            BufferedImage combinedOnImage = combineTexture(baseImage, overlayOnImage);
 
             // Save the combined images
             File outputDir = new File(GEN_BLOCK_TEXTURE_PATH);
@@ -76,6 +65,23 @@ public class MachineGenerator extends DataGenerator {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to generate texture for machine " + machineId, e);
         }
+    }
+
+    static BufferedImage combineTexture(BufferedImage base, BufferedImage overlay) {
+        // Habitat uses a 32px face; keep existing 16px controllers unchanged and
+        // scale the casing with hard pixel edges rather than clipping the overlay.
+        int width = Math.max(base.getWidth(), overlay.getWidth());
+        int height = Math.max(base.getHeight(), overlay.getHeight());
+        BufferedImage combined = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = combined.createGraphics();
+        try {
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            graphics.drawImage(base, 0, 0, width, height, null);
+            graphics.drawImage(overlay, 0, 0, width, height, null);
+        } finally {
+            graphics.dispose();
+        }
+        return combined;
     }
 
     private void generateModels(String machineId) {

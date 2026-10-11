@@ -115,21 +115,30 @@
     "layers": [
       [
         "FVVVVVF",
-        "PPPPPPP",
-        "PPPPPPP",
+        "PPLPLPP",
+        "PPPGPPP",
         "FPPPPPF",
-        "       ",
-        "       ",
-        "       "
+        "F     F",
+        "F     F",
+        "FPPPPPF"
+      ],
+      [
+        "FPPVPPF",
+        "G.....G",
+        "G.....G",
+        "F.....F",
+        ".......",
+        ".......",
+        "FPPP..F"
       ],
       [
         "FPPPPPF",
-        "G.L.L.G",
         "G.....G",
-        "FPPPPPF",
-        " ..... ",
-        " ..... ",
-        " F   F "
+        "G.....G",
+        "F.....F",
+        ".......",
+        ".......",
+        "FPGP..F"
       ],
       [
         "FPPVPPF",
@@ -138,7 +147,7 @@
         "F.....F",
         "G.....G",
         "G.....G",
-        "FGG@GGF"
+        "FPP@..F"
       ],
       [
         "FP6P5P7",
@@ -146,7 +155,7 @@
         "FhhPhhF",
         "2hhPhh4",
         "FhhPhhF",
-        "3hhPhhF",
+        "3hhPPPF",
         "FPPPPPF"
       ]
     ],
@@ -159,7 +168,7 @@
       "fluid_input_hatch:north",
       "fluid_output_hatch:east"
     ],
-    "rationale": "7 \u00d7 7 \u00d7 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls."
+    "rationale": "7 \u00d7 7 \u00d7 5 animal-care habitat with a two-block-wide, three-block-high walk-in entrance beside the front control station. A level service path opens into the grass yard and a three-block-high illuminated rear shelter. Continuous corner posts support the canopy and entrance lintel; seven exposed ports retain their 2.6 positions."
   },
   "slaughterhouse": {
     "origin": [

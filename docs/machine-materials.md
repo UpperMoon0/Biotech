@@ -73,9 +73,9 @@ New size: **7 × 5 × 4**. New placed blocks (including controller, hatches, flo
 
 ## Terrestrial Habitat
 
-7 × 7 × 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls.
+7 × 7 × 5 animal-care habitat with a two-block-wide, three-block-high walk-in entrance beside the front control station. A level service path opens into the grass yard and a three-block-high illuminated rear shelter. Continuous corner posts support the canopy and entrance lintel; seven exposed ports retain their 2.6 positions.
 
-New size: **7 × 7 × 4**. New placed blocks (including controller, hatches, floors and water; excluding air): **123**.
+New size: **7 × 7 × 5**. New placed blocks (including controller, hatches, floors and water; excluding air): **146**.
 
 | Part | Count |
 | --- | ---: |
@@ -87,12 +87,12 @@ New size: **7 × 7 × 4**. New placed blocks (including controller, hatches, flo
 | biotech:fluid_input_hatch[facing=north] | 1 |
 | biotech:fluid_output_hatch[facing=east] | 1 |
 | biotech:terrestrial_habitat[facing=south] | 1 |
-| biotech:biotech_frame | 25 |
-| biotech:biotech_framed_glass | 16 |
+| biotech:biotech_frame | 37 |
+| biotech:biotech_framed_glass | 18 |
 | biotech:biotech_grow_light | 2 |
-| biotech:biotech_panel | 46 |
-| biotech:biotech_vent | 6 |
-| minecraft:grass_block[snowy=false] | 20 |
+| biotech:biotech_panel | 56 |
+| biotech:biotech_vent | 7 |
+| minecraft:grass_block[snowy=false] | 18 |
 
 | Port | Controller-relative offset (south) | Faces |
 | --- | --- | --- |
@@ -104,7 +104,7 @@ New size: **7 × 7 × 4**. New placed blocks (including controller, hatches, flo
 | 6: fluid_input_hatch | (-1, -1, -6) | north |
 | 7: fluid_output_hatch | (3, -1, -6) | east |
 
-2.5 baseline: **141 placed required blocks**, including **84 original casings**. New specialized parts: **95** (26 four-part crafting batches, **52 original casings** plus 26 common components when crafted independently). New original casings: 0. Controller/hatch costs remain unchanged. The floor/water counts above are retained functional materials; all manufactured surfaces now use Biotech parts.
+2.5 baseline: **141 placed required blocks**, including **84 original casings**. New specialized parts: **120** (32 four-part crafting batches, **64 original casings** plus 32 common components when crafted independently). New original casings: 0. Controller/hatch costs remain unchanged. The floor/water counts above are retained functional materials; all manufactured surfaces now use Biotech parts.
 
 ## Slaughterhouse
 

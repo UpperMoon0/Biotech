@@ -38,21 +38,30 @@
         "pattern": [
           [
             "FVVVVVF",
-            "PPPPPPP",
-            "PPPPPPP",
+            "PPLPLPP",
+            "PPPGPPP",
             "FPPPPPF",
-            "       ",
-            "       ",
-            "       "
+            "F     F",
+            "F     F",
+            "FPPPPPF"
+          ],
+          [
+            "FPPVPPF",
+            "G.....G",
+            "G.....G",
+            "F.....F",
+            ".......",
+            ".......",
+            "FPPP..F"
           ],
           [
             "FPPPPPF",
-            "G.L.L.G",
             "G.....G",
-            "FPPPPPF",
-            " ..... ",
-            " ..... ",
-            " F   F "
+            "G.....G",
+            "F.....F",
+            ".......",
+            ".......",
+            "FPGP..F"
           ],
           [
             "FPPVPPF",
@@ -61,7 +70,7 @@
             "F.....F",
             "G.....G",
             "G.....G",
-            "FGG0GGF"
+            "FPP0..F"
           ],
           [
             "FP6P5P7",
@@ -69,7 +78,7 @@
             "FhhPhhF",
             "2hhPhh4",
             "FhhPhhF",
-            "3hhPhhF",
+            "3hhPPPF",
             "FPPPPPF"
           ]
         ]
@@ -84,7 +93,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "7 \u00d7 7 \u00d7 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls.$(br)$(br)25 frame, 16 framed glass, 2 grow light, 46 panel, 6 vent, 20 grass block. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "7 \u00d7 7 \u00d7 5 animal-care habitat with a two-block-wide, three-block-high walk-in entrance beside the front control station. A level service path opens into the grass yard and a three-block-high illuminated rear shelter. Continuous corner posts support the canopy and entrance lintel; seven exposed ports retain their 2.6 positions.$(br)$(br)37 frame, 18 framed glass, 2 grow light, 56 panel, 7 vent, 18 grass block. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Original 2.5 builds and 2.6 habitats still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
     }
   ],
   "sortnum": 90

@@ -1,0 +1,55 @@
+{
+  "origin": [
+    3,
+    1,
+    0
+  ],
+  "layers": [
+    [
+      "FVVVVVF",
+      "PPPPPPP",
+      "PPPPPPP",
+      "FPPPPPF",
+      "       ",
+      "       ",
+      "       "
+    ],
+    [
+      "FPPPPPF",
+      "G.L.L.G",
+      "G.....G",
+      "FPPPPPF",
+      " ..... ",
+      " ..... ",
+      " F   F "
+    ],
+    [
+      "FPPVPPF",
+      "G.....G",
+      "G.....G",
+      "F.....F",
+      "G.....G",
+      "G.....G",
+      "FGG@GGF"
+    ],
+    [
+      "FP6P5P7",
+      "1hhPhhF",
+      "FhhPhhF",
+      "2hhPhh4",
+      "FhhPhhF",
+      "3hhPhhF",
+      "FPPPPPF"
+    ]
+  ],
+  "ports": [
+    "item_input_hatch:west",
+    "item_input_hatch:west",
+    "item_input_hatch:west",
+    "item_output_hatch:east",
+    "energy_input_hatch:north",
+    "fluid_input_hatch:north",
+    "fluid_output_hatch:east"
+  ],
+  "rationale": "7 \u00d7 7 \u00d7 4 animal-care yard with a rear canopy, illuminated shelter and open front roof. Grass is functional habitat flooring; center walkway connects the shelter and collection side. Seven ports remain on exposed outer walls."
+}

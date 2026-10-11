@@ -33,6 +33,16 @@ class MachineStructureContractTest {
         }
     }
 
+    @Test void habitatEntranceAndInteriorHaveThreeBlocksOfRequiredClearance() {
+        String[][] layers = MachineStructures.layers("terrestrial_habitat");
+        assertEquals(5, layers.length);
+        for (int y = 1; y <= 3; y++) for (int z = 1; z <= 6; z++) for (int x = 4; x <= 5; x++)
+            assertEquals('.', layers[y][z].charAt(x), "clear doorway-to-shelter route");
+        assertEquals("FPPPPPF", layers[0][6], "supported entrance lintel");
+        assertEquals("FPP@..F", layers[3][6], "controller beside doorway");
+        assertEquals(4, MachineStructures.habitat26Layers().length, "2.6 remains frozen");
+    }
+
     @Test void guidePreviewExactlyMatchesNativeLayers() throws Exception {
         Path root = Path.of("").toAbsolutePath();
         while (!Files.exists(root.resolve("design/machines.json"))) root = root.getParent();
