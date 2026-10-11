@@ -129,7 +129,7 @@ public final class MachineLifecycleChecks {
         }
         for (int i=0; i<outputs.getSlots(); i++) outputs.setStackInSlot(i,new ItemStack(Items.COBBLESTONE,64));
         if(customFluids){
-            setField(machine,"activeRecipeId",recipe.getId());setField(machine,"activeRecipeSnapshot",data.copy());
+            setField(machine,"activeRecipeKey",net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE,net.minecraft.resources.Identifier.fromNamespaceAndPath("biotech",recipeName)));setField(machine,"activeRecipeSnapshot",data.copy());
             setField(machine,"activeItemOutputIndexes",new int[]{0});setField(machine,"recipeEnergyCost",1024);
         }
         tick(helper,machine,1);
