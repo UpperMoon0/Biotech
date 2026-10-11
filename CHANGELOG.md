@@ -1,4 +1,4 @@
-# 2.7 — Walk-in Terrestrial Habitat
+# 2.7-alpha.1 — Walk-in Terrestrial Habitat (alpha)
 
 - Rebuild the habitat as a 7 × 7 × 6 stepped-shelter/open-run structure with a two-wide, three-high entrance, level service path, lower offset feeding pod and at least three-high rear shelter.
 - Preserve exact 2.5 machines and the original 2.6 habitat as complete compatibility layouts; existing blocks are never converted automatically.

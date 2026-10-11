@@ -15,6 +15,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  release-policy:
+    name: Validate release channel policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 -m unittest discover -s scripts -p 'test_release*.py' -v
+      - run: python3 scripts/release_policy.py --commit "$GITHUB_SHA" --output release-policy.json
+
   draft-fast:
     if: github.event_name == 'pull_request' && github.event.pull_request.draft && !contains(github.event.pull_request.labels.*.name, 'full-validation')
     name: draft-fast-neoforge-26.1.2
@@ -148,6 +156,14 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew :${{ matrix.target }}:test :${{ matrix.target }}:build --no-daemon --stacktrace 2>&1 | tee "${{ matrix.target }}-build.log"
+      - name: Verify actual JAR channel and provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='${{ matrix.target }}'
+          mapfile -t jars < <(find "$target/build/libs" -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' ! -name '*-dev-shadow.jar' ! -name '*-plain.jar' | sort)
+          [[ ${#jars[@]} == 1 ]] || { echo "Expected one release JAR" >&2; exit 1; }
+          python3 scripts/release_policy.py --commit "$GITHUB_SHA" --output "$target/build/release-provenance.json" --jar "${jars[0]}" --loader "${target%%-*}" --minecraft "${target#*-}"
       - name: Upload failing 26.1.2 Gradle log
         if: failure() && matrix.target == 'neoforge-26.1.2'
         uses: actions/upload-artifact@v7
@@ -170,6 +186,7 @@ jobs:
         with:
           name: verification-${{ matrix.target }}
           path: |
+            ${{ matrix.target }}/build/release-provenance.json
             ${{ matrix.target }}/build/test-results/
             ${{ matrix.target }}/build/reports/tests/
             ${{ matrix.target }}/build/reports/gametest/

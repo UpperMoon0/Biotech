@@ -10,12 +10,17 @@ on:
         description: Publish the current version from main
         type: boolean
         default: false
+      release_channel:
+        description: Must match mod_version (unsuffixed = release; -alpha.N/-beta.N = prerelease)
+        type: choice
+        default: release
+        options: [release, alpha, beta]
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: biotech-release
   cancel-in-progress: false
 
 jobs:
@@ -26,6 +31,9 @@ jobs:
       should_release: ${{ steps.check.outputs.should_release }}
       version: ${{ steps.check.outputs.version }}
       changelog: ${{ steps.check.outputs.changelog }}
+      channel: ${{ steps.check.outputs.channel }}
+      github_prerelease: ${{ steps.check.outputs.github_prerelease }}
+      github_make_latest: ${{ steps.check.outputs.github_make_latest }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -37,41 +45,43 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           REF: ${{ github.ref }}
           MANUAL_RELEASE: ${{ inputs.release || false }}
+          REQUESTED_CHANNEL: ${{ inputs.release_channel || 'release' }}
         run: |
           set -euo pipefail
-          version="$(sed -n 's/^mod_version[[:space:]]*=[[:space:]]*//p' gradle.properties | head -n1 | tr -d '\r' | xargs)"
-          if [[ ! "$version" =~ ^[0-9A-Za-z][0-9A-Za-z._+-]*$ ]]; then
-            printf 'Invalid mod_version: %q\n' "$version" >&2
-            exit 1
+          args=()
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$MANUAL_RELEASE" == "true" ]]; then
+            args+=(--requested-channel "$REQUESTED_CHANNEL")
           fi
-          changelog="CHANGELOG-${version}.md"
-          if [[ ! -s "$changelog" ]]; then
-            echo "Missing release changelog: $changelog" >&2
-            exit 1
-          fi
-          expected="v${version}"
+          python3 scripts/release_policy.py --commit "$GITHUB_SHA" --output release-policy.json --github-output "$GITHUB_OUTPUT" "${args[@]}"
+          version="$(jq -r .version release-policy.json)"
+          expected="$(jq -r .tag release-policy.json)"
+          channel="$(jq -r .channel release-policy.json)"
           should_release=false
-
-          if [[ "$REF" == refs/tags/* ]]; then
-            if [[ "${REF#refs/tags/}" != "$expected" ]]; then
-              echo "Tag ${REF#refs/tags/} does not match mod_version $version" >&2
-              exit 1
-            fi
+          tag_exists=false
+          set +e
+          git ls-remote --exit-code --tags origin "refs/tags/${expected}" >/dev/null 2>&1
+          tag_status=$?
+          set -e
+          case "$tag_status" in
+            0) tag_exists=true ;;
+            2) ;; # Exactly no matching tag. Network/auth errors must fail closed.
+            *) echo "Unable to verify existing release tag" >&2; exit "$tag_status" ;;
+          esac
+          if [[ "$EVENT_NAME" == "push" && "$REF" == refs/tags/* ]]; then
+            [[ "${REF#refs/tags/}" == "$expected" ]] || { echo "Tag/version mismatch" >&2; exit 1; }
             should_release=true
           elif [[ "$EVENT_NAME" == "workflow_dispatch" && "$REF" == "refs/heads/main" && "$MANUAL_RELEASE" == "true" ]]; then
             should_release=true
-          elif [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/main" ]]; then
-            if git ls-remote --exit-code --tags origin "refs/tags/${expected}" >/dev/null 2>&1; then
-              echo "${expected} already exists; nothing to publish."
-            else
-              should_release=true
-            fi
+          elif [[ "$EVENT_NAME" == "push" && "$REF" == "refs/heads/main" && "$tag_exists" == "false" ]]; then
+            should_release=true
           fi
-
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "changelog=$changelog" >> "$GITHUB_OUTPUT"
+          if [[ "$should_release" == "true" && "$tag_exists" == "true" ]]; then
+            git fetch --no-tags origin "refs/tags/${expected}:refs/tags/${expected}"
+            [[ "$(git rev-list -n 1 "$expected")" == "$(git rev-parse HEAD)" ]] || { echo "Existing tag points to another commit; refusing to overwrite" >&2; exit 1; }
+          fi
           echo "should_release=$should_release" >> "$GITHUB_OUTPUT"
-          echo "Release trigger: $should_release"
+          echo "Release trigger: $should_release; version=$version; channel=$channel"
+
 
   build:
     name: Build ${{ matrix.loader }} ${{ matrix.minecraft }}
@@ -149,19 +159,27 @@ jobs:
       - name: Build and test Forge 1.20.1
         if: matrix.project == 'forge-1.20.1'
         run: |
-          ./gradlew :forge-1.20.1:testClasses :forge-1.20.1:assemble --no-daemon --stacktrace
+          ./gradlew :forge-1.20.1:test :forge-1.20.1:build --no-daemon --stacktrace
           ./gradlew :forge-1.20.1:runGameTestServer --no-daemon --stacktrace
       - name: Build and test NeoForge
         if: matrix.project != 'forge-1.20.1'
         run: |
           ./gradlew :${{ matrix.project }}:test :${{ matrix.project }}:build --no-daemon --stacktrace
           ./gradlew :${{ matrix.project }}:runGameTestServer --no-daemon --stacktrace
+      - name: Write channel and artifact provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t jars < <(find '${{ matrix.project }}/build/libs' -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' ! -name '*-dev-shadow.jar' ! -name '*-plain.jar' | sort)
+          [[ ${#jars[@]} == 1 ]] || { echo "Expected one release JAR" >&2; exit 1; }
+          python3 scripts/release_policy.py --commit "$GITHUB_SHA" --output '${{ matrix.project }}/build/libs/release-${{ matrix.project }}.json' --jar "${jars[0]}" --loader '${{ matrix.loader }}' --minecraft '${{ matrix.minecraft }}'
       - name: Upload release JAR
         uses: actions/upload-artifact@v7
         with:
-          name: biotech-${{ matrix.loader }}-${{ matrix.minecraft }}
+          name: biotech-${{ needs.release-gate.outputs.version }}-${{ needs.release-gate.outputs.channel }}-${{ matrix.loader }}-${{ matrix.minecraft }}
           path: |
             ${{ matrix.project }}/build/libs/*.jar
+            ${{ matrix.project }}/build/libs/release-*.json
             !${{ matrix.project }}/build/libs/*-sources.jar
             !${{ matrix.project }}/build/libs/*-javadoc.jar
             !${{ matrix.project }}/build/libs/*-dev-shadow.jar
@@ -171,7 +189,7 @@ jobs:
   publish-curseforge:
     name: Publish ${{ matrix.loader_name }} ${{ matrix.minecraft }} to CurseForge
     if: needs.release-gate.outputs.should_release == 'true'
-    needs: [release-gate, build]
+    needs: [release-gate, build, publish-github-release]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -193,7 +211,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
-          name: biotech-${{ matrix.loader }}-${{ matrix.minecraft }}
+          name: biotech-${{ needs.release-gate.outputs.version }}-${{ needs.release-gate.outputs.channel }}-${{ matrix.loader }}-${{ matrix.minecraft }}
           path: curseforge-artifact
       - name: Select release JAR
         id: release_file
@@ -213,6 +231,7 @@ jobs:
           CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
           CURSEFORGE_PROJECT_ID: '1119684'
           MOD_VERSION: ${{ needs.release-gate.outputs.version }}
+          RELEASE_CHANNEL: ${{ needs.release-gate.outputs.channel }}
           CHANGELOG_PATH: ${{ needs.release-gate.outputs.changelog }}
           JAR_PATH: ${{ steps.release_file.outputs.jar_path }}
           MINECRAFT_VERSION: ${{ matrix.minecraft }}
@@ -224,22 +243,34 @@ jobs:
             echo "Missing required GitHub secret: CURSEFORGE_API_TOKEN" >&2
             exit 1
           fi
+          case "$RELEASE_CHANNEL" in alpha|beta|release) ;; *) echo "Invalid release channel" >&2; exit 1;; esac
           test -f "$CHANGELOG_PATH"
           game_version_names="$(jq -cn --arg mc "$MINECRAFT_VERSION" --arg loader "$LOADER_NAME" --arg java "$JAVA_VERSION_NAME" '[$mc, $loader, $java, "Client"]')"
           changelog="$(<"$CHANGELOG_PATH")"
-          metadata="$(jq -cn --arg changelog "$changelog" --arg displayName "Biotech ${MOD_VERSION} - ${LOADER_NAME} ${MINECRAFT_VERSION}" --argjson gameVersionNames "$game_version_names" '{changelog:$changelog,changelogType:"markdown",displayName:$displayName,gameVersionNames:$gameVersionNames,releaseType:"release",relations:{projects:[{slug:"nstut-lib",type:"requiredDependency"},{slug:"patchouli",type:"requiredDependency"},{slug:"openui-mc",type:"requiredDependency"}]}}')"
+          metadata="$(jq -cn --arg changelog "$changelog" --arg displayName "Biotech ${MOD_VERSION} - ${LOADER_NAME} ${MINECRAFT_VERSION}" --arg releaseType "$RELEASE_CHANNEL" --argjson gameVersionNames "$game_version_names" '{changelog:$changelog,changelogType:"markdown",displayName:$displayName,gameVersionNames:$gameVersionNames,releaseType:$releaseType,relations:{projects:[{slug:"nstut-lib",type:"requiredDependency"},{slug:"patchouli",type:"requiredDependency"},{slug:"openui-mc",type:"requiredDependency"}]}}')"
           response_file="$(mktemp)"
           trap 'rm -f "$response_file"' EXIT
           http_status="$(curl --silent --show-error --retry 4 --retry-max-time 90 --connect-timeout 15 --max-time 60 --output "$response_file" --write-out '%{http_code}' --request POST --header "X-Api-Token: ${CURSEFORGE_API_TOKEN}" --form-string "metadata=${metadata}" --form "file=@${JAR_PATH}" "https://minecraft.curseforge.com/api/projects/${CURSEFORGE_PROJECT_ID}/upload-file")"
           response="$(<"$response_file")"
           if [[ "$http_status" =~ ^2 ]]; then
-            echo "Published ${JAR_PATH} to CurseForge as file ID $(jq -er '.id' <<< "$response")."
+            file_id="$(jq -er '.id' <<< "$response")"
+            echo "Published ${JAR_PATH} to CurseForge as file ID $file_id ($RELEASE_CHANNEL)."
+            jq -n --arg version "$MOD_VERSION" --arg channel "$RELEASE_CHANNEL" --arg commit "$GITHUB_SHA" --arg file_id "$file_id" --arg jar "$(basename "$JAR_PATH")" '{version:$version,channel:$channel,commit:$commit,file_id:$file_id,jar:$jar}' > curseforge-receipt.json
           elif grep -Eqi 'already|duplicate' <<< "$response"; then
-            echo "CurseForge already has this JAR; treating retry as successful."
+            echo "CurseForge reported a duplicate; file identity/channel is unverified. Refusing to claim publication success." >&2
+            exit 1
           else
             echo "CurseForge upload failed with HTTP ${http_status}: ${response}" >&2
             exit 1
           fi
+
+      - name: Save CurseForge publication receipt
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: curseforge-receipt-${{ matrix.loader }}-${{ matrix.minecraft }}
+          path: curseforge-receipt.json
+          if-no-files-found: warn
 
   publish-github-release:
     name: Publish GitHub Release
@@ -253,10 +284,23 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           path: artifacts
+      - name: Verify existing release including drafts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 scripts/release_policy.py --commit "$GITHUB_SHA" --output release-policy.json
+          python3 scripts/verify_release_tag.py release-policy.json
+          python3 scripts/verify_existing_release.py release-policy.json
       - uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.release-gate.outputs.version }}
           name: Biotech v${{ needs.release-gate.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ needs.release-gate.outputs.github_prerelease }}
+          make_latest: ${{ needs.release-gate.outputs.github_make_latest }}
+          overwrite_files: false
           body_path: ${{ needs.release-gate.outputs.changelog }}
           fail_on_unmatched_files: true
-          files: artifacts/**/*.jar
+          files: |
+            artifacts/**/*.jar
+            artifacts/**/release-*.json

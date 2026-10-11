@@ -26,3 +26,7 @@ nstut_script_output
 
 # Files from Forge MDK
 forge*changelog.txt
+
+# Python verification tools
+__pycache__/
+*.pyc
