@@ -1,6 +1,6 @@
 # 2.7 — Walk-in Terrestrial Habitat
 
-- Rebuild the habitat as a 7 × 7 × 5 structure with a two-wide, three-high entrance, level service path and three-high rear shelter.
+- Rebuild the habitat as a 7 × 7 × 6 stepped-shelter/open-run structure with a two-wide, three-high entrance, level service path, lower offset feeding pod and at least three-high rear shelter.
 - Preserve exact 2.5 machines and the original 2.6 habitat as complete compatibility layouts; existing blocks are never converted automatically.
 - Give the Service Pipe vanilla 3D block display transforms in inventory and hand views.
 - Add rotation, required-clearance, 2.6 hatch discovery and cycle reload regression coverage.

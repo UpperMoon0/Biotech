@@ -68,7 +68,7 @@ public final class MachineStructureChecks {
                             // blocks of clear air over a level solid floor, in every rotation.
                             for (int z = 1; z <= 6; z++) for (int x = 4; x <= 5; x++) {
                                 BlockPos floor = MultiblockPattern.rotateBlockPos(anchor, origin[0], origin[1], origin[2],
-                                        array.length, array[0].length, x, 4, z, controllerState);
+                                        array.length, array[0].length, x, array.length-1, z, controllerState);
                                 helper.assertTrue(!level.getBlockState(floor).getCollisionShape(level, floor).isEmpty(), context + " walkable floor");
                                 for (int y = 1; y <= 3; y++) {
                                     BlockPos air = floor.above(y);

@@ -114,13 +114,22 @@
     ],
     "layers": [
       [
-        "FVVVVVF",
-        "PPLPLPP",
-        "PPPGPPP",
-        "FPPPPPF",
-        "F     F",
-        "F     F",
-        "FPPPPPF"
+        "  FVF  ",
+        "  PLP  ",
+        "  PGP  ",
+        "  FPF  ",
+        "       ",
+        "       ",
+        "       "
+      ],
+      [
+        "FPPVPPF",
+        "PP...PP",
+        "PP...PP",
+        "FP...PF",
+        ".......",
+        ".......",
+        "   FPPF"
       ],
       [
         "FPPVPPF",
@@ -128,8 +137,8 @@
         "G.....G",
         "F.....F",
         ".......",
-        ".......",
-        "FPPP..F"
+        "PVP....",
+        "FPPF..F"
       ],
       [
         "FPPPPPF",
@@ -137,8 +146,8 @@
         "G.....G",
         "F.....F",
         ".......",
-        ".......",
-        "FPGP..F"
+        "FVP....",
+        "FGPF..F"
       ],
       [
         "FPPVPPF",
@@ -146,8 +155,8 @@
         "G.....G",
         "F.....F",
         "G.....G",
-        "G.....G",
-        "FPP@..F"
+        "FGP...G",
+        "FPG@..F"
       ],
       [
         "FP6P5P7",
@@ -155,7 +164,7 @@
         "FhhPhhF",
         "2hhPhh4",
         "FhhPhhF",
-        "3hhPPPF",
+        "3PPPPPF",
         "FPPPPPF"
       ]
     ],
@@ -168,7 +177,7 @@
       "fluid_input_hatch:north",
       "fluid_output_hatch:east"
     ],
-    "rationale": "7 \u00d7 7 \u00d7 5 animal-care habitat with a two-block-wide, three-block-high walk-in entrance beside the front control station. A level service path opens into the grass yard and a three-block-high illuminated rear shelter. Continuous corner posts support the canopy and entrance lintel; seven exposed ports retain their 2.6 positions."
+    "rationale": "7 \u00d7 7 \u00d7 6 animal-care habitat with three distinct masses: a raised stepped-roof rear shelter, an airy low-glass exercise run, and a lower offset feeding/service pod. A freestanding entrance arch beside the controller provides a two-block-wide, three-block-high opening. The open run has no overhead box frame; the level path leads into the illuminated shelter. Seven exposed ports retain their 2.6 positions."
   },
   "slaughterhouse": {
     "origin": [

@@ -120,11 +120,12 @@ public final class MachineStructures {
             { "FP6P5PF", "1hhPhhF", "FPPhPP4", "2hhPhhF", "FPPPPPF" }
         };
         case "terrestrial_habitat" -> new String[][] {
-            { "FVVVVVF", "PPLPLPP", "PPPGPPP", "FPPPPPF", "F     F", "F     F", "FPPPPPF" },
-            { "FPPVPPF", "G.....G", "G.....G", "F.....F", ".......", ".......", "FPPP..F" },
-            { "FPPPPPF", "G.....G", "G.....G", "F.....F", ".......", ".......", "FPGP..F" },
-            { "FPPVPPF", "G.....G", "G.....G", "F.....F", "G.....G", "G.....G", "FPP@..F" },
-            { "FP6P5P7", "1hhPhhF", "FhhPhhF", "2hhPhh4", "FhhPhhF", "3hhPPPF", "FPPPPPF" }
+            { "  FVF  ", "  PLP  ", "  PGP  ", "  FPF  ", "       ", "       ", "       " },
+            { "FPPVPPF", "PP...PP", "PP...PP", "FP...PF", ".......", ".......", "   FPPF" },
+            { "FPPVPPF", "G.....G", "G.....G", "F.....F", ".......", "PVP....", "FPPF..F" },
+            { "FPPPPPF", "G.....G", "G.....G", "F.....F", ".......", "FVP....", "FGPF..F" },
+            { "FPPVPPF", "G.....G", "G.....G", "F.....F", "G.....G", "FGP...G", "FPG@..F" },
+            { "FP6P5P7", "1hhPhhF", "FhhPhhF", "2hhPhh4", "FhhPhhF", "3PPPPPF", "FPPPPPF" }
         };
         case "slaughterhouse" -> new String[][] {
             { " FVF ", "PPVPP", " PLP ", " PLP ", " PLP ", " PLP ", " FPF " },

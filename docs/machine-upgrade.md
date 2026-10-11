@@ -2,7 +2,7 @@
 
 ## 2.7 habitat entrance revision
 
-New habitat construction is 7 × 7 × 5, with a two-block-wide, three-block-high doorway beside the controller and a level path into the rear shelter. The controller and seven ports retain their exact 2.6 coordinates and facings. The additional height raises the canopy above the walking area; it does not relocate existing blocks.
+New habitat construction is 7 × 7 × 6, with a two-block-wide, three-block-high doorway beside the controller and a level path into the rear shelter. The controller and seven ports retain their exact 2.6 coordinates and facings. The stepped rear canopy, open low-glass run and lower offset service pod replace the prior box-shaped silhouette; it does not relocate existing blocks.
 
 The complete 2.6 habitat is frozen in `design/terrestrial-habitat-2.6.json` and checked independently after the 2.7 pattern and before the 2.5 fallback. Existing 2.6 habitats continue operating with their original low opening until the player deliberately rebuilds them. Mixed partial layouts do not form. Finish the cycle and empty inventories/fluids before rebuilding, or construct a new habitat separately. Construction previews and the guide show 2.7 only.
 

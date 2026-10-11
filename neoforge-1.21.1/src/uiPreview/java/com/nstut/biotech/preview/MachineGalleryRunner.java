@@ -48,7 +48,7 @@ public final class MachineGalleryRunner {
         try {
             if(output==null){output=Path.of(System.getProperty("biotech.machineGallery.output"));Files.createDirectories(output);mc.options.hideGui=true;}
             if(!pending){
-                if(index==29){finish();stopped=true;mc.setScreen(null);mc.stop();return;}
+                if(index==30){finish();stopped=true;mc.setScreen(null);mc.stop();return;}
                 pending=true;ready=false;settledTicks=0;
                 int scene=index;
                 mc.getSingleplayerServer().execute(()->prepare(mc,scene));
@@ -58,7 +58,7 @@ public final class MachineGalleryRunner {
                     throw new IllegalStateException("Rendered client structure is missing or invalid: "+controllerPos);
                 String id=index>=24?"terrestrial_habitat":MachineStructures.ids()[index/4];
                 String layout=index>=24?(index==24?"before-2.6":"after-2.7"):index%4<2?"before-2.5":"after-redesign";
-                String view=index>=24?switch(index){case 24,25 -> "entrance-eye-level";case 26 -> "interior-eye-level";case 27 -> "service-pipe-held";default -> "service-pipe-inventory";}:index%2==0?"front-left":"rear-right";
+                String view=index>=24?switch(index){case 24,25 -> "entrance-eye-level";case 26 -> "interior-eye-level";case 27 -> "service-pipe-held";case 29 -> "silhouette-front-right";default -> "service-pipe-inventory";}:index%2==0?"front-left":"rear-right";
                 String name=id+"-"+layout+"-"+view+".png";
                 try(NativeImage frame=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
                     frame.writeToFile(output.resolve(name));
@@ -131,6 +131,13 @@ public final class MachineGalleryRunner {
                     mc.execute(()->mc.options.hideGui=false);
                 }
                 if(scene==28) mc.execute(()->mc.setScreen(new PipeInventoryScreen()));
+                if(scene==29){
+                    double cx=9,cz=11,cy=86.5,target=82.5;
+                    float angle=(float)Math.toDegrees(Math.atan2(cx,-cz));
+                    float tilt=(float)Math.toDegrees(Math.atan2(cy-target,Math.sqrt(cx*cx+cz*cz)));
+                    player.teleportTo(level,16+cx,cy-player.getEyeHeight(),16+cz,angle,tilt);
+                    mc.execute(()->{mc.setScreen(null);mc.options.hideGui=true;});
+                }
             }
             ready=true;
         }catch(Throwable ex){failure=ex;}

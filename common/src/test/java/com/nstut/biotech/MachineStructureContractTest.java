@@ -35,11 +35,15 @@ class MachineStructureContractTest {
 
     @Test void habitatEntranceAndInteriorHaveThreeBlocksOfRequiredClearance() {
         String[][] layers = MachineStructures.layers("terrestrial_habitat");
-        assertEquals(5, layers.length);
+        assertEquals(6, layers.length);
         for (int y = 1; y <= 3; y++) for (int z = 1; z <= 6; z++) for (int x = 4; x <= 5; x++)
-            assertEquals('.', layers[y][z].charAt(x), "clear doorway-to-shelter route");
-        assertEquals("FPPPPPF", layers[0][6], "supported entrance lintel");
-        assertEquals("FPP@..F", layers[3][6], "controller beside doorway");
+            assertEquals('.', layers[layers.length-y-1][z].charAt(x), "clear doorway-to-shelter route");
+        assertEquals("   FPPF", layers[1][6], "independent supported entrance arch");
+        assertEquals("       ", layers[0][6], "no full-height box across front");
+        assertEquals(".......", layers[1][4], "open run has no high perimeter frame");
+        assertEquals("PVP....", layers[2][5], "lower offset service pod");
+        assertEquals("  FVF  ", layers[0][0], "stepped rear roof ridge");
+        assertEquals("FPG@..F", layers[4][6], "controller beside doorway");
         assertEquals(4, MachineStructures.habitat26Layers().length, "2.6 remains frozen");
     }
 
