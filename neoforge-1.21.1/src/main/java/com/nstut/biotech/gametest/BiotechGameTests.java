@@ -61,6 +61,11 @@ public final class BiotechGameTests {
         MachineStructureChecks.allLayoutsAndRotations(helper);
     }
 
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 400)
+    public static void allMachineCyclesAndReload(GameTestHelper helper) {
+        MachineLifecycleChecks.allMachineCycles(helper);
+    }
+
     private BiotechGameTests() {
     }
 

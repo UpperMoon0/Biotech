@@ -29,7 +29,9 @@ for part in parts:
   assert loot['pools'][0]['entries'][0]['name']=='biotech:'+id
   if modern:assert json.loads((res/f'assets/biotech/items/{id}.json').read_text())['model']['model']=='biotech:item/'+id
   for tag in ['mineable/pickaxe','needs_stone_tool']:
-   assert 'biotech:'+id in json.loads((res/f'data/minecraft/tags/{"blocks" if forge else "block"}/{tag}.json').read_text())['values']
+   tagpath=res/f'data/minecraft/tags/{"blocks" if forge else "block"}/{tag}.json'
+   if not tagpath.exists():tagpath=ROOT/'common/src/main/resources'/f'data/minecraft/tags/blocks/{tag}.json'
+   assert 'biotech:'+id in json.loads(tagpath.read_text())['values']
 subprocess.run([sys.executable,str(ROOT/'scripts/generate_machine_structures.py'),'--check'],check=True)
 print('Verified eight parts: registrations, 32px imagegen texture exports, models, item definitions, crafting, drops and tags on all three targets.')
 
@@ -40,3 +42,9 @@ for name, expected in json.loads((ROOT/'design/legacy-2.5-manifest.json').read_t
  assert hashlib.sha256(body.encode()).hexdigest()==expected['pattern_sha256'],name
  assert hashlib.sha256(offsets.encode()).hexdigest()==expected['hatches_sha256'],name
 print('Verified all twelve legacy pattern implementations and hatch offset tables are byte-identical to 2.5.')
+
+for target in ['forge-1.20.1','neoforge-1.21.1','neoforge-26.1.2']:
+ common=ROOT/'common/src/main/resources';local=ROOT/target/'src/main/resources'
+ # Additions must not collide with common resources (Gradle Copy rejects duplicates).
+ for name in [f'data/minecraft/tags/{"blocks" if target.startswith("forge") else "block"}/mineable/pickaxe.json',f'data/minecraft/tags/{"blocks" if target.startswith("forge") else "block"}/needs_stone_tool.json']:
+  assert not ((common/name).exists() and (local/name).exists()),(target,name,'duplicate resource')
