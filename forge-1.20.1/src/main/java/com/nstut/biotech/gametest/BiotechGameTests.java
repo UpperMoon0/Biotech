@@ -39,6 +39,9 @@ public final class BiotechGameTests {
     private static final String EMPTY_TEMPLATE = "empty";
 
     @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void servicePipeConnections(GameTestHelper helper) { ServicePipeChecks.connectionsAndShapes(helper); }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
     public static void allMachineLayoutsAndRotations(GameTestHelper helper) {
         MachineStructureChecks.allLayoutsAndRotations(helper);
     }

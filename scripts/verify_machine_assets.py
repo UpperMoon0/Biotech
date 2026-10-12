@@ -11,7 +11,16 @@ for part in parts:
  assert 'block.biotech.'+id in lang,id
  model=json.loads((assets/f'models/block/{id}.json').read_text())
  assert json.loads((assets/f'models/item/{id}.json').read_text())['parent']=='biotech:block/'+id
- assert json.loads((assets/f'blockstates/{id}.json').read_text())['variants']['']['model']=='biotech:block/'+id
+ if part!='pipe':assert json.loads((assets/f'blockstates/{id}.json').read_text())['variants']['']['model']=='biotech:block/'+id
+ else:
+  multipart=json.loads((assets/f'blockstates/{id}.json').read_text())['multipart']
+  assert len(multipart)==7 and multipart[0]['apply']['model']=='biotech:block/biotech_pipe_core'
+  assert {next(iter(entry['when'])) for entry in multipart[1:]}=={'up','down','north','south','east','west'}
+  for entry in multipart[1:]:assert entry['apply']['model']=='biotech:block/biotech_pipe_arm'
+  core=json.loads((assets/'models/block/biotech_pipe_core.json').read_text())
+  arm=json.loads((assets/'models/block/biotech_pipe_arm.json').read_text())
+  assert core['elements'][0]['from']==[4,4,4] and core['elements'][0]['to']==[12,12,12]
+  assert len(arm['elements'])==2 and arm['elements'][0]['from']==[5,5,0] and arm['elements'][1]['to']==[13,13,2]
  for texture in model['textures'].values():
   if texture.startswith('#'):continue
   png=assets/(texture.split(':')[1].replace('block/','textures/block/')+'.png')
