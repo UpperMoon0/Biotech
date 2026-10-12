@@ -1,0 +1,13 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+[[mods]]
+modId="upgrade_fixture"
+version="1.0"
+displayName="Biotech released binary upgrade fixture (test only)"
+[[dependencies.upgrade_fixture]]
+modId="biotech"
+type="required"
+versionRange="[2.5,2.7)"
+ordering="AFTER"
+side="SERVER"

@@ -1,0 +1,95 @@
+name: Released binary upgrade
+on:
+  pull_request:
+    paths:
+      - 'verification/upgrade-fixture/**'
+      - '.github/workflows/binary-upgrade.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'verification/upgrade-fixture/**'
+      - '.github/workflows/binary-upgrade.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: binary-upgrade-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  old-binary-world:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Resolve pinned providers
+        id: refs
+        run: |
+          echo "nstut=$(sed -n 's/^nstut_lib_ref=//p' gradle.properties)" >> "$GITHUB_OUTPUT"
+          echo "openui=$(sed -n 's/^openui_ref=//p' gradle.properties)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: UpperMoon0/NsTut-Lib
+          ref: ${{ steps.refs.outputs.nstut }}
+          path: .ci/nstut-lib
+      - uses: actions/checkout@v7
+        with:
+          repository: UpperMoon0/OpenUI-MC
+          ref: ${{ steps.refs.outputs.openui }}
+          path: .ci/openui
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Publish pinned runtime providers
+        run: |
+          bash .ci/nstut-lib/gradlew -p .ci/nstut-lib :neoforge-1.21.1:publishToMavenLocal --no-daemon --stacktrace
+          bash .ci/openui/gradlew -p .ci/openui :neoforge-1.21.1:publishToMavenLocal --no-daemon --stacktrace
+      - name: Download pinned release inputs and verify provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/binary-upgrade/inputs
+          gh release download v2.5 --repo UpperMoon0/Biotech --pattern biotech-neoforge-1.21.1-2.5.jar --dir build/binary-upgrade/inputs
+          gh release download v2.6 --repo UpperMoon0/Biotech --pattern biotech-neoforge-1.21.1-2.6.jar --dir build/binary-upgrade/inputs
+          sha256sum build/binary-upgrade/inputs/*.jar | tee build/binary-upgrade/release-sha256.txt
+          gh api repos/UpperMoon0/Biotech/releases/tags/v2.5 > build/binary-upgrade/release-2.5.json
+          gh api repos/UpperMoon0/Biotech/releases/tags/v2.6 > build/binary-upgrade/release-2.6.json
+          echo 'b305e67e4b03a2c1fe894fd1e6297891a50a3e5b1a0cde77f463226a99f094d1  build/binary-upgrade/inputs/biotech-neoforge-1.21.1-2.5.jar' | sha256sum --check -
+          echo 'e1155b768889d767fb637926a8d82845d46636913aff9b167f5377bc996d52c0  build/binary-upgrade/inputs/biotech-neoforge-1.21.1-2.6.jar' | sha256sum --check -
+          jq -e '.assets[] | select(.id == 630772315 and .digest == "sha256:b305e67e4b03a2c1fe894fd1e6297891a50a3e5b1a0cde77f463226a99f094d1")' build/binary-upgrade/release-2.5.json
+          jq -e '.assets[] | select(.id == 631107304 and .digest == "sha256:e1155b768889d767fb637926a8d82845d46636913aff9b167f5377bc996d52c0")' build/binary-upgrade/release-2.6.json
+          gh api repos/UpperMoon0/Biotech/git/ref/tags/v2.5 > build/binary-upgrade/tag-2.5.json
+          gh api repos/UpperMoon0/Biotech/git/ref/tags/v2.6 > build/binary-upgrade/tag-2.6.json
+          jq -e '.object.type == "commit" and .object.sha == "9adbba7a111e475493b7b57333ac16c87f9231a4"' build/binary-upgrade/tag-2.5.json
+          jq -e '.object.type == "commit" and .object.sha == "e08f67892b9471544559b4b8e9841a56207cc004"' build/binary-upgrade/tag-2.6.json
+          jq -n --arg nstut "$(git -C .ci/nstut-lib rev-parse HEAD)" --arg openui "$(git -C .ci/openui rev-parse HEAD)" '{nstut_commit: $nstut, openui_commit: $openui}' > build/binary-upgrade/provider-commits.json
+      - name: Create and save active world under unmodified 2.5
+        run: |
+          set -o pipefail
+          bash gradlew -p verification/upgrade-fixture clean runServer --no-daemon --stacktrace \
+            -PbiotechJar="$PWD/build/binary-upgrade/inputs/biotech-neoforge-1.21.1-2.5.jar" \
+            -PfixtureDir="$PWD/build/binary-upgrade" -PfixturePhase=seed | tee build/binary-upgrade/seed.log
+          test -s build/binary-upgrade/seed-success.json
+          tar -czf build/binary-upgrade/world-saved-by-2.5.tar.gz -C build/binary-upgrade/server world
+      - name: Load unchanged world under unmodified 2.6 and prove exact continuation
+        run: |
+          set -o pipefail
+          bash gradlew -p verification/upgrade-fixture clean runServer --no-daemon --stacktrace \
+            -PbiotechJar="$PWD/build/binary-upgrade/inputs/biotech-neoforge-1.21.1-2.6.jar" \
+            -PfixtureDir="$PWD/build/binary-upgrade" -PfixturePhase=verify | tee build/binary-upgrade/verify.log
+          test -s build/binary-upgrade/verify-success.json
+          test ! -f build/binary-upgrade/failure.txt
+      - name: Upload binary provenance, original save and assertions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: biotech-2.5-to-2.6-world-upgrade
+          retention-days: 30
+          path: |
+            build/binary-upgrade/*.json
+            build/binary-upgrade/*.txt
+            build/binary-upgrade/*.nbt
+            build/binary-upgrade/*.log
+            build/binary-upgrade/*.tar.gz
+            build/binary-upgrade/server/logs/
