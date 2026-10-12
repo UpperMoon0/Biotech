@@ -83,7 +83,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "7 \u00d7 7 growing bed with a five-block pitched glazed roof. Twenty farmland cells flank a water channel; roof lights and ridge ventilation explain the growing function. All four ports stay at ground level.$(br)$(br)20 frame, 60 framed glass, 7 grow light, 24 panel, 2 vent, 20 farmland, 5 water. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. Smart Hammer fills cleared spaces from inventory but cannot replace solid blocks."
+      "text": "7 \u00d7 7 growing bed with a five-block pitched glazed roof. Twenty farmland cells flank a water channel; roof lights and ridge ventilation explain the growing function. All four ports stay at ground level.$(br)$(br)20 frame, 60 framed glass, 7 grow light, 24 panel, 2 vent, 20 farmland, 5 water. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. NsTut Lib 0.8.2 Smart Hammer replaces supported ordinary blocks inside the current pattern and returns their items. Recover unsupported hatches and resource-bearing or compound blocks manually first; surplus blocks outside the pattern remain."
     }
   ],
   "sortnum": 50
