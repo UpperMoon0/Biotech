@@ -76,6 +76,7 @@ public final class BiotechGameTests {
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> STRUCTURE_LAYOUTS = register("all_machine_layouts_and_rotations", MachineStructureChecks::allLayoutsAndRotations);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> OLD_PIPES = register("old_service_pipe_palette_repair", ServicePipeChecks::oldPaletteRepair);
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> SERVICE_PIPES = register("service_pipe_connections", ServicePipeChecks::connectionsAndShapes);
+    private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HAMMER_RESOURCES = register("smart_hammer_resource_safety", helper -> ServicePipeChecks.hammerResourceSafety(helper,net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel())));
     private static final DeferredHolder<Consumer<GameTestHelper>, Consumer<GameTestHelper>> HAMMER_PIPES = register("smart_hammer_connected_pipes", helper -> ServicePipeChecks.hammerBuild(helper,net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel())));
     private static final int EXPECTED_BIOTECH_RECIPE_COUNT = 194;
 
@@ -103,6 +104,7 @@ public final class BiotechGameTests {
                 STRUCTURE_LAYOUTS,
                 SERVICE_PIPES,
                 OLD_PIPES,
+                HAMMER_RESOURCES,
                 HAMMER_PIPES,
                 HATCHES_ENFORCE_EXTERNAL_IO_DIRECTION,
                 INVALID_STRUCTURE_AND_RELOAD_PRESERVE_ACTIVE_MACHINE_TRANSACTION,
@@ -112,7 +114,7 @@ public final class BiotechGameTests {
                 CAPTURE_ELIGIBILITY_REJECTS_TAGGED_NON_CREATABLE_TYPES,
                 GENERIC_CAPTURED_SPECIES_RECIPE_MATCHES_LIFECYCLE_SELECTORS,
                 ANIMAL_MACHINE_PREPARATION_PRESERVES_AND_INHERITS_STATE)) {
-            event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, (test == STRUCTURE_LAYOUTS || test == STRUCTURE_CYCLES || test == SERVICE_PIPES || test == OLD_PIPES || test == HAMMER_PIPES) ? Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "machine_lab") : emptyStructure, (test == CHUNK_UPGRADE || test == OLD_PIPES) ? 1200 : MAX_TICKS, 0, true)));
+            event.registerTest(test.getId(), new FunctionGameTestInstance(test.getKey(), new TestData<>(environment, (test == STRUCTURE_LAYOUTS || test == STRUCTURE_CYCLES || test == SERVICE_PIPES || test == OLD_PIPES || test == HAMMER_PIPES || test == HAMMER_RESOURCES) ? Identifier.fromNamespaceAndPath(Biotech.MOD_ID, "machine_lab") : emptyStructure, (test == CHUNK_UPGRADE || test == OLD_PIPES) ? 1200 : MAX_TICKS, 0, true)));
         }
     }
 

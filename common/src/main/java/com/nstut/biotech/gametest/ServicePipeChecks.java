@@ -39,7 +39,6 @@ public final class ServicePipeChecks {
                 if(level.getChunkSource().hasChunk(cx,cz)||level.getChunkSource().hasChunk(cx+1,cz))return;
                 if(++unloadedTicks[0]<20)return;
                 level.getChunkSource().save(true);
-                level.setChunkForced(cx,cz,true);
                 helper.assertTrue(level.getChunk(cx,cz)!=originalLeft,"First chunk reloaded from disk");
                 ticks[0]=0;stage[0]=2;return;
             }
@@ -47,7 +46,6 @@ public final class ServicePipeChecks {
                 if(++ticks[0]<3)return;
                 helper.assertTrue(level.getBlockState(left).getValue(ServicePipeBlockBase.UP),"Real chunk load hook reconnects vertical pipe");
                 helper.assertTrue(!level.getChunkSource().hasChunk(cx+1,cz),"Repair never force-loads neighboring chunk");
-                level.setChunkForced(cx+1,cz,true);
                 helper.assertTrue(level.getChunk(cx+1,cz)!=originalRight,"Second chunk reloaded from disk");
                 ticks[0]=0;stage[0]=3;return;
             }
@@ -63,6 +61,52 @@ public final class ServicePipeChecks {
                 } finally {level.setChunkForced(cx,cz,false);level.setChunkForced(cx+1,cz,false);}
             }
         });
+    }
+    public static void hammerResourceSafety(GameTestHelper helper,net.minecraft.world.entity.player.Player player) {
+        var level=helper.getLevel();var target=helper.absolutePos(new BlockPos(4,4,4));
+        level.setBlock(target.below(),Blocks.STONE.defaultBlockState(),3);
+        player.getAbilities().mayBuild=true;player.getAbilities().instabuild=false;
+        var states=new net.minecraft.world.level.block.state.BlockState[]{
+                Blocks.OAK_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,net.minecraft.world.level.block.state.properties.SlabType.DOUBLE),
+                Blocks.CANDLE.defaultBlockState().setValue(net.minecraft.world.level.block.CandleBlock.CANDLES,4),
+                Blocks.SEA_PICKLE.defaultBlockState().setValue(net.minecraft.world.level.block.SeaPickleBlock.PICKLES,4),
+                Blocks.POTTED_POPPY.defaultBlockState(),Blocks.CANDLE_CAKE.defaultBlockState()};
+        for(var state:states) {
+            level.setBlock(target,state,3);player.getInventory().clearContent();
+            player.getInventory().add(new net.minecraft.world.item.ItemStack(Blocks.BRICKS));
+            helper.assertTrue(!hammerCell(helper,player,target,new com.nstut.nstutlib.models.MultiblockBlock(Blocks.BRICKS)),"Resource-bearing replacement fails closed");
+            helper.assertTrue(level.getBlockState(target).equals(state)&&itemCount(player,Blocks.BRICKS.asItem())==1,"Blocked replacement leaves resources and inventory intact");
+            if(state.is(Blocks.OAK_SLAB)||state.is(Blocks.CANDLE)||state.is(Blocks.SEA_PICKLE)) {
+                var correction=new com.nstut.nstutlib.models.MultiblockBlock(state.getBlock(),java.util.Map.of(
+                        state.is(Blocks.OAK_SLAB)?"type":state.is(Blocks.CANDLE)?"candles":"pickles",state.is(Blocks.OAK_SLAB)?"bottom":"1"));
+                helper.assertTrue(!hammerCell(helper,player,target,correction)&&level.getBlockState(target).equals(state),"Same-block quantity reduction fails closed");
+            }
+        }
+        level.setBlock(target,Blocks.OAK_SLAB.defaultBlockState(),3);player.getInventory().clearContent();
+        helper.assertTrue(!hammerCell(helper,player,target,new com.nstut.nstutlib.models.MultiblockBlock(Blocks.OAK_SLAB,java.util.Map.of("type","double"))),"Same-block increase cannot duplicate slab items");
+        level.setBlock(target,Blocks.AIR.defaultBlockState(),3);
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.WATER_BUCKET));
+        helper.assertTrue(hammerCell(helper,player,target,new com.nstut.nstutlib.models.MultiblockBlock(Blocks.WATER)),"Water cells remain constructible with one water bucket");
+        helper.assertTrue(level.getBlockState(target).is(Blocks.WATER)&&itemCount(player,net.minecraft.world.item.Items.WATER_BUCKET)==0
+                &&itemCount(player,net.minecraft.world.item.Items.BUCKET)==1,"Water placement preserves the empty bucket exactly once");
+        helper.succeed();
+    }
+    private static int itemCount(net.minecraft.world.entity.player.Player player,net.minecraft.world.item.Item item) {
+        int count=0;for(int slot=0;slot<player.getInventory().getContainerSize();slot++) {
+            var stack=player.getInventory().getItem(slot);if(stack.is(item))count+=stack.getCount();
+        }return count;
+    }
+    private static boolean hammerCell(GameTestHelper helper,net.minecraft.world.entity.player.Player player,BlockPos target,
+            com.nstut.nstutlib.models.MultiblockBlock cell) {
+        var anchor=target.west();helper.getLevel().setBlock(anchor,Blocks.FURNACE.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING,Direction.SOUTH),3);
+        var pattern=new com.nstut.nstutlib.models.MultiblockPattern(new com.nstut.nstutlib.models.MultiblockBlock[][][]{{{cell}}});
+        try {
+            var hammer=(com.nstut.nstutlib.items.SmartHammer)com.nstut.nstutlib.items.ItemRegistries.SMART_HAMMER.get();
+            var build=com.nstut.nstutlib.items.SmartHammer.class.getDeclaredMethod("buildStructure",net.minecraft.world.level.Level.class,
+                    net.minecraft.world.entity.player.Player.class,BlockPos.class,com.nstut.nstutlib.models.MultiblockPattern.class,int.class,int.class,int.class);
+            build.setAccessible(true);return (boolean)build.invoke(hammer,helper.getLevel(),player,anchor,pattern,-1,0,0);
+        }catch(ReflectiveOperationException exception){throw new AssertionError("Unable to invoke hammer fixture",exception);}
     }
     public static void hammerBuild(GameTestHelper helper,net.minecraft.world.entity.player.Player player){
         var level=helper.getLevel();

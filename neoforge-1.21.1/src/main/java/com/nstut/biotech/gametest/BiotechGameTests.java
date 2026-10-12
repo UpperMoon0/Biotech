@@ -78,6 +78,11 @@ public final class BiotechGameTests {
     }
 
     @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void smartHammerResourceSafety(GameTestHelper helper) {
+        ServicePipeChecks.hammerResourceSafety(helper,net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel()));
+    }
+
+    @GameTest(templateNamespace = TEST_TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
     public static void smartHammerConnectedPipes(GameTestHelper helper) {
         ServicePipeChecks.hammerBuild(helper,net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel()));
     }
