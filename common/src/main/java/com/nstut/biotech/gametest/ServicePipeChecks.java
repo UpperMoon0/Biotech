@@ -10,6 +10,60 @@ import net.minecraft.world.phys.shapes.Shapes;
 
 public final class ServicePipeChecks {
     private ServicePipeChecks(){}
+    public static void oldPaletteRepair(GameTestHelper helper) {
+        var level=helper.getLevel();var pipe=BlockRegistries.BIOTECH_PIPE.get();
+        var serialized=com.google.gson.JsonParser.parseString("{\"Name\":\"biotech:biotech_pipe\"}");
+        var old=net.minecraft.world.level.block.state.BlockState.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,serialized)
+                .result().orElseThrow();
+        helper.assertTrue(old.is(pipe),"Pre-2.7 name-only palette resolves to registered pipe");
+        int cx=(helper.absolutePos(BlockPos.ZERO).getX()>>4)+6144;
+        int cz=(helper.absolutePos(BlockPos.ZERO).getZ()>>4)+6144;
+        var left=new BlockPos((cx<<4)+15,80,(cz<<4)+8);var right=left.east();
+        level.setChunkForced(cx,cz,true);level.setChunkForced(cx+1,cz,true);
+        var originalLeft=level.getChunk(cx,cz);var originalRight=level.getChunk(cx+1,cz);
+        int[] stage={0}, ticks={0}, unloadedTicks={0};
+        helper.onEachTick(()->{
+            if(stage[0]==0) {
+                // Let initial load callbacks drain before writing the old saved palette fixture.
+                if(++ticks[0]<5)return;
+                for(var pos:new BlockPos[]{left,left.above(),right,right.above()}) {
+                    var chunk=level.getChunkAt(pos);
+                    chunk.getSection(chunk.getSectionIndex(pos.getY())).setBlockState(pos.getX()&15,pos.getY()&15,pos.getZ()&15,old);
+                    chunk.setUnsaved(true);
+                }
+                helper.assertTrue(!level.getBlockState(left).getValue(ServicePipeBlockBase.EAST),"Saved old run starts disconnected");
+                level.getChunkSource().save(true);
+                level.setChunkForced(cx,cz,false);level.setChunkForced(cx+1,cz,false);stage[0]=1;return;
+            }
+            if(stage[0]==1) {
+                if(level.getChunkSource().hasChunk(cx,cz)||level.getChunkSource().hasChunk(cx+1,cz))return;
+                if(++unloadedTicks[0]<20)return;
+                level.getChunkSource().save(true);
+                level.setChunkForced(cx,cz,true);
+                helper.assertTrue(level.getChunk(cx,cz)!=originalLeft,"First chunk reloaded from disk");
+                ticks[0]=0;stage[0]=2;return;
+            }
+            if(stage[0]==2) {
+                if(++ticks[0]<3)return;
+                helper.assertTrue(level.getBlockState(left).getValue(ServicePipeBlockBase.UP),"Real chunk load hook reconnects vertical pipe");
+                helper.assertTrue(!level.getChunkSource().hasChunk(cx+1,cz),"Repair never force-loads neighboring chunk");
+                level.setChunkForced(cx+1,cz,true);
+                helper.assertTrue(level.getChunk(cx+1,cz)!=originalRight,"Second chunk reloaded from disk");
+                ticks[0]=0;stage[0]=3;return;
+            }
+            if(stage[0]==3) {
+                if(++ticks[0]<3)return;
+                try {
+                    helper.assertTrue(level.getBlockState(left).getValue(ServicePipeBlockBase.EAST)
+                            &&level.getBlockState(right).getValue(ServicePipeBlockBase.WEST),"Later neighboring load repairs both sides of chunk edge");
+                    helper.assertTrue(level.getBlockState(right).getValue(ServicePipeBlockBase.UP)
+                            &&level.getBlockState(right.above()).getValue(ServicePipeBlockBase.DOWN),"Vertical connections restored too");
+                    for(var pos:new BlockPos[]{left,left.above(),right,right.above()})level.setBlock(pos,Blocks.AIR.defaultBlockState(),2);
+                    stage[0]=4;helper.succeed();
+                } finally {level.setChunkForced(cx,cz,false);level.setChunkForced(cx+1,cz,false);}
+            }
+        });
+    }
     public static void hammerBuild(GameTestHelper helper,net.minecraft.world.entity.player.Player player){
         var level=helper.getLevel();
         var anchor=helper.absolutePos(new BlockPos(4,4,4));

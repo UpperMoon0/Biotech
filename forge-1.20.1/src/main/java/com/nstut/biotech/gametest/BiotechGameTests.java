@@ -41,6 +41,9 @@ public final class BiotechGameTests {
     @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
     public static void servicePipeConnections(GameTestHelper helper) { ServicePipeChecks.connectionsAndShapes(helper); }
 
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 1200)
+    public static void oldServicePipePaletteRepair(GameTestHelper helper) { ServicePipeChecks.oldPaletteRepair(helper); }
+
     @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
     public static void allMachineLayoutsAndRotations(GameTestHelper helper) {
         MachineStructureChecks.allLayoutsAndRotations(helper);
