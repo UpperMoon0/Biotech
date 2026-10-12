@@ -62,6 +62,14 @@ public final class MachineStructureChecks {
                             if (requiredPart == null && !pos.equals(anchor) && !state.isAir() && level.getBlockEntity(pos) == null) requiredPart = pos;
                         }
                         String context = id + "/" + facing + "/" + (layout == 2 ? "2.6" : legacy ? "2.5" : "redesigned");
+                        if (layout != 0) {
+                            helper.assertTrue(!machine.checkMultiblock(level, anchor, controllerState), context + " retired layout must be invalid");
+                            // Repeated production ticks must not make a retired shell operate.
+                            for (int tick = 0; tick < 25; tick++) MachineBlockEntity.serverTick(level, anchor, controllerState, machine);
+                            helper.assertTrue(!machine.checkMultiblock(level, anchor, controllerState), context + " retired layout remains invalid");
+                            helper.assertTrue(!level.getBlockState(anchor).getValue(MachineBlock.OPERATING), context + " retired controller must stop");
+                            continue;
+                        }
                         helper.assertTrue(machine.checkMultiblock(level, anchor, controllerState), context + " must form");
                         if (id.equals("terrestrial_habitat") && layout == 0) {
                             // Doorway (x=4..5) and route into the rear shelter have three full

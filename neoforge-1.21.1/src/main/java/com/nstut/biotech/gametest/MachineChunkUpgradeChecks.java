@@ -33,23 +33,23 @@ public final class MachineChunkUpgradeChecks {
         BlockPos anchor=new BlockPos((cx<<4)+5,80,(cz<<4)+11);
         var state=MachineRegistries.FERMENTER.block().get().defaultBlockState().setValue(MachineBlock.FACING,Direction.SOUTH);
         var blueprint=new FermenterBlockEntity(anchor,state);
-        var blocks=blueprint.getLegacyMultiblockPattern().getPattern();
+        var blocks=blueprint.getMultiblockPattern().getPattern();
         List<BlockPos> positions=new ArrayList<>();
         level.setChunkForced(cx,cz,true);
         for(int y=0;y<blocks.length;y++)for(int z=0;z<blocks[y].length;z++)for(int x=0;x<blocks[y][z].length;x++){
             var part=blocks[y][z][x];if(part==null)continue;
             BlockPos at=MultiblockPattern.rotateBlockPos(anchor,blueprint.getSouthOffsetX(),blueprint.getSouthOffsetY(),blueprint.getSouthOffsetZ(),blocks.length,blocks[y].length,x,y,z,state);
-            helper.assertTrue((at.getX()>>4)==cx&&(at.getZ()>>4)==cz,"Legacy upgrade fixture must fit one unloadable chunk");
+            helper.assertTrue((at.getX()>>4)==cx&&(at.getZ()>>4)==cz,"Current-layout persistence fixture must fit one unloadable chunk");
             BlockState placed=part.getBlock().defaultBlockState();
             for(var entry:part.getStates().entrySet())placed=property(placed,entry.getKey(),entry.getValue());
             level.setBlock(at,placed,2);positions.add(at);
         }
         var machine=(FermenterBlockEntity)level.getBlockEntity(anchor);
-        helper.assertTrue(machine.checkMultiblock(level,anchor,state),"Unchanged 2.5 Fermenter forms");
-        var input=(ItemInputHatchBlockEntity)level.getBlockEntity(anchor.offset(-2,1,-5));
-        var output=(ItemOutputHatchBlockEntity)level.getBlockEntity(anchor.offset(2,1,-5));
-        var water=(FluidInputHatchBlockEntity)level.getBlockEntity(anchor.offset(-1,-1,-8));
-        var energy=(EnergyInputHatchBlockEntity)level.getBlockEntity(anchor.offset(1,-1,-8));
+        helper.assertTrue(machine.checkMultiblock(level,anchor,state),"Current Fermenter layout forms");
+        var input=(ItemInputHatchBlockEntity)level.getBlockEntity(anchor.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("fermenter")[0]));
+        var output=(ItemOutputHatchBlockEntity)level.getBlockEntity(anchor.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("fermenter")[1]));
+        var water=(FluidInputHatchBlockEntity)level.getBlockEntity(anchor.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("fermenter")[3]));
+        var energy=(EnergyInputHatchBlockEntity)level.getBlockEntity(anchor.offset(com.nstut.biotech.machines.MachineStructures.hatchOffsets("fermenter")[2]));
         input.getInternalItemStorage().setStackInSlot(0,new ItemStack(ItemRegistries.PAPER_BAG.get(),16));
         input.getInternalItemStorage().setStackInSlot(1,new ItemStack(Items.DIRT));
         input.getInternalItemStorage().setStackInSlot(2,new ItemStack(Items.BONE_MEAL,3));
@@ -87,7 +87,7 @@ public final class MachineChunkUpgradeChecks {
                 helper.assertTrue(restored!=null&&restored!=machine,"Chunk load creates a fresh controller from persisted world data");
                 helper.assertTrue(savedMachine.equals(restored.saveWithFullMetadata(level.registryAccess())),"Active snapshot, progress, rolls and redstone mode survive real chunk unload/load exactly");
                 helper.assertTrue(savedInput.equals(restoredInput.saveWithFullMetadata(level.registryAccess()))&&savedOutput.equals(restoredOutput.saveWithFullMetadata(level.registryAccess()))&&savedWater.equals(restoredWater.saveWithFullMetadata(level.registryAccess()))&&savedEnergy.equals(restoredEnergy.saveWithFullMetadata(level.registryAccess())),"Populated item, fluid and FE hatches survive real chunk unload/load exactly");
-                helper.assertTrue(restored.checkMultiblock(level,anchor,level.getBlockState(anchor)),"Loaded 2.5 fixture still forms without rebuilding");
+                helper.assertTrue(restored.checkMultiblock(level,anchor,level.getBlockState(anchor)),"Loaded current fixture still forms");
                 restored.setRedstoneMode(RedstoneMode.IGNORE);restoredEnergy.setEnergy(32000-128);
                 for(int tick=0;tick<1000;tick++)MachineBlockEntity.serverTick(level,anchor,level.getBlockState(anchor),restored);
                 int fertilizer=0,diamonds=0;

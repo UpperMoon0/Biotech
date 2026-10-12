@@ -108,7 +108,7 @@ public class TerrestrialHabitatBlockEntity extends ControlledMachineBlockEntity 
                 new Vec3i(2, -1, -6)
         };
 
-        if (redesignedStructure) southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("terrestrial_habitat");
+        southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("terrestrial_habitat");
 
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
@@ -126,15 +126,12 @@ public class TerrestrialHabitatBlockEntity extends ControlledMachineBlockEntity 
         }
     }
 
-    private boolean redesignedStructure;
-
     @Override
     public MultiblockPattern getMultiblockPattern() {
-        return new com.nstut.biotech.machines.CompatibleMachinePattern("terrestrial_habitat",
-                getLegacyMultiblockPattern(), selected -> redesignedStructure = selected);
+        return com.nstut.biotech.machines.MachineStructures.pattern("terrestrial_habitat");
     }
 
-    /** Exact 2.5 pattern retained for existing-world compatibility. */
+    /** Historical 2.5 fixture for rejection tests and material comparisons; never used by live validation. */
     public MultiblockPattern getLegacyMultiblockPattern() {
         MultiblockBlock a = new MultiblockBlock(MachineRegistries.TERRESTRIAL_HABITAT.block().get(), Map.of("facing", "south")),
                 b = new MultiblockBlock(BlockRegistries.BIOTECH_MACHINE_CASING.get(), Map.of()),

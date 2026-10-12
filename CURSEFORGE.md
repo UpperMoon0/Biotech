@@ -115,7 +115,7 @@ That makes Biotech fit naturally into larger tech packs instead of forcing you i
 
 Biotech requires:
 
-- **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
+- **NsTut Lib 0.8.2+ within the 0.8.x compatibility line**
 - **Patchouli**
 - **OpenUI MC 0.0.10 or newer within the 0.0.x compatibility line** on clients, matching the Minecraft version and loader
 

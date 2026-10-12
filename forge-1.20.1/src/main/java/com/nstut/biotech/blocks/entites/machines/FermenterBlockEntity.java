@@ -94,7 +94,7 @@ public class FermenterBlockEntity extends ControlledMachineBlockEntity {
                 new Vec3i(-1, -1, -8)
         };
 
-        if (redesignedStructure) southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("fermenter");
+        southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("fermenter");
 
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
@@ -109,15 +109,12 @@ public class FermenterBlockEntity extends ControlledMachineBlockEntity {
         }
     }
 
-    private boolean redesignedStructure;
-
     @Override
     public MultiblockPattern getMultiblockPattern() {
-        return new com.nstut.biotech.machines.CompatibleMachinePattern("fermenter",
-                getLegacyMultiblockPattern(), selected -> redesignedStructure = selected);
+        return com.nstut.biotech.machines.MachineStructures.pattern("fermenter");
     }
 
-    /** Exact 2.5 pattern retained for existing-world compatibility. */
+    /** Historical 2.5 fixture for rejection tests and material comparisons; never used by live validation. */
     public MultiblockPattern getLegacyMultiblockPattern() {
         MultiblockBlock b = new MultiblockBlock(Blocks.IRON_BLOCK, Map.of()),
         c = new MultiblockBlock(BlockRegistries.BIOTECH_MACHINE_CASING.get(), Map.of()),

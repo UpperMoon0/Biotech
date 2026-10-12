@@ -25,7 +25,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import java.lang.reflect.Field;
 import java.util.*;
 
-/** Real loaded recipes + placed structures + production serverTick, on both sides of the upgrade. */
+/** Real loaded recipes + placed structures + production serverTick, on the current required layout. */
 public final class MachineLifecycleChecks {
     private MachineLifecycleChecks() {}
 
@@ -35,7 +35,7 @@ public final class MachineLifecycleChecks {
         Config.machineEnergyPerTick = 128;
         Config.machineEnergyMultiplier = 1.0;
         try {
-            for (String id : MachineStructures.ids()) for (int layout = 0; layout < (id.equals("terrestrial_habitat") ? 3 : 2); layout++) for (boolean customFluids : new boolean[] {false,true}) {
+            for (String id : MachineStructures.ids()) for (int layout = 0; layout < 1; layout++) for (boolean customFluids : new boolean[] {false,true}) {
                 if(customFluids&&!id.equals("mixer"))continue;
                 List<BlockPos> touched = new ArrayList<>();
                 try { runCycle(helper, id, layout, touched, customFluids); }

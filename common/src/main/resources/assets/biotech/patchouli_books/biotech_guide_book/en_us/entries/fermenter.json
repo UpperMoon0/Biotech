@@ -92,7 +92,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "7 \u00d7 7 \u00d7 6 twin tall sealed fermentation chambers with inspection strip and two passive vent stacks. A short front service vestibule distinguishes it from the single driven Mixer vessel. Feed/output hatches sit at ground level, avoiding the old raised connections.$(br)$(br)24 frame, 9 framed glass, 2 grow light, 71 panel, 4 pipe, 30 vessel, 6 vent. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "7 \u00d7 7 \u00d7 6 twin tall sealed fermentation chambers with inspection strip and two passive vent stacks. A short front service vestibule distinguishes it from the single driven Mixer vessel. Feed/output hatches sit at ground level, avoiding the old raised connections.$(br)$(br)24 frame, 9 framed glass, 2 grow light, 71 panel, 4 pipe, 30 vessel, 6 vent. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. NsTut Lib 0.8.2 Smart Hammer replaces supported ordinary blocks inside the current pattern and returns their items. Recover unsupported hatches and resource-bearing or compound blocks manually first; surplus blocks outside the pattern remain."
     }
   ],
   "sortnum": 70

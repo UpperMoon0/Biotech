@@ -67,7 +67,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "7 \u00d7 5 \u00d7 4 paired incubation bays with a center partition and two roof light banks. West inputs remain ordered parent A, parent B, food; east collects offspring. The compact clinical enclosure is distinct from the open habitat.$(br)$(br)19 frame, 21 framed glass, 8 grow light, 36 panel, 6 vent, 9 grass block. Plus the controller and 6 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "7 \u00d7 5 \u00d7 4 paired incubation bays with a center partition and two roof light banks. West inputs remain ordered parent A, parent B, food; east collects offspring. The compact clinical enclosure is distinct from the open habitat.$(br)$(br)19 frame, 21 framed glass, 8 grow light, 36 panel, 6 vent, 9 grass block. Plus the controller and 6 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. NsTut Lib 0.8.2 Smart Hammer replaces supported ordinary blocks inside the current pattern and returns their items. Recover unsupported hatches and resource-bearing or compound blocks manually first; surplus blocks outside the pattern remain."
     }
   ],
   "sortnum": 80

@@ -39,6 +39,12 @@ public final class BiotechGameTests {
     private static final String EMPTY_TEMPLATE = "empty";
 
     @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void servicePipeConnections(GameTestHelper helper) { ServicePipeChecks.connectionsAndShapes(helper); }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 1200)
+    public static void oldServicePipePaletteRepair(GameTestHelper helper) { ServicePipeChecks.oldPaletteRepair(helper); }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
     public static void allMachineLayoutsAndRotations(GameTestHelper helper) {
         MachineStructureChecks.allLayoutsAndRotations(helper);
     }
@@ -51,6 +57,16 @@ public final class BiotechGameTests {
     @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 1200)
     public static void legacyActiveCycleChunkUpgrade(GameTestHelper helper) {
         MachineChunkUpgradeChecks.legacyActiveCycleSurvivesChunkUnload(helper);
+    }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void smartHammerResourceSafety(GameTestHelper helper) {
+        ServicePipeChecks.hammerResourceSafety(helper,net.minecraftforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel()));
+    }
+
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void smartHammerConnectedPipes(GameTestHelper helper) {
+        ServicePipeChecks.hammerBuild(helper,net.minecraftforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel()));
     }
 
     private BiotechGameTests() {

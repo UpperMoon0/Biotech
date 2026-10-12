@@ -12,7 +12,7 @@ CurseForge: https://www.curseforge.com/minecraft/mc-mods/biotech
 
 Biotech requires:
 
-- **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
+- **NsTut Lib 0.8.2+ within the 0.8.x compatibility line**
 - **Patchouli** for the in-game Biotech Guide Book
 - **OpenUI MC 0.0.10 or newer within the 0.0.x compatibility line** on clients, matching the Minecraft version and loader
 
@@ -69,7 +69,7 @@ Adult/baby state, variants, custom names, and other persistent gameplay state ar
 - **Mixer** — produces animal feeds and supports recipes with item and fluid inputs/outputs.
 - **Fermenter** — processes organic materials, including turning manure into Fertilizer.
 
-Every machine has a Patchouli multiblock preview and crafting recipe in the Biotech Guide Book. Redesigned machines use eight reusable Biotech structural/functional parts with shared graphite, ivory and teal materials. Existing 2.5 builds continue working unchanged. See [construction budgets](docs/machine-materials.md) and [safe upgrade policy](docs/machine-upgrade.md).
+Every machine has a Patchouli multiblock preview and crafting recipe in the Biotech Guide Book. Redesigned machines use eight reusable Biotech structural/functional parts with shared graphite, ivory and teal materials. Only the current guide layout forms. Retired 2.5 layouts and the old 2.6 Habitat stop processing and require rebuilding in 2.7-alpha.2. See [construction budgets](docs/machine-materials.md) and [safe upgrade policy](docs/machine-upgrade.md).
 
 ### Automation-ready hatches
 
@@ -80,6 +80,8 @@ Biotech multiblocks use explicit IO blocks:
 - Fluid Input Hatch: 32,000 mB
 - Fluid Output Hatch: 32,000 mB
 - Energy Input Hatch: 614,400 FE storage, up to 512 FE/t input
+
+Service Pipes connect to adjacent Service Pipes in all six directions. Straight runs, bends, branches and junctions use the same block; models and collision arms follow the connection states. Smart Hammer builds their connected states automatically. Existing saved pipe runs reconnect after server chunk loading, including both sides of chunk boundaries; this repairs derived pipe flags only and does not migrate machines or resources.
 
 External automation is directional: connect item pipes, fluid pipes, or energy cables to the hatch-facing side. Input hatches accept resources and output hatches expose completed products.
 
