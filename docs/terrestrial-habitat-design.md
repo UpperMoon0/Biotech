@@ -11,4 +11,4 @@ Overall footprint is unchanged at 7 × 7; the highest shelter ridge is six block
 
 The initial PR iteration was visually too cubic. This revision removes the continuous upper perimeter, lowers the run walls, introduces an offset service mass and raises only the rear roof ridge. Texture is not used as a substitute for changed geometry.
 
-Exact 2.5 and 2.6 compatibility patterns remain intact. The earlier unpublished PR iteration is not a released world format and is not an additional fallback. Players with released old builds keep their existing geometry until deliberately rebuilding.
+From 2.7-alpha.2, only this current layout forms. The old 2.5 Habitat and the original 2.6 Habitat are retired: their blocks remain in the world, but their controllers stop processing until players rebuild. There is no old-layout configuration or automatic conversion. Historical patterns remain solely as rejection-test and before-image fixtures. See [the rebuilding and stored-content policy](machine-upgrade.md); Smart Hammer fills cleared positions but cannot replace solid old shell blocks.
