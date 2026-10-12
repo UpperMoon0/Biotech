@@ -20,9 +20,11 @@ Clear the old shell and obstructing blocks, rebuild the current guide layout, an
 
 ## Smart Hammer
 
-With enough matching materials in the player's inventory, shift-use NsTut Lib's Smart Hammer on the retained controller to fill missing positions of the current pattern. It skips matching blocks and consumes inventory only for missing placements.
+With enough plain matching materials in the player's inventory, shift-use NsTut Lib 0.8.2's Smart Hammer on the retained controller. It builds the current pattern, replaces ordinary single-cell shell blocks, clears required-air cells and returns recovered block items. Overflow drops at the player's feet. Matching blocks are retained; state corrections reuse the existing block. Service Pipes connect automatically to their neighbours.
 
-The pinned NsTut Lib Smart Hammer refuses any mismatching block whose state is not replaceable. It cannot exchange a solid old shell for a new shell, dismantle surplus old blocks, move loaded hatches or refund replaced shell blocks to inventory. Players must clear those obstructions themselves before building. Water placements consume water buckets and return empty buckets.
+The whole pending pattern is checked for blockers, permissions and materials before editing. Unsupported/populated block entities and protected blocks stop the build with a named blocker. Biotech controllers and hatches have not opted into recovery: empty/recover and dismantle obstructing hatches manually. The retained controller is never replaced; surplus old blocks outside the new pattern are untouched. Water placements consume plain water buckets and return empty buckets.
+
+Completed earlier edits remain if a later callback or inventory/world change interrupts placement. Reuse the hammer to replan the remaining cells. This adds no hatch resource or active-transaction transfer. See [NsTut Lib's recovery contract](https://github.com/UpperMoon0/NsTut-Lib/blob/feat/smart-hammer-safe-replacement/docs/smart-hammer-replacement.md).
 
 ## Verification scope
 

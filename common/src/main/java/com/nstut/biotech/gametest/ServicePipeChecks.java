@@ -10,6 +10,39 @@ import net.minecraft.world.phys.shapes.Shapes;
 
 public final class ServicePipeChecks {
     private ServicePipeChecks(){}
+    public static void hammerBuild(GameTestHelper helper,net.minecraft.world.entity.player.Player player){
+        var level=helper.getLevel();
+        var anchor=helper.absolutePos(new BlockPos(4,4,4));
+        var first=anchor.east();
+        var pipe=BlockRegistries.BIOTECH_PIPE.get();
+        level.setBlock(anchor,Blocks.FURNACE.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING,Direction.SOUTH),3);
+        level.setBlock(first.north(),pipe.defaultBlockState(),3);
+        level.setBlock(first,Blocks.AIR.defaultBlockState(),3);
+        level.setBlock(first.east(),Blocks.AIR.defaultBlockState(),3);
+        player.getInventory().clearContent();
+        player.getAbilities().mayBuild=true;player.getAbilities().instabuild=false;
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(pipe,2));
+        var cell=new com.nstut.nstutlib.models.MultiblockBlock(pipe);
+        var pattern=new com.nstut.nstutlib.models.MultiblockPattern(new com.nstut.nstutlib.models.MultiblockBlock[][][]{{{cell,cell}}});
+        try {
+            var hammer=(com.nstut.nstutlib.items.SmartHammer)com.nstut.nstutlib.items.ItemRegistries.SMART_HAMMER.get();
+            var build=com.nstut.nstutlib.items.SmartHammer.class.getDeclaredMethod("buildStructure",net.minecraft.world.level.Level.class,
+                    net.minecraft.world.entity.player.Player.class,BlockPos.class,com.nstut.nstutlib.models.MultiblockPattern.class,int.class,int.class,int.class);
+            build.setAccessible(true);
+            helper.assertTrue((boolean)build.invoke(hammer,level,player,anchor,pattern,-1,0,0),"Smart Hammer builds pipes with available inventory");
+        }catch(ReflectiveOperationException exception){throw new AssertionError("Unable to invoke hammer fixture",exception);}
+        var state=level.getBlockState(first);
+        helper.assertTrue(state.getValue(ServicePipeBlockBase.NORTH)&&state.getValue(ServicePipeBlockBase.EAST),"First pipe joins existing neighbour and newly built pipe");
+        helper.assertTrue(level.getBlockState(first.north()).getValue(ServicePipeBlockBase.SOUTH)
+                &&level.getBlockState(first.east()).getValue(ServicePipeBlockBase.WEST),"All connections are reciprocal");
+        int remaining=0;
+        for(int slot=0;slot<player.getInventory().getContainerSize();slot++){
+            var stack=player.getInventory().getItem(slot);
+            if(stack.is(pipe.asItem()))remaining+=stack.getCount();
+        }
+        helper.assertTrue(remaining==0,"Exactly two pipes consumed");
+        helper.succeed();
+    }
     public static void connectionsAndShapes(GameTestHelper helper){
         var level=helper.getLevel();
         var center=helper.absolutePos(new BlockPos(4,4,4));
@@ -21,7 +54,7 @@ public final class ServicePipeChecks {
             for(Direction direction:Direction.values())if((mask&(1<<direction.ordinal()))!=0)
                 level.setBlock(center.relative(direction),pipe.defaultBlockState(),3);
             var state=level.getBlockState(center);
-            helper.assertTrue(state.getShape(level,center).bounds().minX()>=0&&state.getShape(level,center).bounds().maxX()<=1,"Collision stays inside its cell");
+            helper.assertTrue(state.getShape(level,center).bounds().minX>=0&&state.getShape(level,center).bounds().maxX<=1,"Collision stays inside its cell");
             for(Direction direction:Direction.values()){
                 boolean connected=(mask&(1<<direction.ordinal()))!=0;
                 helper.assertTrue(state.getValue(ServicePipeBlockBase.connection(direction))==connected,"Center matches neighbour in "+direction+" for mask "+mask);

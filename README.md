@@ -12,7 +12,7 @@ CurseForge: https://www.curseforge.com/minecraft/mc-mods/biotech
 
 Biotech requires:
 
-- **NsTut Lib 0.8.1+ within the 0.8.x compatibility line**
+- **NsTut Lib 0.8.2+ within the 0.8.x compatibility line**
 - **Patchouli** for the in-game Biotech Guide Book
 - **OpenUI MC 0.0.10 or newer within the 0.0.x compatibility line** on clients, matching the Minecraft version and loader
 
@@ -80,6 +80,8 @@ Biotech multiblocks use explicit IO blocks:
 - Fluid Input Hatch: 32,000 mB
 - Fluid Output Hatch: 32,000 mB
 - Energy Input Hatch: 614,400 FE storage, up to 512 FE/t input
+
+Service Pipes connect to adjacent Service Pipes in all six directions. Straight runs, bends, branches and junctions use the same block; models and collision arms follow the connection states. Smart Hammer builds their connected states automatically.
 
 External automation is directional: connect item pipes, fluid pipes, or energy cables to the hatch-facing side. Input hatches accept resources and output hatches expose completed products.
 

@@ -24,12 +24,12 @@ class CompatibilityTest {
         assertEquals("1.21.1", properties.getProperty("minecraft_version_1_21_1"));
         assertEquals("[1.21.1,1.22)", properties.getProperty("minecraft_version_range_1_21_1"));
         assertEquals("21.1.240", properties.getProperty("neoforge_version_1_21_1"));
-        assertEquals("0.8.1", properties.getProperty("nstut_lib_version"));
-        assertEquals("f0bac6d3e2d97fc1042dac6aaf8786af5af7a797", properties.getProperty("nstut_lib_ref"));
+        assertEquals("0.8.2", properties.getProperty("nstut_lib_version"));
+        assertEquals("72eab13f1c492e576a81f3fff5c57ca17cab355e", properties.getProperty("nstut_lib_ref"));
 
         String metadataTemplate = Files.readString(repositoryRoot.resolve(
                 Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml")));
-        assertTrue(metadataTemplate.contains("versionRange = \"[0.8.1,0.9)\""));
+        assertTrue(metadataTemplate.contains("versionRange = \"[0.8.2,0.9)\""));
     }
 
     private static Path findRepositoryRoot(Path start) throws IOException {

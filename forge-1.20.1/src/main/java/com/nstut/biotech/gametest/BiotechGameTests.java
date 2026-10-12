@@ -56,6 +56,11 @@ public final class BiotechGameTests {
         MachineChunkUpgradeChecks.legacyActiveCycleSurvivesChunkUnload(helper);
     }
 
+    @GameTest(templateNamespace = TEMPLATE_NAMESPACE, template = "machine_lab", timeoutTicks = 200)
+    public static void smartHammerConnectedPipes(GameTestHelper helper) {
+        ServicePipeChecks.hammerBuild(helper,net.minecraftforge.common.util.FakePlayerFactory.getMinecraft(helper.getLevel()));
+    }
+
     private BiotechGameTests() {
     }
 
