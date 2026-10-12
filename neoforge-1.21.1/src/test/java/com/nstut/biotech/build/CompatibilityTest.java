@@ -25,7 +25,7 @@ class CompatibilityTest {
         assertEquals("[1.21.1,1.22)", properties.getProperty("minecraft_version_range_1_21_1"));
         assertEquals("21.1.240", properties.getProperty("neoforge_version_1_21_1"));
         assertEquals("0.8.2", properties.getProperty("nstut_lib_version"));
-        assertEquals("2eba051973e967a2fbcee2bf1a5fef48554540f8", properties.getProperty("nstut_lib_ref"));
+        assertEquals("504cf1822072764b6b684c6169dd7734f21031e3", properties.getProperty("nstut_lib_ref"));
 
         String metadataTemplate = Files.readString(repositoryRoot.resolve(
                 Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml")));
