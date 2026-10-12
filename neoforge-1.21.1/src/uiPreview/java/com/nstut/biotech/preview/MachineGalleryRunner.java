@@ -30,6 +30,10 @@ import java.util.List;
 public final class MachineGalleryRunner {
     private record Capture(String file, String machine, String layout, String view, int width, int height, boolean formed) {}
     private static final List<Capture> captures = new ArrayList<>();
+    private record PipeCapture(String file,String shape,int connections,int width,int height) {}
+    private static final List<PipeCapture> pipeCaptures=new ArrayList<>();
+    private static final String[] PIPE_NAMES={"vertical","horizontal","elbow","tee","cross","six-way"};
+    private static final int[] PIPE_MASKS={3,48,10,28,60,63};
     private static int index;
     private static int settledTicks;
     private static boolean pending;
@@ -44,15 +48,27 @@ public final class MachineGalleryRunner {
         if (!Boolean.getBoolean("biotech.machineGallery.enabled") || stopped) return;
         Minecraft mc=Minecraft.getInstance();
         if(failure!=null)throw new IllegalStateException("Machine gallery failed",failure);
-        if(mc.level==null||mc.player==null||mc.getSingleplayerServer()==null||(mc.screen!=null && index < 28)||mc.getOverlay()!=null)return;
+        if(mc.level==null||mc.player==null||mc.getSingleplayerServer()==null||(mc.screen!=null && index != 28)||mc.getOverlay()!=null)return;
         try {
             if(output==null){output=Path.of(System.getProperty("biotech.machineGallery.output"));Files.createDirectories(output);mc.options.hideGui=true;}
             if(!pending){
-                if(index==30){finish();stopped=true;mc.setScreen(null);mc.stop();return;}
+                if(index==36){finish();stopped=true;mc.setScreen(null);mc.stop();return;}
                 pending=true;ready=false;settledTicks=0;
                 int scene=index;
                 mc.getSingleplayerServer().execute(()->prepare(mc,scene));
             } else if(ready&&++settledTicks>=100){
+                if(index>=30){
+                    var state=mc.level.getBlockState(controllerPos);
+                    int mask=0;
+                    for(Direction direction:Direction.values())if(state.getValue(com.nstut.biotech.blocks.ServicePipeBlockBase.connection(direction)))mask|=1<<direction.ordinal();
+                    if(mask!=PIPE_MASKS[index-30])throw new IllegalStateException("Client pipe connections differ from server fixture");
+                    String name="service-pipe-"+PIPE_NAMES[index-30]+".png";
+                    try(NativeImage frame=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
+                        frame.writeToFile(output.resolve(name));
+                        pipeCaptures.add(new PipeCapture(name,PIPE_NAMES[index-30],mask,frame.getWidth(),frame.getHeight()));
+                    }
+                    index++;pending=false;return;
+                }
                 var be=mc.level.getBlockEntity(controllerPos);
                 boolean expectedFormed=index!=24 && (index>=25 || index%4>=2);
                 if(!(be instanceof MachineBlockEntity machine)||machine.checkMultiblock(mc.level,controllerPos,mc.level.getBlockState(controllerPos))!=expectedFormed)
@@ -80,6 +96,28 @@ public final class MachineGalleryRunner {
             level.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false,server);
             level.getGameRules().getRule(GameRules.RULE_RANDOMTICKING).set(0,server);
             level.setDayTime(6000);level.setWeatherParameters(100000,0,false,false);
+            if(scene>=30){
+                BlockPos center=new BlockPos(16,81,16);
+                for(int x=8;x<=24;x++)for(int z=8;z<=24;z++){
+                    level.setBlock(new BlockPos(x,79,z),Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState(),3);
+                    for(int y=80;y<=100;y++)level.setBlock(new BlockPos(x,y,z),Blocks.AIR.defaultBlockState(),3);
+                }
+                var pipe=com.nstut.biotech.blocks.BlockRegistries.BIOTECH_PIPE.get();
+                level.setBlock(center,pipe.defaultBlockState(),3);
+                for(Direction direction:Direction.values())if((PIPE_MASKS[scene-30]&(1<<direction.ordinal()))!=0)
+                    level.setBlock(center.relative(direction),pipe.defaultBlockState(),3);
+                int mask=0;
+                for(Direction direction:Direction.values())if(level.getBlockState(center).getValue(com.nstut.biotech.blocks.ServicePipeBlockBase.connection(direction)))mask|=1<<direction.ordinal();
+                if(mask!=PIPE_MASKS[scene-30])throw new IllegalStateException("Server pipe fixture did not connect");
+                controllerPos=center;
+                player.setGameMode(GameType.SPECTATOR);
+                double dx=4,dz=5,eyeY=84,targetY=81.5;
+                float yaw=(float)Math.toDegrees(Math.atan2(dx,-dz));
+                float pitch=(float)Math.toDegrees(Math.atan2(eyeY-targetY,Math.sqrt(dx*dx+dz*dz)));
+                player.teleportTo(level,16.5+dx,eyeY-player.getEyeHeight(),16.5+dz,yaw,pitch);
+                mc.execute(()->{mc.setScreen(null);mc.options.hideGui=true;});
+                ready=true;return;
+            }
             String id=scene>=24?"terrestrial_habitat":MachineStructures.ids()[scene/4];
             int[] origin=MachineStructures.origin(id);
             var modern=MachineStructures.pattern(id);
@@ -101,7 +139,7 @@ public final class MachineGalleryRunner {
                     var part=chosen[y][z][x];if(part==null)continue;
                     BlockState placed=part.getBlock().defaultBlockState();
                     for(var entry:part.getStates().entrySet())placed=property(placed,entry.getKey(),entry.getValue());
-                    level.setBlock(new BlockPos(sx+x,80+h-y-1,sz+z),placed,2);
+                    level.setBlock(new BlockPos(sx+x,80+h-y-1,sz+z),placed,3);
                 }
             }
             var machine=(MachineBlockEntity)level.getBlockEntity(anchor);
@@ -163,7 +201,9 @@ public final class MachineGalleryRunner {
     private static void finish()throws Exception{
         StringBuilder html=new StringBuilder("<!doctype html><meta charset=utf-8><title>Biotech placed-world comparison</title><style>body{background:#182024;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%}figure{margin:0}</style><h1>Actual in-game multiblocks</h1><p>NeoForge 1.21.1, noon, fixed lens and matching camera distance per machine; front-left and rear-right show controller and automation faces. Retired before layouts were placed and verified invalid; current after layouts were verified formed in the integrated server and client world.</p><main>");
         for(var capture:captures)html.append("<figure><img src=\"").append(capture.file()).append("\"><figcaption>").append(capture.file()).append("</figcaption></figure>");
+        for(var capture:pipeCaptures)html.append("<figure><img src=\"").append(capture.file()).append("\"><figcaption>").append(capture.shape()).append("</figcaption></figure>");
         Files.writeString(output.resolve("index.html"),html.append("</main>").toString());
+        Files.writeString(output.resolve("pipe-manifest.json"),new GsonBuilder().setPrettyPrinting().create().toJson(pipeCaptures));
         Files.writeString(output.resolve("manifest.json"),new GsonBuilder().setPrettyPrinting().create().toJson(captures));
     }
 }
