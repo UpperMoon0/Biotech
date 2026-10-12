@@ -341,7 +341,8 @@ tasks.register('renderMachineGallery') {
         }
         images.each { entry ->
             def png = javax.imageio.ImageIO.read(new File(output, entry.file))
-            if (!entry.formed || png == null || png.width != 1280 || png.height != 960) throw new GradleException("Invalid machine gallery capture: ${entry.file}")
+            boolean expectedFormed = entry.layout.startsWith('after-')
+            if (entry.formed != expectedFormed || png == null || png.width != 1280 || png.height != 960) throw new GradleException("Invalid machine gallery capture: ${entry.file}")
         }
     }
 }
