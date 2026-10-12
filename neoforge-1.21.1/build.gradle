@@ -292,15 +292,6 @@ tasks.register('renderJeiPreviews') {
         if (images.size() != 17 || images.collect { it.file }.toSet().size() != 17) {
             throw new GradleException('Expected 17 unique real JEI previews')
         }
-        def pipeManifest = new File(output, 'pipe-manifest.json')
-        if (!pipeManifest.isFile()) throw new GradleException('Missing connected pipe gallery')
-        def pipes = new groovy.json.JsonSlurper().parse(pipeManifest)
-        def masks = [vertical:3, horizontal:48, elbow:10, tee:28, cross:60, 'six-way':63]
-        if (pipes.size() != 6 || pipes.collect { it.shape }.toSet() != masks.keySet()) throw new GradleException('Expected six pipe connection views')
-        pipes.each { entry ->
-            def png = javax.imageio.ImageIO.read(new File(output, entry.file))
-            if (entry.connections != masks[entry.shape] || png == null || png.width != 1280 || png.height != 960) throw new GradleException("Invalid pipe capture: ${entry.file}")
-        }
         images.each { entry ->
             def image = javax.imageio.ImageIO.read(new File(output, entry.file))
             if (image == null || image.width != 1024 || image.height != 832) {
@@ -347,6 +338,15 @@ tasks.register('renderMachineGallery') {
         ['before-2.6-entrance-eye-level', 'after-2.7-entrance-eye-level', 'after-2.7-interior-eye-level',
          'after-2.7-service-pipe-held', 'after-2.7-service-pipe-inventory', 'after-2.7-silhouette-front-right'].each { view ->
             if (!names.contains("terrestrial_habitat-${view}.png".toString())) throw new GradleException("Missing habitat/pipe evidence: ${view}")
+        }
+        def pipeManifest = new File(output, 'pipe-manifest.json')
+        if (!pipeManifest.isFile()) throw new GradleException('Missing connected pipe gallery')
+        def pipes = new groovy.json.JsonSlurper().parse(pipeManifest)
+        def masks = [vertical:3, horizontal:48, elbow:10, tee:28, cross:60, 'six-way':63]
+        if (pipes.size() != 6 || pipes.collect { it.shape }.toSet() != masks.keySet()) throw new GradleException('Expected six pipe connection views')
+        pipes.each { entry ->
+            def png = javax.imageio.ImageIO.read(new File(output, entry.file))
+            if (entry.connections != masks[entry.shape] || png == null || png.width != 1280 || png.height != 960) throw new GradleException("Invalid pipe capture: ${entry.file}")
         }
         images.each { entry ->
             def png = javax.imageio.ImageIO.read(new File(output, entry.file))
