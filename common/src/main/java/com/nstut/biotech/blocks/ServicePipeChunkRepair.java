@@ -22,7 +22,7 @@ public final class ServicePipeChunkRepair {
         synchronized (PENDING) { pending = PENDING.remove(level); }
         if (pending == null) return;
         for (var chunk : pending)
-            if (level.getChunkSource().getChunkNow(chunk.getPos().x, chunk.getPos().z) == chunk) repair(level, chunk);
+            if (level.getChunkSource().getChunkNow(chunk.getPos().getMinBlockX() >> 4, chunk.getPos().getMinBlockZ() >> 4) == chunk) repair(level, chunk);
     }
 
     public static void repair(Level level, LevelChunk chunk) {

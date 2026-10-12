@@ -26,10 +26,10 @@ public final class ServicePipeChecks {
             if(stage[0]==0) {
                 // Let initial load callbacks drain before writing the old saved palette fixture.
                 if(++ticks[0]<5)return;
+                for(var pos:new BlockPos[]{left,left.above(),right,right.above()})level.setBlock(pos,Blocks.STONE.defaultBlockState(),2 | 16);
                 for(var pos:new BlockPos[]{left,left.above(),right,right.above()}) {
                     var chunk=level.getChunkAt(pos);
                     chunk.getSection(chunk.getSectionIndex(pos.getY())).setBlockState(pos.getX()&15,pos.getY()&15,pos.getZ()&15,old);
-                    chunk.setUnsaved(true);
                 }
                 helper.assertTrue(!level.getBlockState(left).getValue(ServicePipeBlockBase.EAST),"Saved old run starts disconnected");
                 level.getChunkSource().save(true);
