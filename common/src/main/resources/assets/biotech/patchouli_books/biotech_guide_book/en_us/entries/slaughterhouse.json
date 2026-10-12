@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Slaughterhouse rolls the captured animal's actual entity loot table once per consumed individual. Variant state and datapack changes apply. Counts are multiplied by the server's slaughterhouseYieldMultiplier setting (default 2, range 1\u201364) and split into legal stacks.$(br)$(br)Prepared results survive blocked outputs, power loss and reloads. The machine uses a non-player, non-looting context; player-only drops are not granted."
+      "text": "The Slaughterhouse rolls the captured animal's actual entity loot table once per consumed individual. Variant state and datapack changes apply. Counts are multiplied by the server's slaughterhouseYieldMultiplier setting (default 2, range 1–64) and split into legal stacks.$(br)$(br)Prepared results survive blocked outputs, power loss and reloads. The machine uses a non-player, non-looting context; player-only drops are not granted."
     },
     {
       "type": "patchouli:text",
@@ -14,19 +14,19 @@
     {
       "multiblock": {
         "mapping": {
+          "0": "biotech:slaughterhouse[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_input_hatch[facing=west]",
+          "3": "biotech:item_output_hatch[facing=east]",
+          "4": "biotech:energy_input_hatch[facing=north]",
+          "5": "biotech:fluid_input_hatch[facing=north]",
           "D": "biotech:biotech_drive",
           "F": "biotech:biotech_frame",
           "G": "biotech:biotech_framed_glass",
           "L": "biotech:biotech_grow_light",
           "P": "biotech:biotech_panel",
           "V": "biotech:biotech_vent",
-          ".": "minecraft:air",
-          "0": "biotech:slaughterhouse[facing=south]",
-          "1": "biotech:item_input_hatch[facing=west]",
-          "2": "biotech:item_input_hatch[facing=west]",
-          "3": "biotech:item_output_hatch[facing=east]",
-          "4": "biotech:energy_input_hatch[facing=north]",
-          "5": "biotech:fluid_input_hatch[facing=north]"
+          ".": "minecraft:air"
         },
         "symmetrical": false,
         "pattern": [
@@ -78,7 +78,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "5 \u00d7 7 \u00d7 4 sealed processing line. West intake, internal drive units and east discharge communicate the flow. Narrow inspection windows and a vented spine replace the old red glass tower; no decorative gore.$(br)$(br)2 drive, 18 frame, 6 framed glass, 4 grow light, 61 panel, 7 vent. Plus the controller and 5 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "5 × 7 × 4 sealed processing line. West intake, internal drive units and east discharge communicate the flow. Narrow inspection windows and a vented spine replace the old red glass tower; no decorative gore.$(br)$(br)2 drive, 18 frame, 6 framed glass, 4 grow light, 61 panel, 7 vent. Plus the controller and 5 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. Smart Hammer fills cleared spaces from inventory but cannot replace solid blocks."
     }
   ],
   "sortnum": 100

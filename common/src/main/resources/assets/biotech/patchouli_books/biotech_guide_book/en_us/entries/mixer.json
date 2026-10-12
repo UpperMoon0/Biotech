@@ -10,14 +10,6 @@
     {
       "multiblock": {
         "mapping": {
-          "D": "biotech:biotech_drive",
-          "F": "biotech:biotech_frame",
-          "G": "biotech:biotech_framed_glass",
-          "P": "biotech:biotech_panel",
-          "R": "biotech:biotech_pipe",
-          "T": "biotech:biotech_vessel",
-          "V": "biotech:biotech_vent",
-          ".": "minecraft:air",
           "0": "biotech:mixer[facing=south]",
           "1": "biotech:item_input_hatch[facing=west]",
           "2": "biotech:item_output_hatch[facing=east]",
@@ -25,7 +17,15 @@
           "4": "biotech:fluid_input_hatch[facing=west]",
           "5": "biotech:fluid_input_hatch[facing=west]",
           "6": "biotech:fluid_input_hatch[facing=west]",
-          "7": "biotech:fluid_output_hatch[facing=east]"
+          "7": "biotech:fluid_output_hatch[facing=east]",
+          "D": "biotech:biotech_drive",
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "P": "biotech:biotech_panel",
+          "R": "biotech:biotech_pipe",
+          "T": "biotech:biotech_vessel",
+          "V": "biotech:biotech_vent",
+          ".": "minecraft:air"
         },
         "symmetrical": false,
         "pattern": [
@@ -83,7 +83,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "5 \u00d7 5 \u00d7 6 compact driven vessel, replacing a 12 \u00d7 5 \u00d7 10 gantry. A top drive and central service shaft read as an agitator. Three distinct fluid feeds face west; low east item/fluid discharge stays accessible. The controller sits in a one-block front recess.$(br)$(br)2 drive, 15 frame, 4 framed glass, 11 panel, 7 pipe, 26 vessel, 2 vent. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "5 × 5 × 6 compact driven vessel, replacing a 12 × 5 × 10 gantry. A top drive and central service shaft read as an agitator. Three distinct fluid feeds face west; low east item/fluid discharge stays accessible. The controller sits in a one-block front recess.$(br)$(br)2 drive, 15 frame, 4 framed glass, 11 panel, 7 pipe, 26 vessel, 2 vent. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. Smart Hammer fills cleared spaces from inventory but cannot replace solid blocks."
     }
   ],
   "sortnum": 60

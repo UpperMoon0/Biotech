@@ -105,7 +105,7 @@ public class BreedingChamberBlockEntity extends ControlledMachineBlockEntity {
                 new Vec3i(-2, -1, -6)
         };
 
-        if (redesignedStructure) southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("breeding_chamber");
+        southOffset = com.nstut.biotech.machines.MachineStructures.hatchOffsets("breeding_chamber");
 
         for (int i = 0; i < southOffset.length; i++) {
             Vec3i rotatedOffset = rotateHatchesOffset(southOffset[i], facing);
@@ -122,15 +122,12 @@ public class BreedingChamberBlockEntity extends ControlledMachineBlockEntity {
         }
     }
 
-    private boolean redesignedStructure;
-
     @Override
     public MultiblockPattern getMultiblockPattern() {
-        return new com.nstut.biotech.machines.CompatibleMachinePattern("breeding_chamber",
-                getLegacyMultiblockPattern(), selected -> redesignedStructure = selected);
+        return com.nstut.biotech.machines.MachineStructures.pattern("breeding_chamber");
     }
 
-    /** Exact 2.5 pattern retained for existing-world compatibility. */
+    /** Historical 2.5 fixture for rejection tests and material comparisons; never used by live validation. */
     public MultiblockPattern getLegacyMultiblockPattern() {
         MultiblockBlock a = new MultiblockBlock(MachineRegistries.BREEDING_CHAMBER.block().get(), Map.of("facing", "south")),
                 b = new MultiblockBlock(BlockRegistries.BIOTECH_MACHINE_CASING.get(), Map.of()),

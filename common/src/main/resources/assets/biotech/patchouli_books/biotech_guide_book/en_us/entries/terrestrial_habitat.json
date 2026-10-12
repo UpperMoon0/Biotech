@@ -18,13 +18,6 @@
     {
       "multiblock": {
         "mapping": {
-          "F": "biotech:biotech_frame",
-          "G": "biotech:biotech_framed_glass",
-          "L": "biotech:biotech_grow_light",
-          "P": "biotech:biotech_panel",
-          "V": "biotech:biotech_vent",
-          "h": "minecraft:grass_block[snowy=false]",
-          ".": "minecraft:air",
           "0": "biotech:terrestrial_habitat[facing=south]",
           "1": "biotech:item_input_hatch[facing=west]",
           "2": "biotech:item_input_hatch[facing=west]",
@@ -32,7 +25,14 @@
           "4": "biotech:item_output_hatch[facing=east]",
           "5": "biotech:energy_input_hatch[facing=north]",
           "6": "biotech:fluid_input_hatch[facing=north]",
-          "7": "biotech:fluid_output_hatch[facing=east]"
+          "7": "biotech:fluid_output_hatch[facing=east]",
+          "F": "biotech:biotech_frame",
+          "G": "biotech:biotech_framed_glass",
+          "L": "biotech:biotech_grow_light",
+          "P": "biotech:biotech_panel",
+          "V": "biotech:biotech_vent",
+          "h": "minecraft:grass_block[snowy=false]",
+          ".": "minecraft:air"
         },
         "symmetrical": false,
         "pattern": [
@@ -102,7 +102,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "7 \u00d7 7 \u00d7 6 animal-care habitat with three distinct masses: a raised stepped-roof rear shelter, an airy low-glass exercise run, and a lower offset feeding/service pod. A freestanding entrance arch beside the controller provides a two-block-wide, three-block-high opening. The open run has no overhead box frame; the level path leads into the illuminated shelter. Seven exposed ports retain their 2.6 positions.$(br)$(br)41 frame, 19 framed glass, 1 grow light, 59 panel, 6 vent, 16 grass block. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Original 2.5 builds and 2.6 habitats still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "7 × 7 × 6 animal-care habitat with three distinct masses: a raised stepped-roof rear shelter, an airy low-glass exercise run, and a lower offset feeding/service pod. A freestanding entrance arch beside the controller provides a two-block-wide, three-block-high opening. The open run has no overhead box frame; the level path leads into the illuminated shelter. Seven exposed ports retain their 2.6 positions.$(br)$(br)41 frame, 19 framed glass, 1 grow light, 59 panel, 6 vent, 16 grass block. Plus the controller and 7 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. Smart Hammer fills cleared spaces from inventory but cannot replace solid blocks."
     }
   ],
   "sortnum": 90

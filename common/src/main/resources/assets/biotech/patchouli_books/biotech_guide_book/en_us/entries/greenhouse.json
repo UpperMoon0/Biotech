@@ -10,6 +10,11 @@
     {
       "multiblock": {
         "mapping": {
+          "0": "biotech:greenhouse[facing=south]",
+          "1": "biotech:item_input_hatch[facing=west]",
+          "2": "biotech:item_output_hatch[facing=east]",
+          "3": "biotech:energy_input_hatch[facing=north]",
+          "4": "biotech:fluid_input_hatch[facing=north]",
           "F": "biotech:biotech_frame",
           "G": "biotech:biotech_framed_glass",
           "L": "biotech:biotech_grow_light",
@@ -17,12 +22,7 @@
           "V": "biotech:biotech_vent",
           "f": "minecraft:farmland[moisture=7]",
           "w": "minecraft:water[level=0]",
-          ".": "minecraft:air",
-          "0": "biotech:greenhouse[facing=south]",
-          "1": "biotech:item_input_hatch[facing=west]",
-          "2": "biotech:item_output_hatch[facing=east]",
-          "3": "biotech:energy_input_hatch[facing=north]",
-          "4": "biotech:fluid_input_hatch[facing=north]"
+          ".": "minecraft:air"
         },
         "symmetrical": false,
         "pattern": [
@@ -83,7 +83,7 @@
       "type": "patchouli:text",
       "anchor": "construction",
       "title": "Construction",
-      "text": "7 \u00d7 7 growing bed with a five-block pitched glazed roof. Twenty farmland cells flank a water channel; roof lights and ridge ventilation explain the growing function. All four ports stay at ground level.$(br)$(br)20 frame, 60 framed glass, 7 grow light, 24 panel, 2 vent, 20 farmland, 5 water. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Original 2.5 builds still form unchanged. Do not move a controller or loaded hatch during an active cycle. Build the new design separately, or finish and empty the old machine before rebuilding."
+      "text": "7 × 7 growing bed with a five-block pitched glazed roof. Twenty farmland cells flank a water channel; roof lights and ridge ventilation explain the growing function. All four ports stay at ground level.$(br)$(br)20 frame, 60 framed glass, 7 grow light, 24 panel, 2 vent, 20 farmland, 5 water. Plus the controller and 4 hatches shown in the preview.$(br)$(br)Only the current guide layout forms. Retired 2.5 layouts and the 2.6 Habitat require rebuilding. Finish active cycles and empty hatches before updating; do not break a loaded controller or hatch. Smart Hammer fills cleared spaces from inventory but cannot replace solid blocks."
     }
   ],
   "sortnum": 50

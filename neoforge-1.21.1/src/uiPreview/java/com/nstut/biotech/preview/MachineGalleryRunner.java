@@ -54,7 +54,8 @@ public final class MachineGalleryRunner {
                 mc.getSingleplayerServer().execute(()->prepare(mc,scene));
             } else if(ready&&++settledTicks>=100){
                 var be=mc.level.getBlockEntity(controllerPos);
-                if(!(be instanceof MachineBlockEntity machine)||!machine.checkMultiblock(mc.level,controllerPos,mc.level.getBlockState(controllerPos)))
+                boolean expectedFormed=index!=24 && (index>=25 || index%4>=2);
+                if(!(be instanceof MachineBlockEntity machine)||machine.checkMultiblock(mc.level,controllerPos,mc.level.getBlockState(controllerPos))!=expectedFormed)
                     throw new IllegalStateException("Rendered client structure is missing or invalid: "+controllerPos);
                 String id=index>=24?"terrestrial_habitat":MachineStructures.ids()[index/4];
                 String layout=index>=24?(index==24?"before-2.6":"after-2.7"):index%4<2?"before-2.5":"after-redesign";
@@ -62,7 +63,7 @@ public final class MachineGalleryRunner {
                 String name=id+"-"+layout+"-"+view+".png";
                 try(NativeImage frame=Screenshot.takeScreenshot(mc.getMainRenderTarget())){
                     frame.writeToFile(output.resolve(name));
-                    captures.add(new Capture(name,id,layout,view,frame.getWidth(),frame.getHeight(),true));
+                    captures.add(new Capture(name,id,layout,view,frame.getWidth(),frame.getHeight(),expectedFormed));
                 }
                 index++;pending=false;
             }
@@ -104,7 +105,8 @@ public final class MachineGalleryRunner {
                 }
             }
             var machine=(MachineBlockEntity)level.getBlockEntity(anchor);
-            if(machine==null||!machine.checkMultiblock(level,anchor,level.getBlockState(anchor)))throw new IllegalStateException("Gallery fixture does not form: "+id);
+            boolean expectedFormed=scene!=24 && (scene>=25 || scene%4>=2);
+            if(machine==null||machine.checkMultiblock(level,anchor,level.getBlockState(anchor))!=expectedFormed)throw new IllegalStateException("Gallery fixture has wrong formation result: "+id);
             controllerPos=anchor;
             // Same lens, distance, lighting and target for each before/after pair.
             int maxH=Math.max(legacy.getPattern().length,a.length);
@@ -159,7 +161,7 @@ public final class MachineGalleryRunner {
         }
     }
     private static void finish()throws Exception{
-        StringBuilder html=new StringBuilder("<!doctype html><meta charset=utf-8><title>Biotech placed-world comparison</title><style>body{background:#182024;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%}figure{margin:0}</style><h1>Actual in-game multiblocks</h1><p>NeoForge 1.21.1, noon, fixed lens and matching camera distance per machine; front-left and rear-right show controller and automation faces. Both old and new layouts were placed and validated in the integrated server and client world.</p><main>");
+        StringBuilder html=new StringBuilder("<!doctype html><meta charset=utf-8><title>Biotech placed-world comparison</title><style>body{background:#182024;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}img{width:100%}figure{margin:0}</style><h1>Actual in-game multiblocks</h1><p>NeoForge 1.21.1, noon, fixed lens and matching camera distance per machine; front-left and rear-right show controller and automation faces. Retired before layouts were placed and verified invalid; current after layouts were verified formed in the integrated server and client world.</p><main>");
         for(var capture:captures)html.append("<figure><img src=\"").append(capture.file()).append("\"><figcaption>").append(capture.file()).append("</figcaption></figure>");
         Files.writeString(output.resolve("index.html"),html.append("</main>").toString());
         Files.writeString(output.resolve("manifest.json"),new GsonBuilder().setPrettyPrinting().create().toJson(captures));

@@ -1,4 +1,4 @@
-name: Released binary upgrade
+name: Historical 2.5 to 2.6 binary upgrade
 on:
   pull_request:
     paths:

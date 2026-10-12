@@ -1,6 +1,6 @@
 # Actual released-binary world upgrade
 
-This isolated test-only mod addresses the remaining issue49 acceptance gap. It is a standalone Gradle project: it does not compile Biotech source, modify either release JAR, or enter the production JARs.
+This isolated test-only mod records historical upgrade behavior of the immutable 2.5 and 2.6 releases. Current 2.7-alpha.2 deliberately requires rebuilding retired layouts; this fixture does not test the current binary or prove legacy acceptance by it. It is a standalone Gradle project: it does not compile Biotech source, modify either release JAR, or enter the production JARs.
 
 The workflow downloads the published NeoForge 1.21.1 Biotech 2.5 and 2.6 JARs, verifies pinned SHA-256 digests, release asset IDs and tag commit IDs, records release metadata and resolved provider commits, and starts two separate server processes with pinned dependencies. At startup the harness verifies the runtime Biotech mod file matches the supplied released JAR byte-for-byte and has the expected version.
 

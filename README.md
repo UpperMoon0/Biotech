@@ -69,7 +69,7 @@ Adult/baby state, variants, custom names, and other persistent gameplay state ar
 - **Mixer** — produces animal feeds and supports recipes with item and fluid inputs/outputs.
 - **Fermenter** — processes organic materials, including turning manure into Fertilizer.
 
-Every machine has a Patchouli multiblock preview and crafting recipe in the Biotech Guide Book. Redesigned machines use eight reusable Biotech structural/functional parts with shared graphite, ivory and teal materials. Existing 2.5 builds continue working unchanged. See [construction budgets](docs/machine-materials.md) and [safe upgrade policy](docs/machine-upgrade.md).
+Every machine has a Patchouli multiblock preview and crafting recipe in the Biotech Guide Book. Redesigned machines use eight reusable Biotech structural/functional parts with shared graphite, ivory and teal materials. Only the current guide layout forms. Retired 2.5 layouts and the old 2.6 Habitat stop processing and require rebuilding in 2.7-alpha.2. See [construction budgets](docs/machine-materials.md) and [safe upgrade policy](docs/machine-upgrade.md).
 
 ### Automation-ready hatches
 
