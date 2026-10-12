@@ -48,7 +48,7 @@ public final class MachineGalleryRunner {
         if (!Boolean.getBoolean("biotech.machineGallery.enabled") || stopped) return;
         Minecraft mc=Minecraft.getInstance();
         if(failure!=null)throw new IllegalStateException("Machine gallery failed",failure);
-        if(mc.level==null||mc.player==null||mc.getSingleplayerServer()==null||(mc.screen!=null && index != 28)||mc.getOverlay()!=null)return;
+        if(mc.level==null||mc.player==null||mc.getSingleplayerServer()==null||(mc.screen!=null && index < 28)||mc.getOverlay()!=null)return;
         try {
             if(output==null){output=Path.of(System.getProperty("biotech.machineGallery.output"));Files.createDirectories(output);mc.options.hideGui=true;}
             if(!pending){
