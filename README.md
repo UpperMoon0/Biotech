@@ -81,7 +81,7 @@ Biotech multiblocks use explicit IO blocks:
 - Fluid Output Hatch: 32,000 mB
 - Energy Input Hatch: 614,400 FE storage, up to 512 FE/t input
 
-Service Pipes connect to adjacent Service Pipes in all six directions. Straight runs, bends, branches and junctions use the same block; models and collision arms follow the connection states. Smart Hammer builds their connected states automatically.
+Service Pipes connect to adjacent Service Pipes in all six directions. Straight runs, bends, branches and junctions use the same block; models and collision arms follow the connection states. Smart Hammer builds their connected states automatically. Existing saved pipe runs reconnect after server chunk loading, including both sides of chunk boundaries; this repairs derived pipe flags only and does not migrate machines or resources.
 
 External automation is directional: connect item pipes, fluid pipes, or energy cables to the hatch-facing side. Input hatches accept resources and output hatches expose completed products.
 

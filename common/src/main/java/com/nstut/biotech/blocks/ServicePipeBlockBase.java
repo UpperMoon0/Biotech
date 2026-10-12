@@ -57,6 +57,8 @@ public abstract class ServicePipeBlockBase extends Block {
         return connectedState(defaultBlockState(),context.getLevel(),context.getClickedPos());
     }
     @Override public void onPlace(BlockState state,Level level,BlockPos pos,BlockState previous,boolean moving){
+        // Property-only repair must not query unloaded neighbors or recurse into another repair.
+        if (previous.is(state.getBlock())) return;
         // Also handles direct setBlock callers such as Smart Hammer and structure placement.
         BlockState connected=connectedState(state,level,pos);
         if(connected!=state)level.setBlock(pos,connected,3);

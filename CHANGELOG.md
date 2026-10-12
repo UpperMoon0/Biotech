@@ -2,7 +2,8 @@
 
 - Remove runtime validation fallbacks for 2.5 machines and the old 2.6 Habitat. Only the current construction preview forms.
 - Retired structures pause processing; updating does not move blocks or clear stored contents or transaction snapshots.
-- Rebuild from the guide after recovering stored contents. Smart Hammer fills cleared positions from inventory; it does not replace solid blocks or refund an old shell.
+- Rebuild from the guide after recovering stored contents. NsTut Lib 0.8.2 Smart Hammer replaces supported ordinary blocks inside the current pattern and refunds their block items. Quantity-bearing/compound blocks and unsupported hatches must be recovered manually.
+- Existing saved Service Pipes reconnect after server chunk loading, with reciprocal cross-chunk connections.
 - Keep the actual released 2.5-to-2.6 fixture as historical evidence and test current-layout operation plus retired-layout rejection on every target.
 
 # 2.7-alpha.1 — Walk-in Terrestrial Habitat (alpha)
