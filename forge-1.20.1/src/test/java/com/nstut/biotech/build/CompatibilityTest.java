@@ -28,5 +28,6 @@ class CompatibilityTest {
 
         String modsToml = Files.readString(Path.of("src", "main", "resources", "META-INF", "mods.toml"));
         assertTrue(modsToml.contains("versionRange=\"[0.8.2,)\""));
+        assertTrue(modsToml.contains("versionRange=\"[0.0.10,)\""));
     }
 }
