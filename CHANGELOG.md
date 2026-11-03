@@ -1,3 +1,9 @@
+# 2.8-alpha.1 — Open-ended runtime library requirements (unreleased)
+
+- Remove arbitrary upper-version ceilings for required NsTut Lib and OpenUI MC dependencies while preserving tested minimum versions and loader requirements.
+- Build and test with NsTut Lib 0.8.2 and the corrected OpenUI source revision. The patched OpenUI binary must be independently released before this version may be published.
+- See [2.8-alpha.1 release notes](CHANGELOG-2.8-alpha.1.md) for compatibility evidence and remaining release gates.
+
 # 2.7-alpha.2 — Current layouts required (alpha)
 
 - Remove runtime validation fallbacks for 2.5 machines and the old 2.6 Habitat. Only the current construction preview forms.
