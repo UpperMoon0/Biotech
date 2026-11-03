@@ -38,7 +38,7 @@ description='''${mod_description}'''
 [[dependencies.${mod_id}]]
     modId="openui_mc"
     mandatory=true
-    versionRange="[0.0.10,)"
+    versionRange="[0.0.16,)"
     ordering="AFTER"
     side="CLIENT"
 [[dependencies.${mod_id}]]
