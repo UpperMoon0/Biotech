@@ -117,7 +117,7 @@ Biotech requires:
 
 - **NsTut Lib 0.8.2 or newer (minimum-only; validate newer APIs before upgrading)**
 - **Patchouli**
-- **OpenUI MC 0.0.10 or newer (minimum-only; tested source baseline requires a separately released OpenUI bug fix)** on clients, matching the Minecraft version and loader
+- **OpenUI MC 0.0.16 or newer (minimum-only; fixes clipped pre-render hover/tooltips)** on clients, matching the Minecraft version and loader
 
 JEI and Jade are supported integrations and are highly useful in larger modpacks.
 

@@ -14,7 +14,7 @@ OpenUI owns component layout, lifecycle, and overlays. Vanilla owns real invento
 - `./gradlew gameTestAll`: existing gameplay integration tests on all targets.
 - Client checks: open every machine and hatch; inspect invalid, idle, and active machine states; hover energy, fluid, progress, and recipe outputs; resize and change GUI scale; close/reopen; exercise hatch pickup, drag, shift-click, carried stacks, and inventory-key dismissal.
 
-Biotech requires OpenUI MC 0.0.10+ within the 0.0.x compatibility line on clients (`[0.0.10,0.1)`). The coordinated OpenUI source revision is pinned in `gradle.properties`; CI and release jobs publish that exact provider to Maven Local before compiling Biotech.
+Biotech 2.7-alpha.3 requires OpenUI MC **0.0.16+** on clients (`[0.0.16,)`, no arbitrary upper cap). Earlier released OpenUI builds lack the clipped `preRender` callback fix needed by live hover tooltips. `openui_ref` pins the release-source commit corresponding to OpenUI 0.0.16; CI/release builds publish that exact provider to Maven Local before compiling Biotech. Validate against the publicly published 0.0.16 binary before shipping Biotech.
 
 ## PNG preview job
 
