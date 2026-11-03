@@ -30,6 +30,7 @@ class CompatibilityTest {
         String metadataTemplate = Files.readString(repositoryRoot.resolve(
                 Path.of("neoforge-1.21.1", "src/main/templates/META-INF/neoforge.mods.toml")));
         assertTrue(metadataTemplate.contains("versionRange = \"[0.8.2,)\""));
+        assertTrue(metadataTemplate.contains("versionRange = \"[0.0.10,)\""));
     }
 
     private static Path findRepositoryRoot(Path start) throws IOException {
