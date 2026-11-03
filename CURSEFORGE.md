@@ -115,9 +115,9 @@ That makes Biotech fit naturally into larger tech packs instead of forcing you i
 
 Biotech requires:
 
-- **NsTut Lib 0.8.2+ within the 0.8.x compatibility line**
+- **NsTut Lib 0.8.2 or newer (minimum-only; validate newer APIs before upgrading)**
 - **Patchouli**
-- **OpenUI MC 0.0.10 or newer within the 0.0.x compatibility line** on clients, matching the Minecraft version and loader
+- **OpenUI MC 0.0.16 or newer (minimum-only; fixes clipped pre-render hover/tooltips)** on clients, matching the Minecraft version and loader
 
 JEI and Jade are supported integrations and are highly useful in larger modpacks.
 
@@ -125,7 +125,7 @@ JEI and Jade are supported integrations and are highly useful in larger modpacks
 
 ## Supported versions
 
-Current Biotech 2.3 targets:
+Biotech targets:
 
 - **Minecraft 1.20.1 — Forge — Java 17**
 - **Minecraft 1.21.1 — NeoForge — Java 21**

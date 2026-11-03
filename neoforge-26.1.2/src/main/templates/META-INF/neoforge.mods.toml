@@ -35,13 +35,13 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "nstutlib"
 type = "required"
-versionRange = "[0.8.2,0.9)"
+versionRange = "[0.8.2,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
 modId = "openui_mc"
 type = "required"
-versionRange = "[0.0.10,0.1)"
+versionRange = "[0.0.16,)"
 ordering = "AFTER"
 side = "CLIENT"

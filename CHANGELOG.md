@@ -1,3 +1,9 @@
+# 2.7-alpha.3 — Open-ended dependencies and OpenUI hover compatibility
+
+- Remove arbitrary upper-version ceilings for required NsTut Lib and OpenUI MC dependencies while preserving tested minimum versions and loader requirements.
+- Require OpenUI MC 0.0.16+ on clients and compile against its exact release-source commit; keep NsTut Lib 0.8.2+ minimum-only. Verify the published OpenUI 0.0.16 binary before cutting the Biotech alpha.
+- See [2.7-alpha.3 release notes](CHANGELOG-2.7-alpha.3.md) for compatibility evidence and remaining release gates.
+
 # 2.7-alpha.2 — Current layouts required (alpha)
 
 - Remove runtime validation fallbacks for 2.5 machines and the old 2.6 Habitat. Only the current construction preview forms.
