@@ -27,7 +27,7 @@ class CompatibilityTest {
         assertEquals("7b9fa191c9196da75c6762387b993f4c969a812a", properties.getProperty("nstut_lib_ref"));
 
         String metadataTemplate = Files.readString(repositoryRoot.resolve(Path.of("neoforge-26.1.2", "src/main/templates/META-INF/neoforge.mods.toml")));
-        assertTrue(metadataTemplate.contains("versionRange = \"[0.8.2,0.9)\""));
+        assertTrue(metadataTemplate.contains("versionRange = \"[0.8.2,)\""));
     }
 
     private static Path findRepositoryRoot() {
